@@ -10,7 +10,6 @@ import logging
 import sys
 
 from app import app
-from app import db
 
 
 
@@ -62,9 +61,6 @@ def after_request_stuff(resp):
     resp.headers['Access-Control-Allow-Methods'] = "POST, GET, OPTIONS, PUT, DELETE, PATCH"
     resp.headers['Access-Control-Allow-Headers'] = "origin, content-type, accept, x-requested-with"
 
-    # remove session
-    db.session.remove()
-
     # without this jason's heroku local buffers forever
     sys.stdout.flush()
 
@@ -103,8 +99,9 @@ def index_endpoint():
 
 @app.route("/<path:url>", methods=["GET"])
 def get_doi_redirect_endpoint(url):
-    pass
-
+    return jsonify({
+        "input": url
+    })
 
 
 if __name__ == "__main__":
