@@ -8,6 +8,8 @@ import json
 import os
 import logging
 import sys
+import requests
+import re
 
 from app import app
 
@@ -68,6 +70,10 @@ def after_request_stuff(resp):
 
 
 
+# FUNCTIONS. move this to another file later.
+#
+######################################################################################
+
 
 
 def print_ip():
@@ -83,7 +89,58 @@ def print_ip():
     )
 
 
+class NotFoundException(Exception):
+    pass
 
+def get_readme(github_base_url):
+
+    # use this later
+    # url = "https://github.com/{}/{}".format(
+    #     owner,
+    #     repo_name
+    # )
+
+    url = github_base_url
+    r = requests.get(url)
+    p = re.compile(
+        ur'<article class="markdown-body entry-content" itemprop="text">(.+?)</article>',
+        re.MULTILINE | re.DOTALL
+    )
+    try:
+        result = re.findall(p, r.text)[0]
+    except IndexError:
+        result = None
+    return result
+
+def get_zenodo_doi_from_github(github_base_url):
+    zenodo_doi_url = None
+    readme = get_readme(github_base_url)
+    if not readme:
+        raise NotFoundException("No GitHub README found")
+
+    if "zenodo" in readme:
+        try:
+            zenodo_doi = re.findall("://zenodo.org/badge/doi/(.+?).svg", readme, re.MULTILINE)[0]
+            zenodo_doi_url = "http://doi.org/{}".format(zenodo_doi)
+        except IndexError:
+            pass
+
+    return zenodo_doi_url
+
+def get_metadata(doi_url):
+    headers = {'Accept': 'application/rdf+xml;q=0.5, application/vnd.citationstyles.csl+json;q=1.0'}
+    r = requests.get(doi_url, headers=headers)
+    data = r.json()
+    return data
+
+
+
+
+
+
+# ENDPOINTS
+#
+######################################################################################
 
 
 @app.route('/', methods=["GET"])
@@ -95,13 +152,27 @@ def index_endpoint():
     })
 
 
-
-
-@app.route("/<path:url>", methods=["GET"])
-def get_doi_redirect_endpoint(url):
+@app.route("/doi/<path:doi>", methods=["GET"])
+def citeas_doi_get(doi):
     return jsonify({
-        "input": url
+        "doi": "{}".format(doi)
     })
+
+@app.route("/url/<path:url>", methods=["GET"])
+def citeas_url_get(url):
+    response = {"url": url}
+
+    if "github" in url:
+        try:
+            response["zenodo_doi"] = get_zenodo_doi_from_github(url)
+            response["metadata"] = get_metadata(response["zenodo_doi"])
+        except NotFoundException:
+            abort_json(404, u"No README found at {}".format(url))
+
+    return jsonify(response)
+
+
+
 
 
 if __name__ == "__main__":
