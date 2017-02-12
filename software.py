@@ -111,7 +111,7 @@ class Software(object):
         response = {
             "url": self.url,
             "doi": self.doi,
-            "metadata": self.metadata,
-            "_citation": self.citation
+            "citation": self.citation,
+            "metadata": self.metadata
         }
         return response
