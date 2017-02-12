@@ -6,16 +6,11 @@ from flask import jsonify
 
 import json
 import os
-import logging
 import sys
 import requests
 import re
 
 from app import app
-
-
-
-logger = logging.getLogger("views")
 
 
 def json_dumper(obj):
@@ -33,7 +28,7 @@ def json_resp(thing):
     json_str = json.dumps(thing, sort_keys=True, default=json_dumper, indent=4)
 
     if request.path.endswith(".json") and (os.getenv("FLASK_DEBUG", False) == "True"):
-        logger.info(u"rendering output through debug_api.html template")
+        print u"rendering output through debug_api.html template"
         resp = make_response(render_template(
             'debug_api.html',
             data=json_str))
