@@ -7,12 +7,12 @@ import app
 from jobs import update_registry
 from jobs import Update
 
-from publication import Publication
-
-q = db.session.query(Publication.id)
-update_registry.register(Update(
-    job=Publication.refresh,
-    query=q,
-    queue_id=0
-))
+# from publication import Publication
+#
+# q = db.session.query(Publication.id)
+# update_registry.register(Update(
+#     job=Publication.refresh,
+#     query=q,
+#     queue_id=0
+# ))
 
