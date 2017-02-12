@@ -105,6 +105,14 @@ def index_endpoint():
     })
 
 
+@app.route("/product/<path:url_or_doi>", methods=["GET"])
+def citeas_product_get(url_or_doi):
+    if url_or_doi.startswith("10."):
+        return citeas_doi_get(url_or_doi)
+    else:
+        return citeas_url_get(url_or_doi)
+
+
 @app.route("/doi/<path:doi>", methods=["GET"])
 def citeas_doi_get(doi):
     my_software = Software()
