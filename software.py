@@ -1,5 +1,6 @@
 import requests
 import re
+import os
 from io import StringIO
 from HTMLParser import HTMLParser
 from citeproc.source.json import CiteProcJSON
@@ -168,11 +169,11 @@ class Software(object):
 
         tokens_str = os.environ["GITHUB_TOKENS"]
         tokens = [t.split(":") for t in tokens_str.split(",")]
-        r = requests.get(url, auth=tokens[0], headers=h)
+        (login, token) = tokens[0]
 
         api_url = self.url.replace("github.com/", "api.github.com/repos/")
         print api_url
-        r = requests.get(api_url)
+        r = requests.get(api_url, auth=(login, token), headers=h)
         self.github_api_raw = r.json()
 
 
