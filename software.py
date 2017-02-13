@@ -164,6 +164,12 @@ class Software(object):
     def set_github_api_raw(self):
         if not self.has_github_url:
             return
+        h = {"User-Agent": "CiteAs"}
+
+        tokens_str = os.environ["GITHUB_TOKENS"]
+        tokens = [t.split(":") for t in tokens_str.split(",")]
+        r = requests.get(url, auth=tokens[0], headers=h)
+
         api_url = self.url.replace("github.com/", "api.github.com/repos/")
         print api_url
         r = requests.get(api_url)
