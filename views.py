@@ -10,6 +10,7 @@ import sys
 import requests
 import re
 from software import Software
+from software import NotFoundException
 
 from app import app
 
@@ -83,10 +84,6 @@ def print_ip():
         ip=ip,
         user_agent=user_agent
     )
-
-
-class NotFoundException(Exception):
-    pass
 
 
 

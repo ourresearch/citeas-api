@@ -1,60 +1,96 @@
 import requests
 import re
+from io import StringIO
 from HTMLParser import HTMLParser
 from citeproc.source.json import CiteProcJSON
 from citeproc import CitationStylesStyle, CitationStylesBibliography
 from citeproc import formatter
 from citeproc import Citation, CitationItem
+from citeproc.source.bibtex.bibparse import BibTeXParser
 
-def get_readme(github_base_url):
+class NotFoundException(Exception):
+    pass
 
-    # use this later
-    # url = "https://github.com/{}/{}".format(
-    #     owner,
-    #     repo_name
-    # )
+def get_nonempty_contents(filename_list, github_base_url):
+    for filename in filename_list:
+        url = u"{}/raw/master/{}".format(github_base_url, filename)
+        r = requests.get(url)
+        if r.status_code == 200:
+            return r.text
+    return None
 
-    url = github_base_url
-    r = requests.get(url)
-    p = re.compile(
-        ur'<article class="markdown-body entry-content" itemprop="text">(.+?)</article>',
-        re.MULTILINE | re.DOTALL
-    )
+def get_concatenation(filename_list, github_base_url):
+    response = ""
+    for filename in filename_list:
+        url = u"{}/raw/master/{}".format(github_base_url, filename)
+        r = requests.get(url)
+        if r.status_code == 200:
+            response += "\n{}".format(r.text)
+    return response
+
+def extract_bibtex(text):
     try:
-        result = re.findall(p, r.text)[0]
+        result = re.findall(ur"(@.+{.+})", text, re.MULTILINE | re.DOTALL)[0]
     except IndexError:
         result = None
     return result
 
 
+def get_readme_and_citation_concat(github_base_url):
+    readme = None
+    readme = get_concatenation(["README", "README.md", "CITATION", "CITATION.md"], github_base_url)
+    return readme
+
 
 def format_citation_from_metadata(data):
-    for k, v in data.iteritems():
-        if k=="author":
-            author_list = []
-            for name_dict in v:
-                new_name_dict = {}
-                for name_k, name_v in name_dict.iteritems():
-                    if name_k == "literal":
-                        new_name_dict["family"] = name_v
-                    else:
-                        new_name_dict[name_k] = name_v
-                author_list.append(new_name_dict)
-            data["author"] = author_list
-
     data["id"] = "ITEM-1"
-    bib_source = CiteProcJSON([data])
+    id = "ITEM-1"
+
+    if "bibtex" in data:
+        bibtext_string = u"{}".format(data["bibtex"])
+        bib_source = BibTeXParser(StringIO(bibtext_string))
+        id = bib_source.keys()[0]
+    else:
+        for k, v in data.iteritems():
+            if k=="author":
+                author_list = []
+                for name_dict in v:
+                    new_name_dict = {}
+                    for name_k, name_v in name_dict.iteritems():
+                        if name_k == "literal":
+                            new_name_dict["family"] = name_v
+                        else:
+                            new_name_dict[name_k] = name_v
+                    author_list.append(new_name_dict)
+                data["author"] = author_list
+        bib_source = CiteProcJSON([data])
+
     bib_style = CitationStylesStyle('harvard1', validate=False)
     bibliography = CitationStylesBibliography(bib_style, bib_source, formatter.html)
-    citation = Citation([CitationItem('ITEM-1')])
+    citation = Citation([CitationItem(id)])
     bibliography.register(citation)
-    citation_text = u"".join(bibliography.bibliography()[0])
+
+    try:
+        citation_parts = u"".join(bibliography.bibliography()[0])
+        citation_text = u"".join(citation_parts)
+    except Exception:
+        print "Error parsing bibliography, so no bibliography for now"
+        citation_text = str(data["bibtex"])
 
     html_parser = HTMLParser()
-    citation_text = html_parser.unescape(u"".join(bibliography.bibliography()[0]))
+    citation_text = html_parser.unescape(citation_text)
 
-    print "bib: \n{}".format(citation_text)
     return citation_text
+
+def find_zenodo_doi(text):
+    if text and "zenodo" in text:
+        try:
+            text = text.lower()
+            return re.findall("://zenodo.org/badge/doi/(.+?).svg", text, re.MULTILINE)[0]
+        except IndexError:
+            pass
+    return None
+
 
 
 class Software(object):
@@ -63,28 +99,8 @@ class Software(object):
         self.doi = None
         self.metadata = {}
         self.citation = ""
+        self.github_api_raw = None
 
-    @property
-    def readme_page(self):
-        return self.url
-
-    @property
-    def best_citation(self):
-        return "hi"
-
-    def find_doi(self):
-        if self.doi:
-            return
-        if self.url and "github.com" in self.url:
-            readme = get_readme(self.url)
-            if not readme:
-                raise NotFoundException("No GitHub README found")
-            if "zenodo" in readme:
-                try:
-                    text = readme.lower()
-                    self.doi = re.findall("://zenodo.org/badge/doi/(.+?).svg", text, re.MULTILINE)[0]
-                except IndexError:
-                    pass
 
     @property
     def doi_url(self):
@@ -101,17 +117,95 @@ class Software(object):
         return None
 
 
-    def set_metadata(self):
-        if not self.doi_url:
+    @property
+    def has_github_url(self):
+        return self.url and "github.com" in self.url
+
+    @property
+    def owner(self):
+        if not self.has_github_url:
             return
+        if not self.github_api_raw:
+            self.set_github_api_raw()
+        return self.github_api_raw["owner"]["login"]
+
+    @property
+    def repo_name(self):
+        if not self.has_github_url:
+            return
+        if not self.github_api_raw:
+            self.set_github_api_raw()
+        return self.github_api_raw["name"]
+
+    @property
+    def year(self):
+        if not self.has_github_url:
+            return
+        if not self.github_api_raw:
+            self.set_github_api_raw()
+        return self.github_api_raw["created_at"][0:4]
+
+
+    def find_doi(self):
+        if self.doi:
+            return
+        if self.has_github_url:
+            self.doi = find_zenodo_doi(get_readme_and_citation_concat(self.url))
+
+
+    def find_citeas_request_in_github_repo(self):
+        request_text = None
+        if self.has_github_url:
+            request_text = get_readme_and_citation_concat(self.url)
+            return extract_bibtex(request_text)
+        return None
+
+
+    def set_github_api_raw(self):
+        if not self.has_github_url:
+            return
+        api_url = self.url.replace("github.com/", "api.github.com/repos/")
+        print api_url
+        r = requests.get(api_url)
+        self.github_api_raw = r.json()
+
+
+    def set_metadata(self):
+        if self.doi_url:
+            self.set_metadata_from_doi()
+        elif self.has_github_url:
+            bibtex = self.find_citeas_request_in_github_repo()
+            if bibtex:
+                self.metadata["bibtex"] = bibtex
+            else:
+                self.set_metadata_from_github_biblio()
+
+
+    def set_metadata_from_doi(self):
         headers = {'Accept': 'application/rdf+xml;q=0.5, application/vnd.citationstyles.csl+json;q=1.0'}
         r = requests.get(self.doi_url, headers=headers)
         self.metadata = r.json()
 
+
+    def set_metadata_from_github_biblio(self):
+        self.metadata = {}
+        self.metadata["title"] = self.repo_name
+        self.metadata["author"] = [{"family": self.owner}]
+        self.metadata["publisher"] = "GitHub repository"
+        self.metadata["URL"] = self.url
+        self.metadata["issued"] = {"date-parts": [[self.year]]}
+        self.metadata["type"] = "software"
+
+
     def set_citation(self):
         self.find_doi()
         self.set_metadata()
-        self.citation = format_citation_from_metadata(self.metadata)
+
+        if self.metadata:
+            self.citation = format_citation_from_metadata(self.metadata)
+
+        if not self.citation:
+            self.citation = self.display_url
 
 
     def __repr__(self):
@@ -125,3 +219,6 @@ class Software(object):
             "metadata": self.metadata
         }
         return response
+
+
+
