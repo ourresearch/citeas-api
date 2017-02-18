@@ -16,11 +16,12 @@ requests_cache.install_cache('my_requests_cache', expire_after=60*60*24*7)  # ex
 
 test_urls = [
     ("http://cnn.com", "", "http://cnn.com"),
-    ("https://github.com/pvlib/pvlib-python", "10.5281/zenodo.50141", "Will Holmgren et al., 2016. pvlib-python: 0.3.1. Available at: https://doi.org/10.5281/zenodo.50141."),
-    ("https://github.com/gcowan/hyperk", "10.5281/zenodo.160400", "G. A. Cowan, 2016. Gcowan/Hyperk: Mcp Data Processing Code. Available at: https://doi.org/10.5281/zenodo.160400."),
-    ("https://github.com/NSLS-II-XPD/xpdView", "10.5281/zenodo.60479", "Caleb Duff & Joseph Kaming-Thanassi, 2016. xpdView: xpdView initial release. Available at: https://doi.org/10.5281/zenodo.60479."),
+    ("https://github.com/pvlib/pvlib-python", "10.5281/zenodo.50141", "Holmgren, W. et al., 2016. pvlib-python: 0.3.1. Available at: https://doi.org/10.5281/zenodo.50141."),
+    ("https://github.com/gcowan/hyperk", "10.5281/zenodo.160400", "Cowan, G., 2016. Gcowan/Hyperk: Mcp Data Processing Code. Available at: https://doi.org/10.5281/zenodo.160400."),
+    ("https://github.com/NSLS-II-XPD/xpdView", "10.5281/zenodo.60479", "Duff, C. & Kaming-Thanassi, J., 2016. xpdView: xpdView initial release. Available at: https://doi.org/10.5281/zenodo.60479."),
     ("https://github.com/impactstory/depsy", "", "Impactstory, 2015. depsy. Available at: https://github.com/impactstory/depsy."),
-    ("https://github.com/abianchetti/blick", "", """@MastersThesis{bianchetti,\n      author = {Bianchetti, Arturo},\n      title = {Determinaci\\'on del di\\'ametro pupilar ocular en tiempo real},\n      school = {Grupo de \\'Optica y' y Visi\\'on, Facultad de Ingenier\\'ia, Universidad de Buenos Aires},\n      year = {2012}\n      }""")
+    ("https://github.com/abianchetti/blick", "", """@MastersThesis{bianchetti,\n      author = {Bianchetti, Arturo},\n      title = {Determinaci\\'on del di\\'ametro pupilar ocular en tiempo real},\n      school = {Grupo de \\'Optica y' y Visi\\'on, Facultad de Ingenier\\'ia, Universidad de Buenos Aires},\n      year = {2012}\n      }"""),
+    ("https://github.com/jasonpriem/FeedVis", "", u"Priem, J., 2011. FeedVis. Available at: https://github.com/jasonpriem/FeedVis.")
     # ("https://github.com/vahtras/loprop", "", """@misc{Vahtras:13276,\nauthor = {Olav Vahtras},\ntitle = {LoProp for Dalton},\nyear = {2014},\ndoi = {10.5281/zenodo.13276},\nurl = {http://dx.doi.org/10.5281/zenodo.13276},\n}"""),
     # ("https://github.com/magitz/1001", "", "Mavrodiev EV. (2015) 1001 - A tool for binary representations of unordered multistate characters (with examples from genomic data) PeerJ PrePrints 3:e1403 https://dx.doi.org/10.7287/peerj.preprints.1153v1"),
     # ("https://github.com/gregmacfarlane/trucksim_disagg", "", """Macfarlane, G. and Donnelly, R. (2014). A national simulation of freight truck flows."""),

@@ -8,6 +8,8 @@ from citeproc import CitationStylesStyle, CitationStylesBibliography
 from citeproc import formatter
 from citeproc import Citation, CitationItem
 from citeproc.source.bibtex.bibparse import BibTeXParser
+from nameparser import HumanName
+
 
 class NotFoundException(Exception):
     pass
@@ -43,6 +45,19 @@ def get_readme_and_citation_concat(github_base_url):
     return readme
 
 
+def author_name_as_dict(literal_name):
+    if len(literal_name.split(" ")) > 1:
+        name_dict = HumanName(literal_name).as_dict()
+        response_dict = {
+            "family": name_dict["last"],
+            "given": name_dict["first"],
+            "suffix": name_dict["suffix"]
+        }
+    else:
+        response_dict = {"family": literal_name}
+
+    return response_dict
+
 def format_citation_from_metadata(data):
     data["id"] = "ITEM-1"
     id = "ITEM-1"
@@ -59,7 +74,7 @@ def format_citation_from_metadata(data):
                     new_name_dict = {}
                     for name_k, name_v in name_dict.iteritems():
                         if name_k == "literal":
-                            new_name_dict["family"] = name_v
+                            new_name_dict = author_name_as_dict(name_v)
                         else:
                             new_name_dict[name_k] = name_v
                     author_list.append(new_name_dict)
@@ -101,6 +116,7 @@ class Software(object):
         self.metadata = {}
         self.citation = ""
         self.github_api_raw = None
+        self.github_user_api_raw = None
 
 
     @property
@@ -123,12 +139,20 @@ class Software(object):
         return self.url and "github.com" in self.url
 
     @property
-    def owner(self):
+    def owner_login(self):
         if not self.has_github_url:
             return
         if not self.github_api_raw:
             self.set_github_api_raw()
         return self.github_api_raw["owner"]["login"]
+
+    @property
+    def owner_name(self):
+        if not self.has_github_url:
+            return
+        if not self.github_user_api_raw:
+            self.set_github_user_api_raw()
+        return self.github_user_api_raw["name"]
 
     @property
     def repo_name(self):
@@ -161,21 +185,29 @@ class Software(object):
             return extract_bibtex(request_text)
         return None
 
+    def get_github_token_tuple(self):
+        tokens_str = os.environ["GITHUB_TOKENS"]
+        tokens = [t.split(":") for t in tokens_str.split(",")]
+        (login, token) = tokens[0]
+        return (login, token)
 
     def set_github_api_raw(self):
         if not self.has_github_url:
             return
-        h = {"User-Agent": "CiteAs"}
-
-        tokens_str = os.environ["GITHUB_TOKENS"]
-        tokens = [t.split(":") for t in tokens_str.split(",")]
-        (login, token) = tokens[0]
-
         api_url = self.url.replace("github.com/", "api.github.com/repos/")
-        print api_url
+        h = {"User-Agent": "CiteAs"}
+        (login, token) = self.get_github_token_tuple()
         r = requests.get(api_url, auth=(login, token), headers=h)
         self.github_api_raw = r.json()
 
+    def set_github_user_api_raw(self):
+        if not self.has_github_url:
+            return
+        api_url = "https://api.github.com/users/{}".format(self.owner_login)
+        h = {"User-Agent": "CiteAs"}
+        (login, token) = self.get_github_token_tuple()
+        r = requests.get(api_url, auth=(login, token), headers=h)
+        self.github_user_api_raw = r.json()
 
     def set_metadata(self):
         if self.doi_url:
@@ -197,7 +229,7 @@ class Software(object):
     def set_metadata_from_github_biblio(self):
         self.metadata = {}
         self.metadata["title"] = self.repo_name
-        self.metadata["author"] = [{"family": self.owner}]
+        self.metadata["author"] = [author_name_as_dict(self.owner_name)]
         self.metadata["publisher"] = "GitHub repository"
         self.metadata["URL"] = self.url
         self.metadata["issued"] = {"date-parts": [[self.year]]}
