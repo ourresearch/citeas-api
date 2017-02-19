@@ -1,13 +1,15 @@
 import requests
 import re
 import os
+import logging
 from io import StringIO
 from HTMLParser import HTMLParser
 from citeproc.source.json import CiteProcJSON
 from citeproc import CitationStylesStyle, CitationStylesBibliography
 from citeproc import formatter
 from citeproc import Citation, CitationItem
-from citeproc.source.bibtex.bibparse import BibTeXParser
+# from citeproc.source.bibtex import BibTeX
+from bibtex import BibTeX
 from nameparser import HumanName
 
 
@@ -17,7 +19,9 @@ class NotFoundException(Exception):
 def get_nonempty_contents(filename_list, github_base_url):
     for filename in filename_list:
         url = u"{}/raw/master/{}".format(github_base_url, filename)
+        print "looking for filename", url
         r = requests.get(url)
+        print "done"
         if r.status_code == 200:
             return r.text
     return None
@@ -28,7 +32,7 @@ def get_concatenation(filename_list, github_base_url):
         url = u"{}/raw/master/{}".format(github_base_url, filename)
         r = requests.get(url)
         if r.status_code == 200:
-            response += "\n{}".format(r.text)
+            response += u"\n{}".format(r.text)
     return response
 
 def extract_bibtex(text):
@@ -64,8 +68,11 @@ def format_citation_from_metadata(data):
 
     if "bibtex" in data:
         bibtext_string = u"{}".format(data["bibtex"])
-        bib_source = BibTeXParser(StringIO(bibtext_string))
+        bib_source = BibTeX(StringIO(bibtext_string))
         id = bib_source.keys()[0]
+        if "month" in bib_source[id]:
+            del bib_source[id]["month"]
+        print bib_source
     else:
         for k, v in data.iteritems():
             if k=="author":
@@ -81,8 +88,10 @@ def format_citation_from_metadata(data):
                 data["author"] = author_list
         bib_source = CiteProcJSON([data])
 
+
+
     bib_style = CitationStylesStyle('harvard1', validate=False)
-    bibliography = CitationStylesBibliography(bib_style, bib_source, formatter.html)
+    bibliography = CitationStylesBibliography(bib_style, bib_source, formatter.plain) #could be formatter.html
     citation = Citation([CitationItem(id)])
     bibliography.register(citation)
 
@@ -219,6 +228,11 @@ class Software(object):
             else:
                 self.set_metadata_from_github_biblio()
 
+        if not self.metadata:
+            self.metadata = {}
+            self.metadata["type"] = "misc"
+            self.metadata["URL"] = self.url
+
 
     def set_metadata_from_doi(self):
         headers = {'Accept': 'application/rdf+xml;q=0.5, application/vnd.citationstyles.csl+json;q=1.0'}
@@ -239,12 +253,7 @@ class Software(object):
     def set_citation(self):
         self.find_doi()
         self.set_metadata()
-
-        if self.metadata:
-            self.citation = format_citation_from_metadata(self.metadata)
-
-        if not self.citation:
-            self.citation = self.display_url
+        self.citation = format_citation_from_metadata(self.metadata)
 
 
     def __repr__(self):

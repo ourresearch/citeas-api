@@ -21,7 +21,7 @@ libraries_to_mum = [
     "oauthlib",
     "boto",
     "newrelic",
-    "RateLimiter"
+    "RateLimiter",
 ]
 
 for a_library in libraries_to_mum:
