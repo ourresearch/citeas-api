@@ -23,7 +23,6 @@ def get_nonempty_contents(filename_list, github_base_url):
         url = u"{}/raw/master/{}".format(github_base_url, filename)
         print "looking for filename", url
         r = requests.get(url, timeout=5)
-        print "done"
         if r.status_code == 200:
             return r.text
     return None
@@ -171,7 +170,6 @@ class Software(object):
         if self.has_github_url:
             self.doi = find_zenodo_doi(get_readme_and_citation_concat(self.url))
 
-
     def find_citeas_request_in_github_repo(self):
         request_text = None
         if self.has_github_url:
@@ -205,12 +203,16 @@ class Software(object):
 
     def set_metadata(self):
         if self.doi_url:
+            print u"calling self.set_metadata_from_doi()"
             self.set_metadata_from_doi()
+
         elif self.has_github_url:
             bibtex = self.find_citeas_request_in_github_repo()
             if bibtex:
+                print u"calling self.set_metadata_from_bibtex()"
                 self.set_metadata_from_bibtex(bibtex)
             else:
+                print u"calling self.set_metadata_from_github_biblio()"
                 self.set_metadata_from_github_biblio()
 
         if not self.metadata:
@@ -220,12 +222,19 @@ class Software(object):
 
     def set_metadata_from_bibtex(self, bibtex):
         bibtext_string = u"{}".format(bibtex)
+        bibtext_string.replace("-", "-")
         bib_dict = BibTeX(StringIO(bibtext_string))
         id = bib_dict.keys()[0]
+
         if "month" in bib_dict[id]:
             del bib_dict[id]["month"]
+
         self.metadata = dict(bib_dict[id].items())
         self.metadata["bibtex"] = bibtex
+        self.metadata["issued"] = {"date-parts": [[self.year]]}
+        if "doi" in self.metadata:
+            print "self.metadata[doi]", self.metadata["doi"]
+            self.doi = list(self.metadata["doi"])[0]
 
 
     def set_metadata_from_doi(self):
@@ -249,15 +258,22 @@ class Software(object):
         self.set_metadata()
         self.bib_source = get_bib_source_from_dict(self.metadata)
 
+    @property
+    def citation(self):
+        return self.display_citation(self.citation_style)
 
-    def display_citation(self, bib_stylename):
+    @property
+    def citation_plain(self):
+        return self.display_citation(self.citation_style, formatter=formatter.plain)
+
+    def display_citation(self, bib_stylename, formatter=formatter.html):
         # valid style names: plos, apa, pnas, nature, bmj, harvard1
         # full list is here: https://github.com/citation-style-language/styles
 
         style_path = get_style_filepath(bib_stylename)
         bib_style = CitationStylesStyle(style_path, validate=False)
 
-        bibliography = CitationStylesBibliography(bib_style, self.bib_source, formatter.html) #could be formatter.html
+        bibliography = CitationStylesBibliography(bib_style, self.bib_source, formatter) #could be formatter.html
         id = "ITEM-1"
         citation = Citation([CitationItem(id)])
         bibliography.register(citation)

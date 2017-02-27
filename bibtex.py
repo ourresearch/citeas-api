@@ -44,7 +44,12 @@ class BibTeX(BibliographySource):
               'title': 'title',
 #              'type': None,
 #              'year': None,
+
               'volume': 'volume',
+
+              # hap added doi and url
+              'doi': 'doi',
+              'url': 'url',
 
               # non-standard fields
               'isbn': 'ISBN',
@@ -110,6 +115,7 @@ class BibTeX(BibliographySource):
                 except TypeError:
                     value = str(value)
             csl_dict[csl_field] = value
+            # print("csl_dict: {}".format(csl_dict))
         return csl_dict
 
     @staticmethod
