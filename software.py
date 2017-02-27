@@ -110,7 +110,7 @@ class Software(object):
         self.bib_source = None
         self.github_api_raw = None
         self.github_user_api_raw = None
-        self.citation_style = "apa"
+        self.citation_style = "harvard1"
 
 
     @property
