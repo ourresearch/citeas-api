@@ -56,8 +56,8 @@ class MyTestCase(unittest.TestCase):
         (url, doi, expected) = test_data
         my_software = Software()
         my_software.url = url
-        my_software.set_citation()
-        assert_equals(my_software.citation, expected)
+        my_software.set_bib_source()
+        assert_equals(my_software.bib_source, expected)
 
     @data(*test_urls)
     def test_the_dois(self, test_data):
@@ -65,5 +65,5 @@ class MyTestCase(unittest.TestCase):
         if doi:
             my_software = Software()
             my_software.doi = doi
-            my_software.set_citation()
-            assert_equals(my_software.citation, expected)
+            my_software.set_bib_source()
+            assert_equals(my_software.bib_source, expected)

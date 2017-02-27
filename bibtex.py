@@ -6,7 +6,7 @@ from __future__ import (absolute_import, division, print_function,
 from citeproc.py2compat import *
 
 # copied from https://github.com/brechtm/citeproc-py/blob/master/citeproc/source/bibtex/bibtex.py
-# then modified
+# then modified to fix bugs.  search for "hap" to see mods
 
 import re
 import unicodedata
@@ -127,14 +127,17 @@ class BibTeX(BibliographySource):
         return pages
 
     def _bibtex_to_csl_date(self, bibtex_entry):
-        if 'month' in bibtex_entry:
-            begin_dict, end_dict = {}, {}
-            # begin_dict, end_dict = self._parse_month(bibtex_entry['month'])
-        else:
-            begin_dict, end_dict = {}, {}
+        # hap commented out the month section on feb 18, 2017 because was causing bugs,
+        # if 'month' in bibtex_entry:
+        #     begin_dict, end_dict = self._parse_month(bibtex_entry['month'])
+        # else:
+        #     begin_dict, end_dict = {}, {}
+
+        # hap replaced section above with this, ignoring the month.
+        begin_dict, end_dict = {}, {}
+
         if 'year' in bibtex_entry:
-            begin_dict['year'], end_dict['year'] \
-                = self._parse_year(bibtex_entry['year'])
+            begin_dict['year'], end_dict['year'] = self._parse_year(bibtex_entry['year'])
         if not begin_dict:
             return None
         if begin_dict == end_dict:

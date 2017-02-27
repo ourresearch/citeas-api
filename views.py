@@ -14,7 +14,6 @@ from software import NotFoundException
 
 from app import app
 
-
 def json_dumper(obj):
     """
     if the obj has a to_dict() function we've implemented, uses it to get dict.
@@ -110,27 +109,29 @@ def citeas_product_get(url_or_doi):
         return citeas_url_get(url_or_doi)
 
 
+def api_response(my_software):
+    if request.args.get("citation-style"):
+        my_software.citation_style = request.args.get("citation-style")
+
+    try:
+        my_software.set_bib_source()
+    except NotFoundException:
+        abort_json(404, u"No README found at {}".format(url))
+
+    return jsonify(my_software.to_dict())
+
+
 @app.route("/doi/<path:doi>", methods=["GET"])
 def citeas_doi_get(doi):
     my_software = Software()
     my_software.doi = doi
-    try:
-        my_software.set_citation()
-    except NotFoundException:
-        abort_json(404, u"No README found at {}".format(url))
-    return jsonify(my_software.to_dict())
-
+    return api_response(my_software)
 
 @app.route("/url/<path:url>", methods=["GET"])
 def citeas_url_get(url):
     my_software = Software()
     my_software.url = url
-    try:
-        my_software.set_citation()
-    except NotFoundException:
-        abort_json(404, u"No README found at {}".format(url))
-    return jsonify(my_software.to_dict())
-
+    return api_response(my_software)
 
 
 

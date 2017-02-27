@@ -1,15 +1,17 @@
 import requests
 import re
 import os
-import logging
 from io import StringIO
 from HTMLParser import HTMLParser
 from citeproc.source.json import CiteProcJSON
-from citeproc import CitationStylesStyle, CitationStylesBibliography
+from citeproc import CitationStylesStyle
+from citeproc import CitationStylesBibliography
 from citeproc import formatter
-from citeproc import Citation, CitationItem
-# from citeproc.source.bibtex import BibTeX
-from bibtex import BibTeX
+from citeproc import Citation
+from citeproc import CitationItem
+from citeproc_styles import get_style_filepath
+
+from bibtex import BibTeX  # use local patched version instead of citeproc.source.bibtex
 from nameparser import HumanName
 
 
@@ -20,7 +22,7 @@ def get_nonempty_contents(filename_list, github_base_url):
     for filename in filename_list:
         url = u"{}/raw/master/{}".format(github_base_url, filename)
         print "looking for filename", url
-        r = requests.get(url)
+        r = requests.get(url, timeout=5)
         print "done"
         if r.status_code == 200:
             return r.text
@@ -30,7 +32,8 @@ def get_concatenation(filename_list, github_base_url):
     response = ""
     for filename in filename_list:
         url = u"{}/raw/master/{}".format(github_base_url, filename)
-        r = requests.get(url)
+        print u"getting {}".format(url)
+        r = requests.get(url, timeout=5)
         if r.status_code == 200:
             response += u"\n{}".format(r.text)
     return response
@@ -62,50 +65,31 @@ def author_name_as_dict(literal_name):
 
     return response_dict
 
-def format_citation_from_metadata(data):
+def get_bib_source_from_dict(data):
     data["id"] = "ITEM-1"
     id = "ITEM-1"
 
     if "bibtex" in data:
-        bibtext_string = u"{}".format(data["bibtex"])
-        bib_source = BibTeX(StringIO(bibtext_string))
-        id = bib_source.keys()[0]
-        if "month" in bib_source[id]:
-            del bib_source[id]["month"]
-        print bib_source
-    else:
-        for k, v in data.iteritems():
-            if k=="author":
-                author_list = []
-                for name_dict in v:
-                    new_name_dict = {}
-                    for name_k, name_v in name_dict.iteritems():
-                        if name_k == "literal":
-                            new_name_dict = author_name_as_dict(name_v)
-                        else:
-                            new_name_dict[name_k] = name_v
-                    author_list.append(new_name_dict)
-                data["author"] = author_list
-        bib_source = CiteProcJSON([data])
+        del data["bibtex"]
+
+    for k, v in data.iteritems():
+        if k=="author":
+            author_list = []
+            for name_dict in v:
+                new_name_dict = {}
+                for name_k, name_v in name_dict.iteritems():
+                    if name_k == "literal":
+                        new_name_dict = author_name_as_dict(name_v)
+                    else:
+                        new_name_dict[name_k] = name_v
+                author_list.append(new_name_dict)
+            data["author"] = author_list
+
+    bib_source = CiteProcJSON([data])
+
+    return bib_source
 
 
-
-    bib_style = CitationStylesStyle('harvard1', validate=False)
-    bibliography = CitationStylesBibliography(bib_style, bib_source, formatter.plain) #could be formatter.html
-    citation = Citation([CitationItem(id)])
-    bibliography.register(citation)
-
-    try:
-        citation_parts = u"".join(bibliography.bibliography()[0])
-        citation_text = u"".join(citation_parts)
-    except Exception:
-        print "Error parsing bibliography, so no bibliography for now"
-        citation_text = str(data["bibtex"])
-
-    html_parser = HTMLParser()
-    citation_text = html_parser.unescape(citation_text)
-
-    return citation_text
 
 def find_zenodo_doi(text):
     if text and "zenodo" in text:
@@ -123,9 +107,10 @@ class Software(object):
         self.url = None
         self.doi = None
         self.metadata = {}
-        self.citation = ""
+        self.bib_source = None
         self.github_api_raw = None
         self.github_user_api_raw = None
+        self.citation_style = "apa"
 
 
     @property
@@ -224,7 +209,7 @@ class Software(object):
         elif self.has_github_url:
             bibtex = self.find_citeas_request_in_github_repo()
             if bibtex:
-                self.metadata["bibtex"] = bibtex
+                self.set_metadata_from_bibtex(bibtex)
             else:
                 self.set_metadata_from_github_biblio()
 
@@ -232,6 +217,15 @@ class Software(object):
             self.metadata = {}
             self.metadata["type"] = "misc"
             self.metadata["URL"] = self.url
+
+    def set_metadata_from_bibtex(self, bibtex):
+        bibtext_string = u"{}".format(bibtex)
+        bib_dict = BibTeX(StringIO(bibtext_string))
+        id = bib_dict.keys()[0]
+        if "month" in bib_dict[id]:
+            del bib_dict[id]["month"]
+        self.metadata = dict(bib_dict[id].items())
+        self.metadata["bibtex"] = bibtex
 
 
     def set_metadata_from_doi(self):
@@ -250,10 +244,33 @@ class Software(object):
         self.metadata["type"] = "software"
 
 
-    def set_citation(self):
+    def set_bib_source(self):
         self.find_doi()
         self.set_metadata()
-        self.citation = format_citation_from_metadata(self.metadata)
+        self.bib_source = get_bib_source_from_dict(self.metadata)
+
+
+    def display_citation(self, bib_stylename):
+        # plos, apa, pnas, nature, bmj, harvard1
+        style_path = get_style_filepath(bib_stylename)
+        bib_style = CitationStylesStyle(style_path, validate=False)
+
+        bibliography = CitationStylesBibliography(bib_style, self.bib_source, formatter.html) #could be formatter.html
+        id = "ITEM-1"
+        citation = Citation([CitationItem(id)])
+        bibliography.register(citation)
+
+        try:
+            citation_parts = u"".join(bibliography.bibliography()[0])
+            citation_text = u"".join(citation_parts)
+        except Exception:
+            print "Error parsing bibliography, so no bibliography for now"
+            citation_text = str(self.bib_source["bibtex"])
+
+        html_parser = HTMLParser()
+        citation_text = html_parser.unescape(citation_text)
+
+        return citation_text
 
 
     def __repr__(self):
@@ -263,7 +280,7 @@ class Software(object):
         response = {
             "url": self.display_url,
             "doi": self.doi,
-            "citation": self.citation,
+            "citation": self.display_citation(self.citation_style),
             "metadata": self.metadata
         }
         return response

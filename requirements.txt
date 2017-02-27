@@ -1,4 +1,5 @@
 citeproc-py==0.3.0
+citeproc-py-styles==0.1.0
 ddt==1.1.1
 Flask==0.10.1
 Flask-Compress==1.3.0
