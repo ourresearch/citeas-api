@@ -251,7 +251,9 @@ class Software(object):
 
 
     def display_citation(self, bib_stylename):
-        # plos, apa, pnas, nature, bmj, harvard1
+        # valid style names: plos, apa, pnas, nature, bmj, harvard1
+        # full list is here: https://github.com/citation-style-language/styles
+
         style_path = get_style_filepath(bib_stylename)
         bib_style = CitationStylesStyle(style_path, validate=False)
 
