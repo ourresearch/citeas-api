@@ -94,12 +94,12 @@ class BibTeX(BibliographySource):
                 value = value.strip()
             except AttributeError:
                 pass
+
             try:
                 csl_field = self.fields[field]
             except KeyError:
-                if field not in ('year', 'month', 'filename'):
-                    warn("Unsupported BibTeX field '{}'".format(field))
-                continue
+                csl_field = field
+
             if field in ('number', 'volume'):
                 try:
                     value = int(value)
@@ -114,6 +114,7 @@ class BibTeX(BibliographySource):
                     value = self._parse_string(value)
                 except TypeError:
                     value = str(value)
+
             csl_dict[csl_field] = value
             # print("csl_dict: {}".format(csl_dict))
         return csl_dict

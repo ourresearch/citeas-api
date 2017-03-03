@@ -1,6 +1,7 @@
 import requests
 import re
 import os
+import json
 from io import StringIO
 from HTMLParser import HTMLParser
 from citeproc.source.json import CiteProcJSON
@@ -37,7 +38,18 @@ def get_concatenation(filename_list, github_base_url):
             response += u"\n{}".format(r.text)
     return response
 
+def get_bibtex_url(text):
+    if not text:
+        return None
+    try:
+        result = re.findall(u'(http"?\'?[^"\']*data_type=BIBTEX[^"\']*)', text, re.MULTILINE | re.DOTALL)[0]
+    except IndexError:
+        result = None
+    return result
+
 def extract_bibtex(text):
+    if not text:
+        return None
     try:
         result = re.findall(ur"(@.+{.+})", text, re.MULTILINE | re.DOTALL)[0]
     except IndexError:
@@ -68,21 +80,29 @@ def get_bib_source_from_dict(data):
     data["id"] = "ITEM-1"
     id = "ITEM-1"
 
+    if "author" in data:
+        author_list = []
+        for name_dict in data["author"]:
+            new_name_dict = {}
+            for name_k, name_v in name_dict.iteritems():
+                if name_k == "literal":
+                    new_name_dict = author_name_as_dict(name_v)
+                else:
+                    new_name_dict[name_k] = name_v
+            author_list.append(new_name_dict)
+        data["author"] = author_list
+
+    if not "type" in data:
+        data["type"] = "misc"
+
+    for k, val in data.iteritems():
+        if k in ["title", "container-title"]:
+            num_upper = sum([1 for c in val if c.isupper()])
+            if num_upper > 0.75*len(val):
+                data[k] = val.title()
+
     if "bibtex" in data:
         del data["bibtex"]
-
-    for k, v in data.iteritems():
-        if k=="author":
-            author_list = []
-            for name_dict in v:
-                new_name_dict = {}
-                for name_k, name_v in name_dict.iteritems():
-                    if name_k == "literal":
-                        new_name_dict = author_name_as_dict(name_v)
-                    else:
-                        new_name_dict[name_k] = name_v
-                author_list.append(new_name_dict)
-            data["author"] = author_list
 
     bib_source = CiteProcJSON([data])
 
@@ -107,6 +127,7 @@ class Software(object):
         self.doi = None
         self.metadata = {}
         self.bib_source = None
+        self.bibtex = None
         self.github_api_raw = None
         self.github_user_api_raw = None
         self.citation_style = "harvard1"
@@ -201,24 +222,42 @@ class Software(object):
         r = requests.get(api_url, auth=(login, token), headers=h)
         self.github_user_api_raw = r.json()
 
+    def set_metadata_from_homepage(self):
+        bibtex = None
+        r = requests.get(self.url)
+        homepage_text = r.text
+        bibtex = extract_bibtex(homepage_text)
+        if not bibtex:
+            if get_bibtex_url(homepage_text):
+                r = requests.get(get_bibtex_url(homepage_text))
+                self.bibtex = extract_bibtex(r.text)
+
     def set_metadata(self):
         if self.doi_url:
             print u"calling self.set_metadata_from_doi()"
             self.set_metadata_from_doi()
 
         elif self.has_github_url:
-            bibtex = self.find_citeas_request_in_github_repo()
-            if bibtex:
-                print u"calling self.set_metadata_from_bibtex()"
-                self.set_metadata_from_bibtex(bibtex)
-            else:
+            self.bibtex = self.find_citeas_request_in_github_repo()
+            if not self.bibtex:
                 print u"calling self.set_metadata_from_github_biblio()"
                 self.set_metadata_from_github_biblio()
+
+        elif self.url:
+            self.set_metadata_from_homepage()
+
+        if self.bibtex:
+            print u"calling self.set_metadata_from_bibtex()"
+            self.set_metadata_from_bibtex(self.bibtex)
+            if self.doi_url:
+                print u"calling self.set_metadata_from_doi()"
+                self.set_metadata_from_doi()
 
         if not self.metadata:
             self.metadata = {}
             self.metadata["type"] = "misc"
             self.metadata["URL"] = self.url
+
 
     def set_metadata_from_bibtex(self, bibtex):
         bibtext_string = u"{}".format(bibtex)
@@ -231,7 +270,8 @@ class Software(object):
 
         self.metadata = dict(bib_dict[id].items())
         self.metadata["bibtex"] = bibtex
-        self.metadata["issued"] = {"date-parts": [[self.year]]}
+        if self.year:
+            self.metadata["issued"] = {"date-parts": [[self.year]]}
         if "doi" in self.metadata:
             print "self.metadata[doi]", self.metadata["doi"]
             self.doi = list(self.metadata["doi"])[0]
