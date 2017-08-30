@@ -135,6 +135,12 @@ class Software(object):
 
 
     @property
+    def name(self):
+        if self.metadata and self.metadata.get("title", None):
+            return self.metadata.get("title", None)
+        return self.url
+
+    @property
     def doi_url(self):
         if self.doi:
             return u"http://doi.org/{}".format(self.doi)
@@ -353,6 +359,7 @@ class Software(object):
     def to_dict(self):
         response = {
             "url": self.display_url,
+            "name": self.name,
             "doi": self.doi,
             "citations": self.citation_styles,
             "metadata": self.metadata,

@@ -14,14 +14,7 @@ class EnhancedCitationStyle(CitationStylesStyle):
         info = self.root.find("{http://purl.org/net/xbiblio/csl}info")
         if info:
             title = info.find("{http://purl.org/net/xbiblio/csl}title")
-            print title.text
             return title.text
-            # print [elem.text for elem in list(info)]
-            # short_title = info.find(u"{http://purl.org/net/xbiblio/csl}title-short")
-            # if short_title:
-            #     print short_title.text
-        # print (etree.tostring(bib_style.xml, pretty_print=True))
-        # print bib_style.xml
         return self.style_path
 
 
