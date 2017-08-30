@@ -354,7 +354,7 @@ class Software(object):
         response = {
             "url": self.display_url,
             "doi": self.doi,
-            "citation": self.citation_styles,
+            "citations": self.citation_styles,
             "metadata": self.metadata,
             "provenance": self.provenance
         }
