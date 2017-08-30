@@ -5,12 +5,12 @@ import json
 from io import StringIO
 from HTMLParser import HTMLParser
 from citeproc.source.json import CiteProcJSON
-from citeproc import CitationStylesStyle
+from enhanced_citation_style import EnhancedCitationStyle
+from enhanced_citation_style import get_style_name
 from citeproc import CitationStylesBibliography
 from citeproc import formatter
 from citeproc import Citation
 from citeproc import CitationItem
-from citeproc_styles import get_style_filepath
 
 from bibtex import BibTeX  # use local patched version instead of citeproc.source.bibtex
 from nameparser import HumanName
@@ -130,6 +130,7 @@ class Software(object):
         self.bibtex = None
         self.github_api_raw = None
         self.github_user_api_raw = None
+        self.provenance = []
         self.citation_style = "harvard1"
 
 
@@ -189,7 +190,12 @@ class Software(object):
         if self.doi:
             return
         if self.has_github_url:
+            self.provenance.append("looked for zenodo doi in github readme and citation files")
             self.doi = find_zenodo_doi(get_readme_and_citation_concat(self.url))
+            if self.doi:
+                self.provenance.append("... found doi.")
+            else:
+                self.provenance.append("... didn't find it")
 
     def find_citeas_request_in_github_repo(self):
         request_text = None
@@ -278,7 +284,7 @@ class Software(object):
 
 
     def set_metadata_from_doi(self):
-        headers = {'Accept': 'application/rdf+xml;q=0.5, application/vnd.citationstyles.csl+json;q=1.0'}
+        headers = {'Accept': 'application/vnd.citationstyles.csl+json'}
         r = requests.get(self.doi_url, headers=headers)
         self.metadata = r.json()
 
@@ -310,9 +316,7 @@ class Software(object):
         # valid style names: plos, apa, pnas, nature, bmj, harvard1
         # full list is here: https://github.com/citation-style-language/styles
 
-        style_path = get_style_filepath(bib_stylename)
-        bib_style = CitationStylesStyle(style_path, validate=False)
-
+        bib_style = EnhancedCitationStyle(bib_stylename)
         bibliography = CitationStylesBibliography(bib_style, self.bib_source, formatter) #could be formatter.html
         id = "ITEM-1"
         citation = Citation([CitationItem(id)])
@@ -330,6 +334,18 @@ class Software(object):
 
         return citation_text
 
+    @property
+    def citation_styles(self):
+        response = []
+        # full list of possible citation formats is here: https://github.com/citation-style-language/styles
+        for bib_stylename in ["plos", "apa", "pnas", "nature", "bmj", "harvard1", "modern-language-association-with-url"]:
+            citation_style_object = {
+                "style_shortname": bib_stylename,
+                "citation": self.display_citation(bib_stylename),
+                "style_fullname": get_style_name(bib_stylename)
+            }
+            response.append(citation_style_object)
+        return response
 
     def __repr__(self):
         return u"<Software ({})>".format(self.url)
@@ -338,8 +354,9 @@ class Software(object):
         response = {
             "url": self.display_url,
             "doi": self.doi,
-            "citation": self.display_citation(self.citation_style),
-            "metadata": self.metadata
+            "citation": self.citation_styles,
+            "metadata": self.metadata,
+            "provenance": self.provenance
         }
         return response
 
