@@ -60,7 +60,7 @@ class MyTestCase(unittest.TestCase):
         (url, doi, expected) = test_data
         my_software = Software()
         my_software.url = url
-        my_software.set_bib_source()
+        my_software.find_citation()
         assert_equals(my_software.citation_plain, expected)
 
     @data(*test_urls)
@@ -69,5 +69,5 @@ class MyTestCase(unittest.TestCase):
         if doi:
             my_software = Software()
             my_software.doi = doi
-            my_software.set_bib_source()
+            my_software.find_citation()
             assert_equals(my_software.citation_plain, expected)

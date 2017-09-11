@@ -117,7 +117,7 @@ def api_response(my_software):
         my_software.citation_style = request.args.get("citation-style")
 
     try:
-        my_software.set_bib_source()
+        my_software.find_citation()
     except NotFoundException:
         abort_json(404, u"No README found at {}".format(url))
 

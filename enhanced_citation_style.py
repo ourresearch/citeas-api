@@ -12,7 +12,7 @@ class EnhancedCitationStyle(CitationStylesStyle):
     @property
     def name(self):
         info = self.root.find("{http://purl.org/net/xbiblio/csl}info")
-        if info:
+        if info is not None:
             title = info.find("{http://purl.org/net/xbiblio/csl}title")
             return title.text
         return self.style_path

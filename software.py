@@ -1,4 +1,5 @@
 import requests
+import datetime
 import re
 import os
 import json
@@ -19,23 +20,17 @@ from nameparser import HumanName
 class NotFoundException(Exception):
     pass
 
-def get_nonempty_contents(filename_list, github_base_url):
-    for filename in filename_list:
-        url = u"{}/raw/master/{}".format(github_base_url, filename)
-        print "looking for filename", url
-        r = requests.get(url, timeout=5)
-        if r.status_code == 200:
-            return r.text
-    return None
 
-def get_concatenation(filename_list, github_base_url):
+def get_github_path(filename, github_base_url):
+    return u"{}/raw/master/{}".format(github_base_url, filename)
+
+def get_github_file_contents(filename, github_base_url):
     response = ""
-    for filename in filename_list:
-        url = u"{}/raw/master/{}".format(github_base_url, filename)
-        print u"getting {}".format(url)
-        r = requests.get(url, timeout=5)
-        if r.status_code == 200:
-            response += u"\n{}".format(r.text)
+    url = get_github_path(filename, github_base_url)
+    print u"getting {}".format(url)
+    r = requests.get(url, timeout=5)
+    if r.status_code == 200:
+        response += u"\n{}".format(r.text)
     return response
 
 def get_bibtex_url(text):
@@ -57,10 +52,13 @@ def extract_bibtex(text):
     return result
 
 
-def get_readme_and_citation_concat(github_base_url):
-    readme = None
-    readme = get_concatenation(["README", "README.md", "CITATION", "CITATION.md"], github_base_url)
-    return readme
+def find_or_empty_string(pattern, text):
+    try:
+        response = re.findall(pattern, text)[0]
+    except IndexError:
+        response = ""
+    return response
+
 
 
 def author_name_as_dict(literal_name):
@@ -121,6 +119,70 @@ def find_zenodo_doi(text):
 
 
 
+
+
+class ProvenanceStep(object):
+    def __init__(self, looking_for="", place_looking="", success=None):
+        self.looking_for = looking_for
+        self.place_looking = place_looking
+        self.success = success
+        self.timestamp = datetime.datetime.utcnow()
+
+
+    def __repr__(self):
+        return u"<ProvenanceStep ({})>".format(self.display)
+
+    @property
+    def looking_for_pronoun(self):
+        if not self.looking_for:
+            return ""
+        if self.looking_for.endswith("s"):
+            return "them"
+        return "it"
+
+    def display(self):
+        response = u""
+        if self.looking_for:
+            response += u"Looked for {}".format(self.looking_for)
+
+        if self.place_looking:
+            if self.place_looking.startswith("http"):
+                response += u" at {}".format(self.place_looking)
+            else:
+                response += u" in {}".format(self.place_looking)
+
+        if self.success == True:
+            response += u". Found {}!".format(self.looking_for_pronoun)
+        elif self.success == False:
+            response += u". Didn't find {}.".format(self.looking_for_pronoun)
+        else:
+            response += "."
+
+        return response
+
+
+class LastProvenanceStep(ProvenanceStep):
+    def __init__(self):
+        self.looking_for = None
+        self.place_looking = None
+        self.success = None
+
+    def display(self):
+        return u"Finished!"
+
+
+class ProvenanceChain(object):
+    def __init__(self):
+        self.list = []
+
+    def append(self, obj):
+        self.list.append(obj)
+
+    def display(self):
+        return [obj.display() for obj in self.list]
+
+
+
 class Software(object):
     def __init__(self):
         self.url = None
@@ -130,7 +192,7 @@ class Software(object):
         self.bibtex = None
         self.github_api_raw = None
         self.github_user_api_raw = None
-        self.provenance = []
+        self.provenance_chain = ProvenanceChain()
         self.citation_style = "harvard1"
 
 
@@ -194,21 +256,84 @@ class Software(object):
 
     def find_doi(self):
         if self.doi:
+            self.provenance_chain.append(ProvenanceStep("DOI", "request parameters", True))
             return
-        if self.has_github_url:
-            self.provenance.append("looked for zenodo doi in github readme and citation files")
-            self.doi = find_zenodo_doi(get_readme_and_citation_concat(self.url))
-            if self.doi:
-                self.provenance.append("... found doi.")
-            else:
-                self.provenance.append("... didn't find it")
+        else:
+            self.provenance_chain.append(ProvenanceStep("DOI", "request parameters", False))
 
-    def find_citeas_request_in_github_repo(self):
-        request_text = None
         if self.has_github_url:
-            request_text = get_readme_and_citation_concat(self.url)
-            return extract_bibtex(request_text)
+            self.provenance_chain.append(ProvenanceStep("GitHub url", "request parameters", True))
+            for filename in ["README", "README.md", "CITATION", "CITATION.md"]:
+                text = get_github_file_contents(filename, self.url)
+                self.doi = find_zenodo_doi(text)
+                if self.doi:
+                    self.provenance_chain.append(
+                        ProvenanceStep("DOI", u"GitHub file {}".format(get_github_path(filename, self.url)), True))
+                    return
+                else:
+                    self.provenance_chain.append(
+                        ProvenanceStep("DOI", u"GitHub file {}".format(get_github_path(filename, self.url)), False))
+
+        else:
+            self.provenance_chain.append(ProvenanceStep("GitHub url", "request parameters", False))
+
+
+
+    def set_metadata_from_github(self):
+        self.bibtex = self.find_bibtex_request_in_github_repo()
+        if not self.bibtex:
+            print u"calling self.set_metadata_from_description_file()"
+            self.set_metadata_from_description_file()
+        if not self.metadata:
+            print u"calling self.set_metadata_from_github_biblio()"
+            self.set_metadata_from_github_biblio()
+
+    def find_bibtex_request_in_github_repo(self):
+        bibtex = None
+        if self.has_github_url:
+            for filename in ["README", "README.md", "CITATION", "CITATION.md"]:
+                text = get_github_file_contents(filename, self.url)
+                bibtex = extract_bibtex(text)
+                if bibtex:
+                    self.provenance_chain.append(
+                        ProvenanceStep("bibtex", u"GitHub file {}".format(get_github_path(filename, self.url)), True))
+                    return bibtex
+                else:
+                    self.provenance_chain.append(
+                        ProvenanceStep("bibtex", u"GitHub file {}".format(get_github_path(filename, self.url)), False))
+
         return None
+
+
+    def set_metadata_from_description_file(self):
+        bibtex = None
+        if self.has_github_url:
+            text = get_github_file_contents("DESCRIPTION", self.url)
+
+        package = find_or_empty_string(ur"Package: (.*)", text)
+        title = find_or_empty_string(ur"Title: (.*)", text)
+        self.metadata["title"] = u"{}: {}".format(package, title)
+        person_list = re.findall(ur"person\((.*)\)", text)
+        authors = []
+        for person in person_list:
+            section = person.replace('"', '').split(",")
+            name = section[0]
+            last_name = section[1].strip()
+            if not last_name.startswith("role"):
+                name += u" {}".format(last_name)
+            authors.append(author_name_as_dict(name))
+        print authors
+        self.metadata["author"] = authors
+        self.metadata["year"] = datetime.datetime.utcnow().isoformat()[0:4]
+        version = find_or_empty_string(ur"Version: (.*)", text)
+        self.metadata["note"] = u"R package version {}".format(version)
+        self.metadata["container-title"] = self.metadata["note"]
+        self.metadata["URL"] = u"https://CRAN.R-project.org/package={}".format(package)
+        self.metadata["type"] = "Manual"
+
+        self.provenance_chain.append(
+            ProvenanceStep("DESCRIPTION metadata", u"GitHub file {}".format(get_github_path("DESCRIPTON", self.url)), True))
+
 
     def get_github_token_tuple(self):
         tokens_str = os.environ["GITHUB_TOKENS"]
@@ -239,10 +364,22 @@ class Software(object):
         r = requests.get(self.url)
         homepage_text = r.text
         bibtex = extract_bibtex(homepage_text)
-        if not bibtex:
-            if get_bibtex_url(homepage_text):
-                r = requests.get(get_bibtex_url(homepage_text))
+        if bibtex:
+            self.provenance_chain.append(ProvenanceStep(u"bibtex", self.url, True))
+            self.bibtex = bibtex
+        else:
+            self.provenance_chain.append(ProvenanceStep(u"bibtex", self.url, False))
+            my_bibtex_url = get_bibtex_url(homepage_text)
+            if my_bibtex_url:
+                self.provenance_chain.append(ProvenanceStep(u"url for a page that might have citation instructions", self.url, True))
+                r = requests.get(my_bibtex_url)
                 self.bibtex = extract_bibtex(r.text)
+                if self.bibtex:
+                    self.provenance_chain.append(ProvenanceStep(u"bibtex", my_bibtex_url, True))
+                else:
+                    self.provenance_chain.append(ProvenanceStep(u"bibtex", my_bibtex_url, False))
+
+
 
     def set_metadata(self):
         if self.doi_url:
@@ -250,10 +387,7 @@ class Software(object):
             self.set_metadata_from_doi()
 
         elif self.has_github_url:
-            self.bibtex = self.find_citeas_request_in_github_repo()
-            if not self.bibtex:
-                print u"calling self.set_metadata_from_github_biblio()"
-                self.set_metadata_from_github_biblio()
+            self.set_metadata_from_github()
 
         elif self.url:
             self.set_metadata_from_homepage()
@@ -266,6 +400,7 @@ class Software(object):
                 self.set_metadata_from_doi()
 
         if not self.metadata:
+            self.provenance_chain.append(ProvenanceStep(u"citation details", "webpage default", None))
             self.metadata = {}
             self.metadata["type"] = "misc"
             self.metadata["URL"] = self.url
@@ -275,6 +410,7 @@ class Software(object):
         bibtext_string = u"{}".format(bibtex)
         bibtext_string.replace("-", "-")
         bib_dict = BibTeX(StringIO(bibtext_string))
+
         id = bib_dict.keys()[0]
 
         if "month" in bib_dict[id]:
@@ -282,18 +418,24 @@ class Software(object):
 
         self.metadata = dict(bib_dict[id].items())
         self.metadata["bibtex"] = bibtex
-        if self.year:
-            self.metadata["issued"] = {"date-parts": [[self.year]]}
-        if "doi" in self.metadata:
-            print "self.metadata[doi]", self.metadata["doi"]
-            self.doi = list(self.metadata["doi"])[0]
+        if hasattr(bib_dict[id], "year") and bib_dict[id]["year"]:
+            self.metadata["issued"] = {"date-parts": [[bib_dict[id]["year"]]]}
 
+        if "doi" in self.metadata:
+            self.doi = list(self.metadata["doi"])[0]
+            self.provenance_chain.append(ProvenanceStep("DOI", "what we've found so far", True))
+        else:
+            self.provenance_chain.append(ProvenanceStep("DOI", "what we've found so far", False))
+            self.provenance_chain.append(ProvenanceStep("citation details", "what we've found so far", True))
+
+        print "*******"
+        print self.metadata
 
     def set_metadata_from_doi(self):
         headers = {'Accept': 'application/vnd.citationstyles.csl+json'}
         r = requests.get(self.doi_url, headers=headers)
         self.metadata = r.json()
-
+        self.provenance_chain.append(ProvenanceStep("citation details", u"DOI metadata for {}".format(self.doi), True))
 
     def set_metadata_from_github_biblio(self):
         self.metadata = {}
@@ -301,14 +443,15 @@ class Software(object):
         self.metadata["author"] = [author_name_as_dict(self.owner_name)]
         self.metadata["publisher"] = "GitHub repository"
         self.metadata["URL"] = self.url
-        self.metadata["issued"] = {"date-parts": [[self.year]]}
+        # self.metadata["issued"] = {"date-parts": [[self.year]]}
         self.metadata["type"] = "software"
+        self.provenance_chain.append(ProvenanceStep("citation details", "GitHub repository metadata", True))
 
-
-    def set_bib_source(self):
+    def find_citation(self):
         self.find_doi()
         self.set_metadata()
         self.bib_source = get_bib_source_from_dict(self.metadata)
+        self.provenance_chain.append(LastProvenanceStep())
 
     @property
     def citation(self):
@@ -344,7 +487,7 @@ class Software(object):
     def citation_styles(self):
         response = []
         # full list of possible citation formats is here: https://github.com/citation-style-language/styles
-        for bib_stylename in ["plos", "apa", "pnas", "nature", "bmj", "harvard1", "modern-language-association-with-url"]:
+        for bib_stylename in ["apa", "harvard1", "nature", "modern-language-association-with-url", "chicago-author-date", "vancouver"]:
             citation_style_object = {
                 "style_shortname": bib_stylename,
                 "citation": self.display_citation(bib_stylename),
@@ -363,7 +506,7 @@ class Software(object):
             "doi": self.doi,
             "citations": self.citation_styles,
             "metadata": self.metadata,
-            "provenance": self.provenance
+            "_provenance": self.provenance_chain.display()
         }
         return response
 
