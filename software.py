@@ -347,8 +347,8 @@ class Software(object):
             print u"calling self.set_metadata_from_description_file()"
             self.set_metadata_from_description_file()
         if not self.bibtex and not self.metadata:
-            print u"calling self.set_metadata_from_github()"
-            self.set_metadata_from_github()
+            print u"calling self.set_metadata_from_github_biblio()"
+            self.set_metadata_from_github_biblio()
 
     def find_bibtex_request_in_github_repo(self):
         bibtex = None
