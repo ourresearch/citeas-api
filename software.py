@@ -53,7 +53,7 @@ def extract_bibtex(text):
 
 def find_or_empty_string(pattern, text):
     try:
-        response = re.findall(pattern, text)[0]
+        response = re.findall(pattern, text, re.IGNORECASE)[0]
     except IndexError:
         response = ""
     return response
@@ -115,12 +115,24 @@ def find_zenodo_doi(text):
     if text and "zenodo" in text:
         try:
             text = text.lower()
-            return re.findall("://zenodo.org/badge/doi/(.+?).svg", text, re.MULTILINE)[0]
+            return re.findall("://zenodo.org/badge/doi/(.+?).svg", text, re.MULTILINE|re.IGNORECASE)[0]
         except IndexError:
             pass
     return None
 
 
+def find_github_url(text):
+    if text and "github" in text.lower():
+        try:
+            text = text.lower()
+            response = re.findall('"https?://github.com/.+"', text, re.MULTILINE|re.IGNORECASE)[0]
+            response = response.replace('"', "")
+            response = response.replace("/issues", "")  # hack for now to get this example working fast http://localhost:5000/product/https://cran.r-project.org/web/packages/stringr
+            print "response", response
+            return response
+        except IndexError:
+            pass
+    return None
 
 
 
@@ -235,10 +247,16 @@ class Software(object):
             return self.doi_url
         return None
 
+    def simplify_url(self):
+        if self.base_library_url:
+            self.url = self.base_library_url
+            self.provenance_chain.append(ProvenanceStep("request parameters", self.request_url, True, "base library url"))
+
+
     @property
     def base_library_url(self):
         if u"cran.r-project.org/web/packages" in self.url:
-            package_name = re.find(u"cran.r-project.org/web/packages/(.*)/?", self.url, re.IGNORECASE)
+            package_name = find_or_empty_string(u"cran.r-project.org/web/packages/(.*)/?", self.url)
             if package_name:
                 return u"http://cran.r-project.org/web/packages/{}".format(package_name)
         return None
@@ -277,10 +295,19 @@ class Software(object):
             if not self.metadata:
                 return
             else:
-                return self.metadata["issued"]["date-parts"][0][0]
+                try:
+                    return self.metadata["issued"]["date-parts"][0][0]
+                except KeyError:
+                    pass
+
         if not self.github_api_raw:
             self.set_github_api_raw()
-        return self.github_api_raw["created_at"][0:4]
+
+        try:
+            return self.github_api_raw["created_at"][0:4]
+        except (KeyError, TypeError):
+            pass
+        return None
 
 
     def find_doi(self):
@@ -292,7 +319,15 @@ class Software(object):
 
         if self.has_github_url:
             self.provenance_chain.append(ProvenanceStep("request parameters", self.request_url, True, "GitHub URL"))
+        else:
+            r = requests.get(self.url)
+            if r.text:
+                github_url = find_github_url(r.text)
+                if github_url:
+                    self.provenance_chain.append(ProvenanceStep("webpage content", self.url, True, "GitHub URL"))
+                    self.url = github_url
 
+        if self.has_github_url:
             for filename in ["README", "README.md", "CITATION", "CITATION.md"]:
                 text = get_github_file_contents(filename, self.url)
                 self.doi = find_zenodo_doi(text)
@@ -304,8 +339,6 @@ class Software(object):
                     self.provenance_chain.append(
                         ProvenanceStep("DOI found", get_github_path(filename, self.url), False, u"GitHub {} file".format(filename)))
 
-        else:
-            self.provenance_chain.append(ProvenanceStep("request parameters", self.request_url, False, "GitHub URL"))
 
 
     def set_metadata_from_github(self):
@@ -343,6 +376,11 @@ class Software(object):
         bibtex = None
         if self.has_github_url:
             text = get_github_file_contents("DESCRIPTION", self.url)
+
+        print "*********", text
+
+        if not text:
+            return
 
         package = find_or_empty_string(ur"Package: (.*)", text)
         title = find_or_empty_string(ur"Title: (.*)", text)
@@ -433,9 +471,10 @@ class Software(object):
                 self.set_metadata_from_doi()
 
         if not self.metadata:
-            self.provenance_chain.append(ProvenanceStep(u"citation details", "webpage default", None))
+            self.provenance_chain.append(ProvenanceStep(u"citation details", "webpage default", True))
             self.metadata = {}
             self.metadata["type"] = "misc"
+            self.metadata["title"] = self.url
             self.metadata["URL"] = self.url
 
 
@@ -480,6 +519,7 @@ class Software(object):
         self.provenance_chain.append(ProvenanceStep("GitHub", self.url, True, "GitHub repository metadata"))
 
     def find_citation(self):
+        self.simplify_url()
         self.find_doi()
         self.set_metadata()
         self.bib_source = get_bib_source_from_dict(self.metadata)
