@@ -255,7 +255,7 @@ class Software(object):
 
     @property
     def base_library_url(self):
-        if u"cran.r-project.org/web/packages" in self.url:
+        if self.url and u"cran.r-project.org/web/packages" in self.url:
             package_name = find_or_empty_string(u"cran.r-project.org/web/packages/(.*)/?", self.url)
             if package_name:
                 return u"http://cran.r-project.org/web/packages/{}".format(package_name)
