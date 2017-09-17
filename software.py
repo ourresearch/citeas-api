@@ -16,7 +16,6 @@ from citeproc import CitationItem
 from bibtex import BibTeX  # use local patched version instead of citeproc.source.bibtex
 from nameparser import HumanName
 
-
 class NotFoundException(Exception):
     pass
 
@@ -74,21 +73,25 @@ def author_name_as_dict(literal_name):
 
     return response_dict
 
+def get_author_list(data_author):
+    author_list = []
+    for name_dict in data_author:
+        new_name_dict = {}
+        for name_k, name_v in name_dict.iteritems():
+            if name_k == "literal":
+                new_name_dict = author_name_as_dict(name_v)
+            else:
+                new_name_dict[name_k] = name_v
+        author_list.append(new_name_dict)
+    return author_list
+
+
 def get_bib_source_from_dict(data):
     data["id"] = "ITEM-1"
     id = "ITEM-1"
 
     if "author" in data:
-        author_list = []
-        for name_dict in data["author"]:
-            new_name_dict = {}
-            for name_k, name_v in name_dict.iteritems():
-                if name_k == "literal":
-                    new_name_dict = author_name_as_dict(name_v)
-                else:
-                    new_name_dict[name_k] = name_v
-            author_list.append(new_name_dict)
-        data["author"] = author_list
+        data["author"] = get_author_list(data["author"])
 
     if not "type" in data:
         data["type"] = "misc"
@@ -122,10 +125,11 @@ def find_zenodo_doi(text):
 
 
 class ProvenanceStep(object):
-    def __init__(self, looking_for="", place_looking="", success=None):
-        self.looking_for = looking_for
-        self.place_looking = place_looking
+    def __init__(self, source_type="", location="", success=None, context=""):
+        self.source_type = source_type
+        self.location = location
         self.success = success
+        self.context = context
         self.timestamp = datetime.datetime.utcnow()
 
 
@@ -134,22 +138,33 @@ class ProvenanceStep(object):
 
     @property
     def looking_for_pronoun(self):
-        if not self.looking_for:
+        if not self.source_type:
             return ""
-        if self.looking_for.endswith("s"):
+        if self.source_type.endswith("s"):
             return "them"
         return "it"
 
-    def display(self):
-        response = u""
-        if self.looking_for:
-            response += u"Looked for {}".format(self.looking_for)
+    def to_dict(self):
+        response = {
+            "location": self.location,
+            "source_type": self.source_type,
+            "context": self.context
+        }
+        return response
 
-        if self.place_looking:
-            if self.place_looking.startswith("http"):
-                response += u" at {}".format(self.place_looking)
+    def display(self):
+        if not self.success:
+            return None
+
+        response = u""
+        if self.source_type:
+            response += u"Looked for {}".format(self.source_type)
+
+        if self.location:
+            if self.location.startswith("http"):
+                response += u" at {}".format(self.location)
             else:
-                response += u" in {}".format(self.place_looking)
+                response += u" in {}".format(self.location)
 
         if self.success == True:
             response += u". Found {}!".format(self.looking_for_pronoun)
@@ -170,7 +185,6 @@ class LastProvenanceStep(ProvenanceStep):
     def display(self):
         return u"Finished!"
 
-
 class ProvenanceChain(object):
     def __init__(self):
         self.list = []
@@ -179,7 +193,10 @@ class ProvenanceChain(object):
         self.list.append(obj)
 
     def display(self):
-        return [obj.display() for obj in self.list]
+        return [obj.to_dict() for obj in self.list if obj.success]
+        # return [obj.display() for obj in self.list if obj.success]
+
+
 
 
 
@@ -216,6 +233,13 @@ class Software(object):
             return self.doi_url
         return None
 
+    @property
+    def base_library_url(self):
+        if u"cran.r-project.org/web/packages" in self.url:
+            package_name = re.find(u"cran.r-project.org/web/packages/(.*)/?", self.url, re.IGNORECASE)
+            if package_name:
+                return u"http://cran.r-project.org/web/packages/{}".format(package_name)
+        return None
 
     @property
     def has_github_url(self):
@@ -248,7 +272,10 @@ class Software(object):
     @property
     def year(self):
         if not self.has_github_url:
-            return
+            if not self.metadata:
+                return
+            else:
+                return self.metadata["issued"]["date-parts"][0][0]
         if not self.github_api_raw:
             self.set_github_api_raw()
         return self.github_api_raw["created_at"][0:4]
@@ -278,7 +305,6 @@ class Software(object):
             self.provenance_chain.append(ProvenanceStep("GitHub url", "request parameters", False))
 
 
-
     def set_metadata_from_github(self):
         self.bibtex = self.find_bibtex_request_in_github_repo()
         if not self.bibtex:
@@ -304,6 +330,11 @@ class Software(object):
 
         return None
 
+    @property
+    def authors(self):
+        if self.metadata and self.metadata.get("author", None):
+            return self.metadata["author"]
+        return {}
 
     def set_metadata_from_description_file(self):
         bibtex = None
@@ -322,7 +353,6 @@ class Software(object):
             if not last_name.startswith("role"):
                 name += u" {}".format(last_name)
             authors.append(author_name_as_dict(name))
-        print authors
         self.metadata["author"] = authors
         self.metadata["year"] = datetime.datetime.utcnow().isoformat()[0:4]
         version = find_or_empty_string(ur"Version: (.*)", text)
@@ -371,13 +401,13 @@ class Software(object):
             self.provenance_chain.append(ProvenanceStep(u"bibtex", self.url, False))
             my_bibtex_url = get_bibtex_url(homepage_text)
             if my_bibtex_url:
-                self.provenance_chain.append(ProvenanceStep(u"url for a page that might have citation instructions", self.url, True))
+                self.provenance_chain.append(ProvenanceStep(u"Project webpage", self.url, True, "BibTex citation request"))
                 r = requests.get(my_bibtex_url)
                 self.bibtex = extract_bibtex(r.text)
                 if self.bibtex:
-                    self.provenance_chain.append(ProvenanceStep(u"bibtex", my_bibtex_url, True))
+                    self.provenance_chain.append(ProvenanceStep(u"bibtex", my_bibtex_url, True, "BibTex citation request"))
                 else:
-                    self.provenance_chain.append(ProvenanceStep(u"bibtex", my_bibtex_url, False))
+                    self.provenance_chain.append(ProvenanceStep(u"bibtex", my_bibtex_url, False, "BibTex citation request"))
 
 
 
@@ -423,10 +453,9 @@ class Software(object):
 
         if "doi" in self.metadata:
             self.doi = list(self.metadata["doi"])[0]
-            self.provenance_chain.append(ProvenanceStep("DOI", "what we've found so far", True))
+            self.provenance_chain.append(ProvenanceStep("Bibtex", "url goes here", True, "DOI in bibtex"))
         else:
-            self.provenance_chain.append(ProvenanceStep("DOI", "what we've found so far", False))
-            self.provenance_chain.append(ProvenanceStep("citation details", "what we've found so far", True))
+            self.provenance_chain.append(ProvenanceStep("Bibtex", "Bibtex metadata", False))
 
         print "*******"
         print self.metadata
@@ -435,7 +464,7 @@ class Software(object):
         headers = {'Accept': 'application/vnd.citationstyles.csl+json'}
         r = requests.get(self.doi_url, headers=headers)
         self.metadata = r.json()
-        self.provenance_chain.append(ProvenanceStep("citation details", u"DOI metadata for {}".format(self.doi), True))
+        self.provenance_chain.append(ProvenanceStep("DOI metadata", self.doi_url, True, "Crossref API"))
 
     def set_metadata_from_github_biblio(self):
         self.metadata = {}
@@ -445,7 +474,7 @@ class Software(object):
         self.metadata["URL"] = self.url
         # self.metadata["issued"] = {"date-parts": [[self.year]]}
         self.metadata["type"] = "software"
-        self.provenance_chain.append(ProvenanceStep("citation details", "GitHub repository metadata", True))
+        self.provenance_chain.append(ProvenanceStep("GitHub", self.url, True, "GitHub repository metadata"))
 
     def find_citation(self):
         self.find_doi()
@@ -496,6 +525,78 @@ class Software(object):
             response.append(citation_style_object)
         return response
 
+    def export(self, export_type):
+        if export_type == "csv":
+            items = self.metadata.items()
+            header_row = u",".join([name for (name, value) in items])
+            value_row = u",".join([str(value) for (name, value) in items])
+            response = u"{}\n{}".format(header_row, value_row)
+            return response
+        elif export_type == "ris":
+            response_list = []
+            response_list.append(("T1", self.metadata.get("title", "")))
+            response_list.append(("JO", self.metadata.get("container-title", "")))
+            response_list.append(("VL", self.metadata.get("volume", "")))
+            response_list.append(("IS", self.metadata.get("issue", "")))
+            response_list.append(("SP", self.metadata.get("page", "")))
+            response_list.append(("V1", self.year))
+            response_list.append(("PB", self.metadata.get("publisher", "")))
+            if self.genre == "article-journal":
+                response_list.append(("TY", "JOUR"))
+            for author in self.authors:
+                response_list.append(("%A", u"{}, {}".format(author["family"], author["given"])))
+            response = u"\n".join(u"{} {}".format(k, v) for (k, v) in response_list)
+            return response
+        elif export_type == "enw":
+            response_list = []
+            response_list.append(("%T", self.metadata.get("title", "")))
+            response_list.append(("%J", self.metadata.get("container-title", "")))
+            response_list.append(("%V", self.metadata.get("volume", "")))
+            response_list.append(("%N", self.metadata.get("issue", "")))
+            response_list.append(("%P", self.metadata.get("page", "")))
+            response_list.append(("%D", self.year))
+            response_list.append(("%I", self.metadata.get("publisher", "")))
+            if self.genre == "article-journal":
+                response_list.append(("0%", "Journal Article"))
+            for author in self.authors:
+                response_list.append(("%A", u"{}, {}".format(author["family"], author["given"])))
+            response = u"\n".join(u"{} {}".format(k, v) for (k, v) in response_list)
+            return response
+        elif export_type == "bibtex":
+            return """@article{piwowar2007sharing,
+              title={Sharing detailed research data is associated with increased citation rate},
+              author={Piwowar, Heather A and Day, Roger S and Fridsma, Douglas B},
+              journal={PloS one},
+              volume={2},
+              number={3},
+              pages={e308},
+              year={2007},
+              publisher={Public Library of Science}
+            }
+            """
+        return None
+
+    @property
+    def exports(self):
+        response = []
+        for export_name in ["csv", "enw", "ris", "bibtex"]:
+            export_object = {
+                "export_name": export_name,
+                "export": self.export(export_name)
+            }
+            response.append(export_object)
+        return response
+
+    @property
+    def genre(self):
+        response = "article-journal"
+        if self.metadata:
+            metadata_type = self.metadata.get("type", None)
+            if metadata_type:
+                response = metadata_type
+        return response
+
+
     def __repr__(self):
         return u"<Software ({})>".format(self.url)
 
@@ -505,8 +606,9 @@ class Software(object):
             "name": self.name,
             "doi": self.doi,
             "citations": self.citation_styles,
+            "exports": self.exports,
             "metadata": self.metadata,
-            "_provenance": self.provenance_chain.display()
+            "provenance": self.provenance_chain.display()
         }
         return response
 
