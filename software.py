@@ -128,8 +128,8 @@ def find_github_url(text):
             response = re.findall('"https?://github.com/.+"', text, re.MULTILINE|re.IGNORECASE)[0]
             response = response.replace('"', "")
             response = response.replace("/issues", "")  # hack for now to get this example working fast http://localhost:5000/product/https://cran.r-project.org/web/packages/stringr
-            print "response", response
-            return response
+            if not "/yt/" in response:  #hack hack hack because need to order these
+                return response
         except IndexError:
             pass
     return None
@@ -347,8 +347,8 @@ class Software(object):
             print u"calling self.set_metadata_from_description_file()"
             self.set_metadata_from_description_file()
         if not self.bibtex and not self.metadata:
-            print u"calling self.set_metadata_from_github_biblio()"
-            self.set_metadata_from_github_biblio()
+            print u"calling self.set_metadata_from_github()"
+            self.set_metadata_from_github()
 
     def find_bibtex_request_in_github_repo(self):
         bibtex = None
@@ -376,8 +376,6 @@ class Software(object):
         bibtex = None
         if self.has_github_url:
             text = get_github_file_contents("DESCRIPTION", self.url)
-
-        print "*********", text
 
         if not text:
             return
@@ -457,11 +455,11 @@ class Software(object):
             print u"calling self.set_metadata_from_doi()"
             self.set_metadata_from_doi()
 
-        elif self.has_github_url:
-            self.set_metadata_from_github()
-
         elif self.url:
             self.set_metadata_from_homepage()
+
+        if not self.bibtex and self.has_github_url:
+            self.set_metadata_from_github()
 
         if self.bibtex:
             print u"calling self.set_metadata_from_bibtex()"
@@ -499,8 +497,6 @@ class Software(object):
         else:
             self.provenance_chain.append(ProvenanceStep("Bibtex", "Bibtex metadata", False))
 
-        print "*******"
-        print self.metadata
 
     def set_metadata_from_doi(self):
         headers = {'Accept': 'application/vnd.citationstyles.csl+json'}
