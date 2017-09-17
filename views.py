@@ -128,12 +128,14 @@ def api_response(my_software):
 def citeas_doi_get(doi):
     my_software = Software()
     my_software.doi = doi
+    my_software.request_url = request.url
     return api_response(my_software)
 
 @app.route("/url/<path:url>", methods=["GET"])
 def citeas_url_get(url):
     my_software = Software()
     my_software.url = url
+    my_software.request_url = request.url
     return api_response(my_software)
 
 

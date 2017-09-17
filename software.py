@@ -211,6 +211,8 @@ class Software(object):
         self.github_user_api_raw = None
         self.provenance_chain = ProvenanceChain()
         self.citation_style = "harvard1"
+        self.request_url = None
+
 
 
     @property
@@ -283,26 +285,27 @@ class Software(object):
 
     def find_doi(self):
         if self.doi:
-            self.provenance_chain.append(ProvenanceStep("DOI", "request parameters", True))
+            self.provenance_chain.append(ProvenanceStep("request parameters", self.request_url, True, "DOI"))
             return
         else:
-            self.provenance_chain.append(ProvenanceStep("DOI", "request parameters", False))
+            self.provenance_chain.append(ProvenanceStep("request parameters", self.request_url, False, "DOI"))
 
         if self.has_github_url:
-            self.provenance_chain.append(ProvenanceStep("GitHub url", "request parameters", True))
+            self.provenance_chain.append(ProvenanceStep("request parameters", self.request_url, True, "GitHub URL"))
+
             for filename in ["README", "README.md", "CITATION", "CITATION.md"]:
                 text = get_github_file_contents(filename, self.url)
                 self.doi = find_zenodo_doi(text)
                 if self.doi:
                     self.provenance_chain.append(
-                        ProvenanceStep("DOI", u"GitHub file {}".format(get_github_path(filename, self.url)), True))
+                        ProvenanceStep("DOI found", get_github_path(filename, self.url), True, u"GitHub {} file".format(filename)))
                     return
                 else:
                     self.provenance_chain.append(
-                        ProvenanceStep("DOI", u"GitHub file {}".format(get_github_path(filename, self.url)), False))
+                        ProvenanceStep("DOI found", get_github_path(filename, self.url), False, u"GitHub {} file".format(filename)))
 
         else:
-            self.provenance_chain.append(ProvenanceStep("GitHub url", "request parameters", False))
+            self.provenance_chain.append(ProvenanceStep("request parameters", self.request_url, False, "GitHub URL"))
 
 
     def set_metadata_from_github(self):
@@ -310,7 +313,7 @@ class Software(object):
         if not self.bibtex:
             print u"calling self.set_metadata_from_description_file()"
             self.set_metadata_from_description_file()
-        if not self.metadata:
+        if not self.bibtex and not self.metadata:
             print u"calling self.set_metadata_from_github_biblio()"
             self.set_metadata_from_github_biblio()
 
@@ -322,11 +325,11 @@ class Software(object):
                 bibtex = extract_bibtex(text)
                 if bibtex:
                     self.provenance_chain.append(
-                        ProvenanceStep("bibtex", u"GitHub file {}".format(get_github_path(filename, self.url)), True))
+                        ProvenanceStep("bibtex metadata", get_github_path(filename, self.url), True, u"GitHub {} file".format(filename)))
                     return bibtex
                 else:
                     self.provenance_chain.append(
-                        ProvenanceStep("bibtex", u"GitHub file {}".format(get_github_path(filename, self.url)), False))
+                        ProvenanceStep("bibtex metadata", get_github_path(filename, self.url), False, u"GitHub {} file".format(filename)))
 
         return None
 
@@ -362,7 +365,7 @@ class Software(object):
         self.metadata["type"] = "Manual"
 
         self.provenance_chain.append(
-            ProvenanceStep("DESCRIPTION metadata", u"GitHub file {}".format(get_github_path("DESCRIPTON", self.url)), True))
+            ProvenanceStep("DESCRIPTION metadata", get_github_path("DESCRIPTION", self.url), True, u"GitHub DESCRIPTION file"))
 
 
     def get_github_token_tuple(self):
@@ -464,7 +467,7 @@ class Software(object):
         headers = {'Accept': 'application/vnd.citationstyles.csl+json'}
         r = requests.get(self.doi_url, headers=headers)
         self.metadata = r.json()
-        self.provenance_chain.append(ProvenanceStep("DOI metadata", self.doi_url, True, "Crossref API"))
+        self.provenance_chain.append(ProvenanceStep("DOI metadata", self.doi_url, True, "DOI API"))
 
     def set_metadata_from_github_biblio(self):
         self.metadata = {}
@@ -544,7 +547,7 @@ class Software(object):
             if self.genre == "article-journal":
                 response_list.append(("TY", "JOUR"))
             for author in self.authors:
-                response_list.append(("%A", u"{}, {}".format(author["family"], author["given"])))
+                response_list.append(("A1", u", ".join([author["family"], author.get("given", "")])))
             response = u"\n".join(u"{} {}".format(k, v) for (k, v) in response_list)
             return response
         elif export_type == "enw":
@@ -559,7 +562,7 @@ class Software(object):
             if self.genre == "article-journal":
                 response_list.append(("0%", "Journal Article"))
             for author in self.authors:
-                response_list.append(("%A", u"{}, {}".format(author["family"], author["given"])))
+                response_list.append(("%A", u", ".join([author["family"], author.get("given", "")])))
             response = u"\n".join(u"{} {}".format(k, v) for (k, v) in response_list)
             return response
         elif export_type == "bibtex":
