@@ -584,7 +584,7 @@ class Software(object):
                 response_list.append(("TY", "JOUR"))
             for author in self.authors:
                 response_list.append(("A1", u", ".join([author["family"], author.get("given", "")])))
-            response = u"\n".join(u"{} {}".format(k, v) for (k, v) in response_list)
+            response = u"\n".join(u"{} - {}".format(k, v) for (k, v) in response_list)
             return response
         elif export_type == "enw":
             response_list = []
