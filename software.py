@@ -573,6 +573,8 @@ class Software(object):
             return response
         elif export_type == "ris":
             response_list = []
+            if self.genre == "article-journal":
+                response_list.append(("TY", "JOUR"))
             response_list.append(("T1", self.metadata.get("title", "")))
             response_list.append(("JO", self.metadata.get("container-title", "")))
             response_list.append(("VL", self.metadata.get("volume", "")))
@@ -580,8 +582,6 @@ class Software(object):
             response_list.append(("SP", self.metadata.get("page", "")))
             response_list.append(("V1", self.year))
             response_list.append(("PB", self.metadata.get("publisher", "")))
-            if self.genre == "article-journal":
-                response_list.append(("TY", "JOUR"))
             for author in self.authors:
                 response_list.append(("A1", u", ".join([author["family"], author.get("given", "")])))
             response = u"\n".join(u"{} - {}".format(k, v) for (k, v) in response_list)
