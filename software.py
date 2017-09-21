@@ -600,6 +600,7 @@ class Software(object):
             for author in self.authors:
                 response_list.append(("%A", u", ".join([author["family"], author.get("given", "")])))
             response = u"\n".join(u"{} {}".format(k, v) for (k, v) in response_list)
+            response += "\nER - "
             return response
         elif export_type == "bibtex":
             return """@article{piwowar2007sharing,
