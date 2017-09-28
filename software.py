@@ -115,30 +115,6 @@ def get_bib_source_from_dict(data):
 
 
 
-def find_zenodo_doi(text):
-    if text and "zenodo" in text:
-        try:
-            text = text.lower()
-            return re.findall("://zenodo.org/badge/doi/(.+?).svg", text, re.MULTILINE|re.IGNORECASE)[0]
-        except IndexError:
-            pass
-    return None
-
-
-def find_github_url(text):
-    if text and "github" in text.lower():
-        try:
-            text = text.lower()
-            response = re.findall('"https?://github.com/.+"', text, re.MULTILINE|re.IGNORECASE)[0]
-            response = response.replace('"', "")
-            response = response.replace("/issues", "")  # hack for now to get this example working fast http://localhost:5000/product/https://cran.r-project.org/web/packages/stringr
-            if not "/yt/" in response:  #hack hack hack because need to order these
-                return response
-        except IndexError:
-            pass
-    return None
-
-
 
 
 
@@ -292,7 +268,6 @@ class Source(object):
 
         self.provenance_chain.list = []
         print "next step"
-        print self.steps
         for step in self.steps:
             print "step", step
             if step not in self.steps_completed:
@@ -301,6 +276,31 @@ class Source(object):
                 method()
                 self.steps_completed.append(step)
                 return
+
+
+    def find_zenodo_doi(source, text):
+        if text and "zenodo" in text:
+            try:
+                text = text.lower()
+                return re.findall("://zenodo.org/badge/doi/(.+?).svg", text, re.MULTILINE|re.IGNORECASE)[0]
+            except IndexError:
+                pass
+        return None
+
+
+    def find_github_url(source, text):
+        if text and "github" in text.lower():
+            try:
+                text = text.lower()
+                response = re.findall('"https?://github.com/.+"', text, re.MULTILINE|re.IGNORECASE)[0]
+                response = response.replace('"', "")
+                response = response.replace("/issues", "")  # hack for now to get this example working fast http://localhost:5000/product/https://cran.r-project.org/web/packages/stringr
+                if not "/yt/" in response:  #hack hack hack because need to order these
+                    return response
+            except IndexError:
+                pass
+        return None
+
 
 
 class DoiSource(Source):
@@ -441,11 +441,11 @@ class GithubSource(Source):
             self.provenance_chain.append(
                 LinkProvenanceStep(u"GitHub file {}".format(filename), path, True))
 
-            doi = find_zenodo_doi(text)
+            doi = self.find_zenodo_doi(text)
             if doi:
                 self.provenance_chain.append(
                     StringProvenanceStep(u"DOI in GitHub {} file".format(filename), path, True))
-                self.metadata.doi = doi
+                self.metadata["doi"] = doi
                 return
 
             self.provenance_chain.append(
@@ -484,7 +484,7 @@ class GithubSource(Source):
 
     def look_for_doi_in_github_file(self, filename):
         text = get_github_file_contents(filename, self.url)
-        self.doi = find_zenodo_doi(text)
+        self.doi = self.find_zenodo_doi(text)
         self.provenance_chain.append(
             ProvenanceStep("DOI found", get_github_path(filename, self.url), self.doi!=None, u"GitHub {} file".format(filename)))
 
@@ -496,7 +496,7 @@ class GithubSource(Source):
             # try to find github url on webpage
             r = requests.get(self.url)
             if r.text:
-                github_url = find_github_url(r.text)
+                github_url = self.find_github_url(r.text)
                 if github_url:
                     self.provenance_chain.append(ProvenanceStep("GitHub URL webpage content", github_url, True))
                     self.github_url = github_url
@@ -681,15 +681,11 @@ class Software(object):
         return None
 
 
-
-
     @property
     def authors(self):
         if self.metadata and self.metadata.get("author", None):
             return self.metadata["author"]
         return {}
-
-
 
 
     @property
@@ -703,7 +699,8 @@ class Software(object):
             if not self.done:
                 self.take_next_step(self.github_source)
 
-            if self.doi_source.has_completed_all_steps and self.github_source.has_completed_all_steps:
+            if not self.done and \
+                    (self.doi_source.has_completed_all_steps and self.github_source.has_completed_all_steps):
                 self.take_next_step(self.webpage_source)
 
 
@@ -716,16 +713,12 @@ class Software(object):
 
 
 
-
-
-
     def take_next_step(self, source):
         source.next_step()
         self.metadata = source.metadata
         self.provenance_chain.list += source.provenance_chain.list
         if self.done:
             self.bib_source = get_bib_source_from_dict(self.metadata)
-            print "bib_source", self.bib_source
 
 
     def find_citation(self):
