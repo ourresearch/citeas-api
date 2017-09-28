@@ -260,6 +260,8 @@ class Source(object):
 
     @property
     def has_completed_all_steps(self):
+        if not self.is_active:
+            return True
         return set(self.steps) == set(self.steps_completed)
 
     def set_metadata_from_bibtex(self, bibtex, location_of_bibtex=None):
@@ -285,10 +287,11 @@ class Source(object):
             self.provenance_chain.append(MetadataProvenanceStep("Bibtex", location_of_bibtex, True))
 
     def next_step(self):
+        if not self.is_active:
+            return
+
         self.provenance_chain.list = []
         print "next step"
-        if not self.id:
-            return
         print self.steps
         for step in self.steps:
             print "step", step
@@ -311,14 +314,23 @@ class DoiSource(Source):
         self.steps_completed = []
 
     @property
+    def is_active(self):
+        return self.doi != None
+
+    @property
     def doi(self):
         return self.id
 
     @property
     def doi_url(self):
-        return u"https://doi.org/{}".format(self.doi)
+        if self.doi:
+            return u"https://doi.org/{}".format(self.doi)
+        return None
 
     def set_metadata(self):
+        if not self.doi_url:
+            return
+
         self.provenance_chain.append(LinkProvenanceStep("DOI", self.doi_url, True))
 
         headers = {'Accept': 'application/vnd.citationstyles.csl+json'}
@@ -329,35 +341,54 @@ class DoiSource(Source):
 
 class WebpageSource(Source):
     def __init__(self, id):
-        self.url = None
+        if id.startswith('http'):
+            self.url = id
+        else:
+            self.url = None
         super(WebpageSource, self).__init__(id)
 
-        if self.id:
-            self.provenance_chain.append(LinkProvenanceStep("GitHub URL", self.url, True))
-
-        self.steps = ["set_metadata_from_homepage"]
+        self.steps = ["set_bibtex_from_homepage", "set_metadata_from_homepage"]
         self.steps_completed = []
+
+    @property
+    def is_active(self):
+        return self.url != None
 
 
     def set_metadata_from_homepage(self):
-        bibtex = None
-        r = requests.get(self.url)
-        homepage_text = r.text
-        bibtex = extract_bibtex(homepage_text)
-        if bibtex:
-            self.provenance_chain.append(ProvenanceStep(u"bibtex", self.url, True))
-            self.bibtex = bibtex
+        if self.url:
+            self.provenance_chain.append(LinkProvenanceStep("Website", self.url, True))
+
+            self.metadata = {}
+            self.metadata["type"] = "misc"
+            self.metadata["title"] = self.url
+            self.metadata["URL"] = self.url
+            self.provenance_chain.append(MetadataProvenanceStep(u"Webpage", self.url, True))
         else:
-            self.provenance_chain.append(ProvenanceStep(u"bibtex", self.url, False))
-            my_bibtex_url = get_bibtex_url(homepage_text)
-            if my_bibtex_url:
-                self.provenance_chain.append(ProvenanceStep(u"Project webpage", self.url, True, "BibTex citation request"))
-                r = requests.get(my_bibtex_url)
-                self.bibtex = extract_bibtex(r.text)
-                if self.bibtex:
-                    self.provenance_chain.append(MetadataProvenanceStep(u"bibtex", my_bibtex_url, True, "BibTex citation request"))
-                else:
-                    self.provenance_chain.append(StringProvenanceStep(u"bibtex", my_bibtex_url, False, "BibTex citation request"))
+            self.provenance_chain.append(MetadataProvenanceStep(u"Webpage", self.url, False))
+
+    def set_bibtex_from_homepage(self):
+        if self.url:
+            self.provenance_chain.append(LinkProvenanceStep("Website", self.url, True))
+
+            bibtex = None
+            r = requests.get(self.url)
+            homepage_text = r.text
+            bibtex = extract_bibtex(homepage_text)
+            if bibtex:
+                self.provenance_chain.append(StringProvenanceStep(u"bibtex", self.url, True))
+                self.bibtex = bibtex
+            else:
+                self.provenance_chain.append(StringProvenanceStep(u"bibtex", self.url, False))
+                my_bibtex_url = get_bibtex_url(homepage_text)
+                if my_bibtex_url:
+                    self.provenance_chain.append(StringProvenanceStep(u"Project webpage", self.url, True, "BibTex citation request"))
+                    r = requests.get(my_bibtex_url)
+                    self.bibtex = extract_bibtex(r.text)
+                    if self.bibtex:
+                        self.provenance_chain.append(MetadataProvenanceStep(u"bibtex", my_bibtex_url, True, "BibTex citation request"))
+                    else:
+                        self.provenance_chain.append(StringProvenanceStep(u"bibtex", my_bibtex_url, False, "BibTex citation request"))
 
 
 class GithubSource(Source):
@@ -379,6 +410,10 @@ class GithubSource(Source):
 
         self.github_api_raw = {}
         self.github_user_api_raw = {}
+
+    @property
+    def is_active(self):
+        return self.id != None
 
 
     @property
@@ -468,9 +503,11 @@ class GithubSource(Source):
 
     def set_metadata_from_description_file(self):
         bibtex = None
-        if self.url:
-            text = get_github_file_contents("DESCRIPTION", self.url)
+        text = None
+        if not self.url:
+            return
 
+        text = get_github_file_contents("DESCRIPTION", self.url)
         if not text:
             return
 
@@ -569,7 +606,7 @@ class Software(object):
 
         self.github_source = GithubSource(self.url)
         self.doi_source = DoiSource(self.doi)
-        self.webpage_source = WebpageSource(self.url)
+        self.webpage_source = WebpageSource(id)
 
 
 
@@ -677,11 +714,6 @@ class Software(object):
                 print u"calling self.set_metadata_from_doi()"
                 self.set_metadata_from_doi()
 
-        if not self.metadata:
-            self.metadata = {}
-            self.metadata["type"] = "misc"
-            self.metadata["title"] = self.url
-            self.metadata["URL"] = self.url
 
 
 
@@ -694,8 +726,6 @@ class Software(object):
         if self.done:
             self.bib_source = get_bib_source_from_dict(self.metadata)
             print "bib_source", self.bib_source
-
-
 
 
     def find_citation(self):
