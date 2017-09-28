@@ -781,8 +781,8 @@ class Software(object):
             return response
         elif export_type == "ris":
             response_list = []
-            if self.genre == "article-journal":
-                response_list.append(("TY", "JOUR"))
+            print "self.genre", self.genre
+            response_list.append(("TY", "JOUR"))
             response_list.append(("T1", self.metadata.get("title", "")))
             response_list.append(("JO", self.metadata.get("container-title", "")))
             response_list.append(("VL", self.metadata.get("volume", "")))
