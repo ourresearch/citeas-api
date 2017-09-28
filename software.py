@@ -788,7 +788,7 @@ class Software(object):
             response_list.append(("VL", self.metadata.get("volume", "")))
             response_list.append(("IS", self.metadata.get("issue", "")))
             response_list.append(("SP", self.metadata.get("page", "")))
-            response_list.append(("V1", self.year))
+            response_list.append(("V1", self.metadata.get("year", "")))
             response_list.append(("PB", self.metadata.get("publisher", "")))
             for author in self.authors:
                 response_list.append(("A1", u", ".join([author["family"], author.get("given", "")])))
@@ -802,7 +802,7 @@ class Software(object):
             response_list.append(("%V", self.metadata.get("volume", "")))
             response_list.append(("%N", self.metadata.get("issue", "")))
             response_list.append(("%P", self.metadata.get("page", "")))
-            response_list.append(("%D", self.year))
+            response_list.append(("%D", self.metadata.get("year", "")))
             response_list.append(("%I", self.metadata.get("publisher", "")))
             if self.genre == "article-journal":
                 response_list.append(("0%", "Journal Article"))
@@ -811,17 +811,35 @@ class Software(object):
             response = u"\n".join(u"{} {}".format(k, v) for (k, v) in response_list)
             return response
         elif export_type == "bibtex":
-            return """@article{piwowar2007sharing,
-              title={Sharing detailed research data is associated with increased citation rate},
-              author={Piwowar, Heather A and Day, Roger S and Fridsma, Douglas B},
-              journal={PloS one},
-              volume={2},
-              number={3},
-              pages={e308},
-              year={2007},
-              publisher={Public Library of Science}
-            }
-            """
+            # return """@article{piwowar2007sharing,
+            #   title={Sharing detailed research data is associated with increased citation rate},
+            #   author={Piwowar, Heather A and Day, Roger S and Fridsma, Douglas B},
+            #   journal={PloS one},
+            #   volume={2},
+            #   number={3},
+            #   pages={e308},
+            #   year={2007},
+            #   publisher={Public Library of Science}
+            # }
+            # """
+            response = "@article{ITEM1, "
+
+            response_list = []
+            response_list.append(("title", self.metadata.get("title", "")))
+            response_list.append(("journal", self.metadata.get("container-title", "")))
+            response_list.append(("volume", self.metadata.get("volume", "")))
+            response_list.append(("number", self.metadata.get("number", "")))
+            response_list.append(("pages", self.metadata.get("pages", "")))
+            response_list.append(("year", self.metadata.get("year", "")))
+            response_list.append(("publisher", self.year))
+            for author in self.authors:
+                response_list.append(("author", u", ".join([author["family"], author.get("given", "")])))
+
+            response += u",\n".join(u"{}={{{}}}".format(k, v) for (k, v) in response_list)
+            response += "}"
+
+            return response
+
         return None
 
     @property
