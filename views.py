@@ -102,41 +102,13 @@ def index_endpoint():
 
 
 
-@app.route("/product/<path:url_or_doi>", methods=["GET"])
-def citeas_product_get(url_or_doi):
-    if url_or_doi.startswith("10."):
-        return citeas_doi_get(url_or_doi)
-    else:
-        return citeas_url_get(url_or_doi)
-
-
-def api_response(my_software):
-    # valid style names: plos, apa, pnas, nature, bmj, harvard1
-    # full list is here: https://github.com/citation-style-language/styles
-    if request.args.get("citation-style"):
-        my_software.citation_style = request.args.get("citation-style")
-
-    try:
-        my_software.find_citation()
-    except NotFoundException:
-        abort_json(404, u"No README found at {}".format(url))
-
+@app.route("/product/<path:id>", methods=["GET"])
+def citeas_product_get(id):
+    my_software = Software(id)
+    my_software.find_citation()
     return jsonify(my_software.to_dict())
 
 
-@app.route("/doi/<path:doi>", methods=["GET"])
-def citeas_doi_get(doi):
-    my_software = Software()
-    my_software.doi = doi
-    my_software.request_url = request.url
-    return api_response(my_software)
-
-@app.route("/url/<path:url>", methods=["GET"])
-def citeas_url_get(url):
-    my_software = Software()
-    my_software.url = url
-    my_software.request_url = request.url
-    return api_response(my_software)
 
 
 

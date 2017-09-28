@@ -8,6 +8,7 @@ from nose.tools import assert_not_equals
 from nose.tools import assert_true
 import requests
 from ddt import ddt, data
+
 import requests_cache
 
 from software import Software
