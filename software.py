@@ -146,7 +146,7 @@ class ProvenanceStep(object):
             "location": self.location,
             "source_type": self.source_type,
             "success": self.success,
-            "_display": self.display(),
+            # "_display": self.display(),
         }
         return response
 
@@ -219,8 +219,22 @@ class ProvenanceChain(object):
         self.list.append(obj)
 
     def display(self):
-        return [obj.to_dict() for obj in self.list]
-        # return [obj.display() for obj in self.list]
+        response = [obj.to_dict() for obj in self.list]
+        fake_stuff = [
+            {
+                "location": None,
+                "input": "https://github.com/ha0ye/rEDM/otherthings",
+                "provenance_step_type": "InputProvenanceStep",
+                "source_type": "Input string",
+                "success": True
+            },{
+                "location": "https://github.com/ha0ye/rEDM",
+                "provenance_step_type": "LinkProvenanceStep",
+                "source_type": "GitHub repository",
+                "success": True
+            }]
+        response = fake_stuff + response
+        return response
 
 
 
