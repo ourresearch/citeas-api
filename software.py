@@ -119,11 +119,10 @@ def get_bib_source_from_dict(data):
 
 
 class ProvenanceStep(object):
-    def __init__(self, source_type="", location="", success=None, context=""):
+    def __init__(self, source_type="", location="", success=None):
         self.source_type = source_type
         self.location = location
         self.success = success
-        self.context = context
         self.timestamp = datetime.datetime.utcnow()
 
     def display(self):
@@ -150,6 +149,14 @@ class ProvenanceStep(object):
         }
         return response
 
+
+class InputProvenanceStep(ProvenanceStep):
+    def __init__(self, source_type):
+        super(InputProvenanceStep, self).__init__(source_type, location="", success=True)
+
+    def display(self):
+        response = u"Input: {}".format(self.source_type)
+        return response
 
 
 class LinkProvenanceStep(ProvenanceStep):
@@ -220,20 +227,6 @@ class ProvenanceChain(object):
 
     def display(self):
         response = [obj.to_dict() for obj in self.list]
-        fake_stuff = [
-            {
-                "location": None,
-                "input": "https://github.com/ha0ye/rEDM/otherthings",
-                "provenance_step_type": "InputProvenanceStep",
-                "source_type": "Input string",
-                "success": True
-            },{
-                "location": "https://github.com/ha0ye/rEDM",
-                "provenance_step_type": "LinkProvenanceStep",
-                "source_type": "GitHub repository",
-                "success": True
-            }]
-        response = fake_stuff + response
         return response
 
 
@@ -273,7 +266,7 @@ class Source(object):
             self.doi = list(self.metadata["doi"])[0]
             self.provenance_chain.append(LinkProvenanceStep("DOI in bibtex", location_of_bibtex, True))
         else:
-            self.provenance_chain.append(StringProvenanceStep("DOI in bibtex", location_of_bibtex, False))
+            self.provenance_chain.append(LinkProvenanceStep("DOI in bibtex", location_of_bibtex, False))
             self.provenance_chain.append(MetadataProvenanceStep("Bibtex", location_of_bibtex, True))
 
     def next_step(self):
@@ -458,12 +451,12 @@ class GithubSource(Source):
             doi = self.find_zenodo_doi(text)
             if doi:
                 self.provenance_chain.append(
-                    StringProvenanceStep(u"DOI in GitHub {} file".format(filename), path, True))
+                    LinkProvenanceStep(u"DOI in GitHub {} file".format(filename), path, True))
                 self.metadata["doi"] = doi
                 return
 
             self.provenance_chain.append(
-                StringProvenanceStep(u"DOI in GitHub {} file".format(filename), path, False))
+                LinkProvenanceStep(u"DOI in GitHub {} file".format(filename), path, False))
 
             bibtex = extract_bibtex(text)
             if bibtex:
@@ -616,6 +609,8 @@ class Software(object):
         self.citation_style = "harvard1"
         self.request_url = None
 
+        self.provenance_chain.append(InputProvenanceStep(self.input))
+
         self.simplify_id(id)
 
         self.github_source = GithubSource(self.url)
@@ -650,15 +645,17 @@ class Software(object):
 
         try:
             self.doi = clean_doi(id)
+            self.provenance_chain.append(StringProvenanceStep("DOI", self.doi, True))
         except NoDoiException:
             self.doi = None
 
         if u"github.com" in id:
             self.url = "/".join(id.split("/", 5)[0:5])
+            self.provenance_chain.append(StringProvenanceStep("GitHub repository", self.url, True))
 
         if self.base_library_url:
             self.url = self.base_library_url
-            # self.provenance_chain.append(ProvenanceStep("request parameters", self.request_url, True, "base library url"))
+            self.provenance_chain.append(StringProvenanceStep("Software package repository", self.url, True))
 
 
     @property
