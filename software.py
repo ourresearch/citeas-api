@@ -285,7 +285,7 @@ class Source(object):
                 return
 
 
-    def find_zenodo_doi(source, text):
+    def find_and_set_zenodo_doi(source, text):
         if text and "zenodo" in text:
             try:
                 text = text.lower()
@@ -295,7 +295,7 @@ class Source(object):
         return None
 
 
-    def find_github_url(source, text):
+    def find_and_set_github_url(source, text):
         if text and "github" in text.lower():
             try:
                 text = text.lower()
@@ -354,7 +354,7 @@ class WebpageSource(Source):
             self.url = None
         super(WebpageSource, self).__init__(id)
 
-        self.steps = ["set_bibtex_from_homepage", "set_metadata_from_homepage"]
+        self.steps = ["set_github_from_homepage", "set_bibtex_from_homepage", "set_metadata_from_homepage"]
         self.steps_completed = []
 
     @property
@@ -448,7 +448,7 @@ class GithubSource(Source):
             self.provenance_chain.append(
                 LinkProvenanceStep(u"GitHub file {}".format(filename), path, True))
 
-            doi = self.find_zenodo_doi(text)
+            doi = self.find_and_set_zenodo_doi(text)
             if doi:
                 self.provenance_chain.append(
                     LinkProvenanceStep(u"DOI in GitHub {} file".format(filename), path, True))
@@ -476,9 +476,6 @@ class GithubSource(Source):
         self.set_metadata_from_request_in_github_repo("README")
 
 
-
-
-
     def set_metadata_from_github_biblio(self):
         self.metadata = {}
         self.metadata["title"] = self.repo_name
@@ -491,11 +488,11 @@ class GithubSource(Source):
 
     def look_for_doi_in_github_file(self, filename):
         text = get_github_file_contents(filename, self.url)
-        self.doi = self.find_zenodo_doi(text)
+        self.doi = self.find_and_set_zenodo_doi(text)
         self.provenance_chain.append(
             ProvenanceStep("DOI found", get_github_path(filename, self.url), self.doi!=None, u"GitHub {} file".format(filename)))
 
-    def set_github_url(self):
+    def find_and_set_github_url(self):
         if self.url:
             self.github_url = self.url
             self.provenance_chain.append(ProvenanceStep("GitHub URL", self.url, True))
@@ -503,7 +500,7 @@ class GithubSource(Source):
             # try to find github url on webpage
             r = requests.get(self.url)
             if r.text:
-                github_url = self.find_github_url(r.text)
+                github_url = self.find_and_set_github_url(r.text)
                 if github_url:
                     self.provenance_chain.append(ProvenanceStep("GitHub URL webpage content", github_url, True))
                     self.github_url = github_url
@@ -537,6 +534,9 @@ class GithubSource(Source):
         self.metadata["container-title"] = self.metadata["note"]
         self.metadata["URL"] = u"https://CRAN.R-project.org/package={}".format(package)
         self.metadata["type"] = "Manual"
+
+        self.provenance_chain.append(
+            LinkProvenanceStep("DESCRIPTION file", get_github_path("DESCRIPTION", self.url), True))
 
         self.provenance_chain.append(
             MetadataProvenanceStep("DESCRIPTION metadata", get_github_path("DESCRIPTION", self.url)))
@@ -613,9 +613,12 @@ class Software(object):
 
         self.simplify_id(id)
 
+        self.initialize_sources()
+
+    def initialize_sources(self):
         self.github_source = GithubSource(self.url)
         self.doi_source = DoiSource(self.doi)
-        self.webpage_source = WebpageSource(id)
+        self.webpage_source = WebpageSource(self.url)
 
 
 
