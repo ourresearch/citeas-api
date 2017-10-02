@@ -10,7 +10,6 @@ import sys
 import requests
 import re
 from software import Software
-from software import NotFoundException
 
 from app import app
 
@@ -105,7 +104,7 @@ def index_endpoint():
 @app.route("/product/<path:id>", methods=["GET"])
 def citeas_product_get(id):
     my_software = Software(id)
-    my_software.find_citation()
+    my_software.find_metadata()
     return jsonify(my_software.to_dict())
 
 

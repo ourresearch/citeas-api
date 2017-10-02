@@ -374,6 +374,8 @@ class WebpageSource(Source):
         else:
             self.provenance_chain.append(MetadataProvenanceStep(u"Webpage", self.url, False))
 
+
+
     def set_bibtex_from_homepage(self):
         if self.url:
             self.provenance_chain.append(LinkProvenanceStep("Website", self.url, True))
@@ -886,7 +888,7 @@ class Software(object):
             "name": self.name,
             "doi": self.doi,
             "citations": self.citation_styles,
-            "exports": self.exports,
+            "reference_manager_exports": self.exports,
             "metadata": self.metadata,
             "provenance": self.provenance_chain.display()
         }
