@@ -192,13 +192,18 @@ class Software(object):
 
     @property
     def name(self):
-        if self.metadata and self.metadata.get("title", None):
-            return self.metadata.get("title", None)
+        if self.metadata and self.metadata.get("title", ""):
+            response = self.metadata.get("title", "")
+            print "title class", response.__class__.__name__
+            if response.__class__.__name__ == "MixedString":
+                return response.pop()
+            else:
+                return response
         return self.display_url
 
     @property
     def display_url(self):
-        return self.completed_steps[0].url
+        return self.completed_steps[0].content_url
 
     @property
     def metadata(self):

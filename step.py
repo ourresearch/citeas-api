@@ -492,7 +492,7 @@ class BibtexMetadataStep(MetadataStep):
         # print "bib_dict[id].values()", bib_dict[id].values()
 
         for (k, v) in bib_dict[id].items():
-                print k, v
+                # print k, v
                 try:
                     # if k in ["volume", "year", "type", "title", "author", "eid", "doi", "container-title", "adsnote", "eprint", "page"]:
                     # print v.values()
