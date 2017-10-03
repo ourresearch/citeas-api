@@ -2,7 +2,9 @@ import requests
 import re
 import os
 import datetime
+from io import StringIO
 from nameparser import HumanName
+from bibtex import BibTeX  # use local patched version instead of citeproc.source.bibtex
 
 from util import clean_doi
 
@@ -32,10 +34,29 @@ def author_name_as_dict(literal_name):
 
 def find_or_empty_string(pattern, text):
     try:
-        response = re.findall(pattern, text, re.IGNORECASE)[0]
+        response = re.findall(pattern, text, re.IGNORECASE|re.MULTILINE)[0]
     except IndexError:
         response = ""
     return response
+
+def get_bibtex_url(text):
+    if not text:
+        return None
+    try:
+        result = re.findall(u'(http"?\'?[^"\']*data_type=BIBTEX[^"\']*)', text, re.MULTILINE | re.DOTALL)[0]
+    except IndexError:
+        result = None
+    return result
+
+def extract_bibtex(text):
+    if not text:
+        return None
+    try:
+        result = re.findall(ur"(@.+{.+})", text, re.MULTILINE | re.DOTALL)[0]
+    except IndexError:
+        result = None
+    return result
+
 
 class Step(object):
     def __init__(self):
@@ -103,33 +124,72 @@ class MetadataStep(Step):
 
 
 class WebpageMetadataStep(MetadataStep):
-
     def set_content(self, input):
         self.content = {}
-
-        matches = re.findall(u"<h1>(.+?)</h1>", input)
-        if matches:
-            title = matches[0]
-        else:
-            title = input
-
+        title = find_or_empty_string(u"<h1>(.+?)</h1>", input)
+        if not title:
+            title = find_or_empty_string(u"<h2>(.+?)</h2>", input)
         self.content["type"] = "misc"
         self.content["title"] = title
-
 
 
 class WebpageStep(Step):
     @property
     def starting_children(self):
         return [
+            # CrossrefResponseStep,
+            GithubRepoStep,
             WebpageMetadataStep
         ]
-
     def set_content(self, input):
         self.content = get_webpage_text(input)
 
 
 
+class PypiLibraryStep(Step):
+    @property
+    def starting_children(self):
+        return [
+            GithubRepoStep
+        ]
+
+    def set_content(self, input):
+        self.set_content_url(input)
+        if self.content_url:
+            page = get_webpage_text(self.content_url)
+            # get rid of the header because it has pypi specific stuff, not stuff about the library
+            # makes it hard to get github links out for the library
+            # see for example https://pypi.python.org/pypi/executor
+            if '<div id="content-body">' in page:
+                page = page.split('<div id="content-body">')[1]
+            self.content = page
+
+    def set_content_url(self, input):
+        if not input.startswith("http"):
+            return
+
+        if "pypi.python.org/pypi" in input or "readthedocs.org" in input:
+            self.content_url = input
+
+
+class CranLibraryStep(Step):
+    @property
+    def starting_children(self):
+        return [
+            GithubRepoStep
+        ]
+
+    def set_content(self, input):
+        if self.content_url:
+            self.content = get_webpage_text(self.content_url)
+
+    def set_content_url(self, input):
+        print "set_content_url", input
+        if input and u"cran.r-project.org/web/packages" in input:
+            package_name = find_or_empty_string(u"cran.r-project.org/web/packages/(.*)/?", input)
+            if package_name:
+                package_name = package_name.split("/")[0]
+                self.content_url = u"https://cran.r-project.org/web/packages/{}".format(package_name)
 
 
 class CrossrefResponseMetadataStep(MetadataStep):
@@ -144,26 +204,45 @@ class CrossrefResponseStep(Step):
             CrossrefResponseMetadataStep
         ]
 
+    def get_zenodo_doi(self, input):
+        return find_or_empty_string("://zenodo.org/badge/doi/(.+?).svg", input)
+
     def set_content(self, input):
+        self.set_content_url(input)
+        doi_url = self.content_url
+        if not doi_url:
+            return
         try:
-            doi = clean_doi(input)
-            doi_url = u"https://doi.org/{}".format(doi)
             headers = {'Accept': 'application/vnd.citationstyles.csl+json'}
             print "doi_url", doi_url
             r = requests.get(doi_url, headers=headers)
             self.content = r.json()
         except Exception:
-            print u"no doi metadata found for {}".format(input)
+            print u"no doi metadata found for {}".format(doi_url)
             pass
 
     def set_content_url(self, input):
+        has_doi = False
+        if input.startswith("10."):
+            has_doi = True
+        elif input.startswith("http") and "doi.org/10." in input:
+            has_doi = True
+        elif self.get_zenodo_doi(input):
+            input = self.get_zenodo_doi(input)
+            has_doi = True
+
+        print "has_doi", has_doi, input[0:10]
+
+        if not has_doi:
+            return
+
         try:
             doi = clean_doi(input)
         except Exception:
             print u"no doi found for {}".format(input)
             return
 
-        doi_url = u"http://doi.org/{}".format(doi)
+        doi_url = u"https://doi.org/{}".format(doi)
         self.content_url = doi_url
 
 
@@ -184,9 +263,6 @@ class GithubApiResponseStep(Step):
     def starting_children(self):
         return [
             GithubApiResponseMetadataStep
-            # GithubCitationFileStep,
-            # GithubReadmeFileStep,
-            # GithubApiResponseStep
         ]
 
     def get_github_token_tuple(self):
@@ -208,10 +284,12 @@ class GithubApiResponseStep(Step):
         (login, token) = self.get_github_token_tuple()
 
         repo_api_url = github_url.replace("github.com/", "api.github.com/repos/")
+        print "repo_api_url", repo_api_url
         r = requests.get(repo_api_url, auth=(login, token), headers=h)
         self.content["repo"] = r.json()
 
         user_api_url = "https://api.github.com/users/{}".format(self.content["repo"]["owner"]["login"])
+        print "user_api_url", user_api_url
         r = requests.get(user_api_url, auth=(login, token), headers=h)
         self.content["user"] = r.json()
 
@@ -225,16 +303,24 @@ class GithubRepoStep(Step):
     @property
     def starting_children(self):
         return [
+                GithubCitationFileStep,
+                GithubReadmeFileStep,
                 GithubDescriptionFileStep,
-                # GithubCitationFileStep,
-                # GithubReadmeFileStep,
                 GithubApiResponseStep
             ]
 
     def set_content(self, input):
         if not "github.com" in input:
             return
-        url = "/".join(input.split("/", 5)[0:5])
+        if input.startswith("http"):
+            url = "/".join(input.split("/", 5)[0:5])
+        else:
+            url = find_or_empty_string('\"(https?://github.com/.+?)\"', input)
+            url = url.replace("/issues", "")
+            url = url.replace("/new", "")
+            if not url:
+                return
+
         self.content = get_webpage_text(url)
         self.content_url = url
 
@@ -282,15 +368,109 @@ class GithubDescriptionFileStep(Step):
         ]
 
     def set_content(self, github_main_page_text):
-        description_filename = None
         matches = re.findall(u"href=\"(.*blob/master/description.*?)\"", github_main_page_text, re.IGNORECASE)
         if matches:
             filename_part = matches[0]
             filename_part = filename_part.replace("/blob", "")
-            description_filename = u"https://raw.githubusercontent.com{}".format(filename_part)
+            filename = u"https://raw.githubusercontent.com{}".format(filename_part)
+            self.content = get_webpage_text(filename)
+            self.content_url = filename
 
-        self.content = get_webpage_text(description_filename)
-        self.content_url = description_filename
+    def set_content_url(self, input):
+        # in this case set_content does it, because it knows the url
+        pass
+
+class GithubCitationFileStep(Step):
+    @property
+    def starting_children(self):
+        return [
+            CrossrefResponseStep,
+            BibtexStep
+        ]
+
+    def set_content(self, github_main_page_text):
+        matches = re.findall(u"href=\"(.*blob/master/citation.*?)\"", github_main_page_text, re.IGNORECASE)
+        if matches:
+            filename_part = matches[0]
+            filename_part = filename_part.replace("/blob", "")
+            filename = u"https://raw.githubusercontent.com{}".format(filename_part)
+            self.content = get_webpage_text(filename)
+            self.content_url = filename
+
+    def set_content_url(self, input):
+        # in this case set_content does it, because it knows the url
+        pass
+
+
+class BibtexMetadataStep(MetadataStep):
+    def set_content(self, bibtex):
+        bibtext_string = u"{}".format(bibtex)
+        bibtext_string.replace("-", "-")
+        bib_dict = BibTeX(StringIO(bibtext_string))
+
+        id = bib_dict.keys()[0]
+
+        if "month" in bib_dict[id]:
+            del bib_dict[id]["month"]
+
+        metadata_dict = {}
+        # print "bib_dict[id].keys()", bib_dict[id].keys()
+        # print "bib_dict[id].values()", bib_dict[id].values()
+
+        for (k, v) in bib_dict[id].items():
+                print k, v
+                try:
+                    # if k in ["volume", "year", "type", "title", "author", "eid", "doi", "container-title", "adsnote", "eprint", "page"]:
+                    # print v.values()
+                    if k in ["volume", "year", "type", "title", "author", "eid", "doi", "container-title", "adsnote", "eprint"]:
+                        metadata_dict[k] = v
+                    pass
+                except Exception:
+                    print "ERROR on ", k, v
+                    pass
+        # metadata_dict = dict(bib_dict[id].items())
+        metadata_dict["bibtex"] = bibtex
+        if hasattr(bib_dict[id], "year") and bib_dict[id]["year"]:
+            metadata_dict["issued"] = {"date-parts": [[bib_dict[id]["year"]]]}
+        self.content = metadata_dict
+
+
+
+class BibtexStep(Step):
+    @property
+    def starting_children(self):
+        return [
+            BibtexMetadataStep
+        ]
+
+    def set_content(self, input):
+        bibtex = extract_bibtex(input)
+        if bibtex:
+            self.content = bibtex
+        else:
+            my_bibtex_url = get_bibtex_url(input)
+            if my_bibtex_url:
+                r = requests.get(my_bibtex_url)
+                self.content = extract_bibtex(r.text)
+                # self.content_url = my_bibtex_url
+
+
+
+class GithubReadmeFileStep(Step):
+    @property
+    def starting_children(self):
+        return [
+            CrossrefResponseStep
+        ]
+
+    def set_content(self, github_main_page_text):
+        matches = re.findall(u"href=\"(.*blob/master/readme.*?)\"", github_main_page_text, re.IGNORECASE)
+        if matches:
+            filename_part = matches[0]
+            filename_part = filename_part.replace("/blob", "")
+            filename = u"https://raw.githubusercontent.com{}".format(filename_part)
+            self.content = get_webpage_text(filename)
+            self.content_url = filename
 
     def set_content_url(self, input):
         # in this case set_content does it, because it knows the url
@@ -303,6 +483,8 @@ class UserInputStep(Step):
         return [
             CrossrefResponseStep,
             GithubRepoStep,
+            CranLibraryStep,
+            PypiLibraryStep,
             WebpageStep
         ]
 
