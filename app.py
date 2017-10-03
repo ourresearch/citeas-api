@@ -6,8 +6,8 @@ import os
 import requests
 import requests_cache
 
-requests_cache.install_cache('my_requests_cache', expire_after=60*60*24*7)  # expire_after is in seconds
-
+requests_cache.install_cache('my_requests_cache', expire_after=60*60*24*1)  # expire_after is in seconds
+requests_cache.clear()
 
 # set up logging
 # see http://wiki.pylonshq.com/display/pylonscookbook/Alternative+logging+configuration
