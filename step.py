@@ -110,8 +110,10 @@ class Step(object):
         name_lower = self.get_name().lower()
         if "metadata" in name_lower:
             return None
-        if name_lower.startswith("doi"):
+        if "crossref" in name_lower:
             return "doi"
+        if "userinput" in name_lower:
+            return None
         if "bibtex" in name_lower:
             return "None"
         return "string"
