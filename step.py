@@ -125,24 +125,24 @@ class Step(object):
         name_lower = self.get_name().lower()
         if "userinput" in name_lower:
             return "user input"
-        if "citationfile" in name_lower:
-            return "CITATION file"
         if "readmefile" in name_lower:
             return "README file"
+        if "citationfile" in name_lower:
+            return "R CITATION file"
         if "descriptionfile" in name_lower:
             return "R DESCRIPTION file"
         if "crossref" in name_lower:
             return "DOI"
         if "bibtex" in name_lower:
-            return "bibtex"
+            return "BibTeX"
         if "githubrepo" in name_lower:
             return "GitHub repository main page"
         if "githubapi" in name_lower:
             return "GitHub repository API response"
         if "cran" in name_lower:
-            return "R CRAN library webpage"
+            return "R CRAN package webpage"
         if "pypi" in name_lower:
-            return "Python PyPI library webpage"
+            return "Python PyPI package webpage"
         if "webpage" in name_lower:
             return "webpage"
         return None
@@ -194,6 +194,7 @@ class WebpageStep(Step):
 
 
 class PypiLibraryStep(Step):
+    more_info = "https://pypi.python.org/pypi"
     @property
     def starting_children(self):
         return [
@@ -220,6 +221,8 @@ class PypiLibraryStep(Step):
 
 
 class CranLibraryStep(Step):
+    more_info = "https://cran.r-project.org/"
+
     @property
     def starting_children(self):
         return [
@@ -245,6 +248,8 @@ class CrossrefResponseMetadataStep(MetadataStep):
 
 
 class CrossrefResponseStep(Step):
+    more_info = "https://project-thor.readme.io/docs/what-is-a-doi"
+
     @property
     def starting_children(self):
         return [
