@@ -59,6 +59,8 @@ def extract_bibtex(text):
 
 
 class Step(object):
+    more_info = None
+
     def __init__(self):
         self.remaining_children = self.starting_children
         # print "in init for {} with starting children {}, remaining children {}".format(
@@ -66,7 +68,6 @@ class Step(object):
         self.url = None
         self.content_url = None
         self.content = None
-        self.more_info = None
         self.parent = None
 
     @property
