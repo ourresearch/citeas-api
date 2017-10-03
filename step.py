@@ -106,6 +106,18 @@ class Step(object):
         self.content_url = input
 
     @property
+    def found_via_proxy_type(self):
+        name_lower = self.get_name().lower()
+        if "metadata" in name_lower:
+            return None
+        if name_lower.startswith("doi"):
+            return "doi"
+        if "bibtex" in name_lower:
+            return "None"
+        return "string"
+
+
+    @property
     def host(self):
         name_lower = self.get_name().lower()
         if name_lower.startswith("github"):
@@ -120,9 +132,8 @@ class Step(object):
             return "pypi"
         return None
 
-    @property
-    def subject(self):
-        name_lower = self.get_name().lower()
+    def get_subject(self, class_name):
+        name_lower = class_name.lower()
         if "userinput" in name_lower:
             return "user input"
         if "readmefile" in name_lower:
@@ -132,7 +143,7 @@ class Step(object):
         if "descriptionfile" in name_lower:
             return "R DESCRIPTION file"
         if "crossref" in name_lower:
-            return "DOI"
+            return "DOI API response"
         if "bibtex" in name_lower:
             return "BibTeX"
         if "githubrepo" in name_lower:
@@ -154,8 +165,10 @@ class Step(object):
             "name": self.get_name(),
             "more_info_url": self.more_info,
             "host": self.host,
-            "subject": self.subject,
-            "parent_step_name": self.parent.__class__.__name__
+            "found_via_proxy_type": self.found_via_proxy_type,
+            "subject": self.get_subject(self.get_name()),
+            "parent_step_name": self.parent.__class__.__name__,
+            "parent_subject": self.get_subject(self.parent.__class__.__name__),
         }
         return ret
 
@@ -311,6 +324,8 @@ class GithubApiResponseMetadataStep(MetadataStep):
         self.content = metadata_dict
 
 class GithubApiResponseStep(Step):
+    more_info = "https://developer.github.com/v3/repos/#get"
+
     @property
     def starting_children(self):
         return [
@@ -352,6 +367,8 @@ class GithubApiResponseStep(Step):
 
 
 class GithubRepoStep(Step):
+    more_info = "http://github.com/"
+
     @property
     def starting_children(self):
         return [
@@ -383,9 +400,8 @@ class GithubRepoStep(Step):
 
 
 
-
-
 class GithubDescriptionMetadataStep(MetadataStep):
+
     def set_content(self, text):
         bibtex = None
         metadata_dict = {}
@@ -413,6 +429,8 @@ class GithubDescriptionMetadataStep(MetadataStep):
 
 
 class GithubDescriptionFileStep(Step):
+    more_info = "http://r-pkgs.had.co.nz/description.html"
+
     @property
     def starting_children(self):
         return [
@@ -433,6 +451,8 @@ class GithubDescriptionFileStep(Step):
         pass
 
 class GithubCitationFileStep(Step):
+    more_info = "http://r-pkgs.had.co.nz/inst.html#inst-citation"
+
     @property
     def starting_children(self):
         return [
@@ -489,6 +509,8 @@ class BibtexMetadataStep(MetadataStep):
 
 
 class BibtexStep(Step):
+    more_info = "https://verbosus.com/bibtex-style-examples.html"
+
     @property
     def starting_children(self):
         return [
@@ -509,6 +531,8 @@ class BibtexStep(Step):
 
 
 class GithubReadmeFileStep(Step):
+    more_info = "https://help.github.com/articles/about-readmes/"
+
     @property
     def starting_children(self):
         return [
