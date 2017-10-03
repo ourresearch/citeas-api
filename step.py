@@ -116,7 +116,7 @@ class Step(object):
             return None
         if "bibtex" in name_lower:
             return "None"
-        return "string"
+        return "link"
 
 
     @property
