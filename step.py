@@ -67,6 +67,7 @@ class Step(object):
         self.content_url = None
         self.content = None
         self.more_info = None
+        self.parent = None
 
     @property
     def starting_children(self):
@@ -90,6 +91,7 @@ class Step(object):
         child_obj = child_class()
         child_obj.set_content_url(self.content_url)
         child_obj.set_content(self.content)
+        child_obj.parent = self
 
         return child_obj
 
@@ -103,12 +105,57 @@ class Step(object):
     def set_content_url(self, input):
         self.content_url = input
 
+    @property
+    def host(self):
+        name_lower = self.get_name().lower()
+        if name_lower.startswith("github"):
+            return "github"
+        if name_lower.startswith("crossref"):
+            return "crossref"
+        if name_lower.startswith("webpage"):
+            return "webpage"
+        if name_lower.startswith("cran"):
+            return "cran"
+        if name_lower.startswith("pypi"):
+            return "pypi"
+        return None
+
+    @property
+    def subject(self):
+        name_lower = self.get_name().lower()
+        if "userinput" in name_lower:
+            return "user input"
+        if "citationfile" in name_lower:
+            return "CITATION file"
+        if "readmefile" in name_lower:
+            return "README file"
+        if "descriptionfile" in name_lower:
+            return "R DESCRIPTION file"
+        if "crossref" in name_lower:
+            return "DOI"
+        if "bibtex" in name_lower:
+            return "bibtex"
+        if "githubrepo" in name_lower:
+            return "GitHub repository main page"
+        if "githubapi" in name_lower:
+            return "GitHub repository API response"
+        if "cran" in name_lower:
+            return "R CRAN library webpage"
+        if "pypi" in name_lower:
+            return "Python PyPI library webpage"
+        if "webpage" in name_lower:
+            return "webpage"
+        return None
+
     def to_dict(self):
         ret = {
             "content_url": self.content_url,
             "has_content": bool(self.content),
             "name": self.get_name(),
-            "more_info": self.more_info
+            "more_info_url": self.more_info,
+            "host": self.host,
+            "subject": self.subject,
+            "parent_step_name": self.parent.__class__.__name__
         }
         return ret
 
