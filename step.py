@@ -317,10 +317,10 @@ class CrossrefResponseStep(Step):
 class GithubApiResponseMetadataStep(MetadataStep):
     def set_content(self, input_dict):
         metadata_dict = {}
-        metadata_dict["title"] = input_dict["repo"].get("name", input_dict["repo"]["url"])
+        metadata_dict["title"] = input_dict["repo"].get("name", input_dict["repo"]["html_url"])
         metadata_dict["author"] = [author_name_as_dict(input_dict["user"]["name"])]
         metadata_dict["publisher"] = "GitHub repository"
-        metadata_dict["URL"] = input_dict["repo"]["url"]
+        metadata_dict["URL"] = input_dict["repo"]["html_url"]
         metadata_dict["issued"] = {"date-parts": [[input_dict["repo"]["created_at"][0:4]]]}
         metadata_dict["type"] = "software"
 
