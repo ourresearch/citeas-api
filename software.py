@@ -45,6 +45,9 @@ def get_bib_source_from_dict(data):
             if num_upper > 0.75*len(val):
                 data[k] = val.title()
 
+    if "page" in data and data["page"]=="-":
+        del data["page"]
+
     if "bibtex" in data:
         del data["bibtex"]
 
@@ -64,12 +67,8 @@ def display_citation(bibtex_metadata, bib_stylename, formatter=formatter.html):
     citation = Citation([CitationItem(id)])
     bibliography.register(citation)
 
-    try:
-        citation_parts = u"".join(bibliography.bibliography()[0])
-        citation_text = u"".join(citation_parts)
-    except Exception:
-        print "Error parsing bibliography, so no bibliography for now"
-        citation_text = str(bibtex_metadata["bibtex"])
+    citation_parts = u"".join(bibliography.bibliography()[0])
+    citation_text = u"".join(citation_parts)
 
     html_parser = HTMLParser()
     citation_text = html_parser.unescape(citation_text)
