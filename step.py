@@ -1,6 +1,7 @@
 import requests
 import re
 import os
+import json
 import datetime
 from io import StringIO
 from nameparser import HumanName
@@ -258,6 +259,7 @@ class CranLibraryStep(Step):
                 self.content_url = u"https://cran.r-project.org/web/packages/{}".format(package_name)
 
 
+
 class CrossrefResponseMetadataStep(MetadataStep):
     def set_content(self, input):
         self.content = input
@@ -312,6 +314,51 @@ class CrossrefResponseStep(Step):
 
         doi_url = u"https://doi.org/{}".format(doi)
         self.content_url = doi_url
+
+
+class CodemetaResponseMetadataStep(MetadataStep):
+    def set_content(self, input_dict):
+        print self.content
+        self.content = input_dict
+
+
+class CodemetaResponseStep(Step):
+    more_info = "https://codemeta.github.io/user-guide/"
+
+    @property
+    def starting_children(self):
+        return [
+            CodemetaResponseMetadataStep
+        ]
+
+
+    def set_content(self, input):
+        data = json.loads(input)
+        self.content = {}
+        self.content["doi"] = clean_doi(data["identifier"])
+        if self.content["doi"]:
+            doi_url = u"https://doi.org/{}".format(self.content["doi"])
+            self.content["URL"] = doi_url
+        else:
+            self.content["URL"] = data["codeRepository"]
+        self.content["title"] = data["title"]
+        self.content["author"] = []
+        if "agents" in data:
+            if isinstance(data["agents"], dict):
+                agents = [data["agents"]]
+            else:
+                agents = data["agents"]
+            for agent in agents:
+                self.content["author"].append(author_name_as_dict(data["agents"]["name"]))
+        if "dateCreated" in data:
+            self.content["issued"] = {"date-parts": [[data["dateCreated"][0:4]]]}
+
+        self.content["publisher"] = "DataCite"
+
+        self.content["type"] = "software"
+
+        self.content["repo"] = data["codeRepository"]
+        print self.content
 
 
 class GithubApiResponseMetadataStep(MetadataStep):
@@ -375,6 +422,7 @@ class GithubRepoStep(Step):
     @property
     def starting_children(self):
         return [
+                GithubCodemetaFileStep,
                 GithubCitationFileStep,
                 GithubReadmeFileStep,
                 GithubDescriptionFileStep,
@@ -531,6 +579,28 @@ class BibtexStep(Step):
                 self.content = extract_bibtex(r.text)
                 # self.content_url = my_bibtex_url
 
+
+class GithubCodemetaFileStep(Step):
+    more_info = "https://codemeta.github.io/user-guide/"
+
+    @property
+    def starting_children(self):
+        return [
+            CodemetaResponseStep
+        ]
+
+    def set_content(self, github_main_page_text):
+        matches = re.findall(u"href=\"(.*blob/master/codemeta.json)\"", github_main_page_text, re.IGNORECASE)
+        if matches:
+            filename_part = matches[0]
+            filename_part = filename_part.replace("/blob", "")
+            filename = u"https://raw.githubusercontent.com{}".format(filename_part)
+            self.content = get_webpage_text(filename)
+            self.content_url = filename
+
+    def set_content_url(self, input):
+        # in this case set_content does it, because it knows the url
+        pass
 
 
 class GithubReadmeFileStep(Step):
