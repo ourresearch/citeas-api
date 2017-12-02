@@ -146,6 +146,8 @@ class Step(object):
             return "R CITATION file"
         if "descriptionfile" in name_lower:
             return "R DESCRIPTION file"
+        if "codemetafile" in name_lower:
+            return "CODEMETA file"
         if "crossref" in name_lower:
             return "DOI API response"
         if "bibtex" in name_lower:
