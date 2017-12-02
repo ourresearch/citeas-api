@@ -112,12 +112,14 @@ class Step(object):
         name_lower = self.get_name().lower()
         if "metadata" in name_lower:
             return None
+        if "codemeta" in name_lower:
+            return None
         if "crossref" in name_lower:
             return "doi"
         if "userinput" in name_lower:
             return None
         if "bibtex" in name_lower:
-            return "None"
+            return None
         return "link"
 
 
@@ -148,6 +150,8 @@ class Step(object):
             return "R DESCRIPTION file"
         if "codemetafile" in name_lower:
             return "CODEMETA file"
+        if "codemetaresponse" in name_lower:
+            return "CODEMETA JSON data"
         if "crossref" in name_lower:
             return "DOI API response"
         if "bibtex" in name_lower:
