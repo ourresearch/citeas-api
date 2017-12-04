@@ -68,8 +68,8 @@ def extract_bibtex(text):
 
 class Step(object):
     step_links = None
-    step_intro = "This is an intro sentence."
-    step_more = "This sentence has more information."
+    step_intro = ""
+    step_more = ""
 
     @classmethod
     def config_dict(cls):
@@ -226,6 +226,9 @@ class WebpageMetadataStep(MetadataStep):
 
 
 class WebpageStep(Step):
+    step_intro = "Software projects often have a project webpage."
+    step_more = "This project webpage often includes attribution information like an associated DOI, GitHub repository, and/or project title."
+
     @property
     def starting_children(self):
         return [
@@ -245,8 +248,8 @@ class WebpageStep(Step):
 
 class PypiLibraryStep(Step):
     step_links = [("PyPI home page", "https://pypi.python.org/pypi")]
-    step_intro = "This is an intro sentence."
-    step_more = "This sentence has more information."
+    step_intro = "The Python Package Index (PyPI) is a repository of software for the Python programming language."
+    step_more = "A project's PyPI repository page often lists useful attribution information."
 
     @property
     def starting_children(self):
@@ -277,8 +280,8 @@ class PypiLibraryStep(Step):
 
 class CranLibraryStep(Step):
     step_links = [("CRAN home page", "https://cran.r-project.org/")]
-    step_intro = "This is an intro sentence."
-    step_more = "This sentence has more information."
+    step_intro = "The Comprehensive R Archive Network (CRAN) is a repository of software for the R programming language."
+    step_more = "A project's CRAN repository page often lists useful attribution information."
 
     @property
     def starting_children(self):
@@ -309,8 +312,8 @@ class CrossrefResponseMetadataStep(MetadataStep):
 
 class CrossrefResponseStep(Step):
     step_links = [("What is a DOI?", "https://project-thor.readme.io/docs/what-is-a-doi")]
-    step_intro = "This is an intro sentence."
-    step_more = "This sentence has more information."
+    step_intro = "A Digital Object Identifier (DOI) is a persistent identifier commonly used to uniquely identify scholarly papers, and increasingly used to identify datasets, software, and other research outputs."
+    step_more = "A DOI is associated with all information needed to properly attribute it, including authors, title, and date of publication."
 
     @property
     def starting_children(self):
@@ -372,9 +375,9 @@ class CodemetaResponseMetadataStep(MetadataStep):
 
 
 class CodemetaResponseStep(Step):
-    step_links = [("CODEMETA user guide", "https://codemeta.github.io/user-guide/")]
-    step_intro = "This is an intro sentence."
-    step_more = "This sentence has more information."
+    step_links = [("CodeMeta user guide", "https://codemeta.github.io/user-guide/")]
+    step_intro = "CodeMeta is a new standard for the exchange of software metadata across repositories and organizations."
+    step_more = "The CodeMeta standard has many contributors spanning research, education, and engineering domains."
 
     @property
     def starting_children(self):
@@ -426,8 +429,8 @@ class GithubApiResponseMetadataStep(MetadataStep):
 
 class GithubApiResponseStep(Step):
     step_links = [("GITHUB API docs", "https://developer.github.com/v3/repos/#get")]
-    step_intro = "This is an intro sentence."
-    step_more = "This sentence has more information."
+    step_intro = "GitHub is a Web-based software version control repository hosting service."
+    step_more = "GitHub's API can be used to find metadata about software projects, like the project's authors, title, and created date."
 
     @property
     def starting_children(self):
@@ -471,8 +474,8 @@ class GithubApiResponseStep(Step):
 
 class GithubRepoStep(Step):
     step_links = [("GitHub home page", "http://github.com/")]
-    step_intro = "This is an intro sentence."
-    step_more = "This sentence has more information."
+    step_intro = "GitHub is a Web-based software version control repository hosting service."
+    step_more = "Attribution information is often included in software source code, which can be inspected for software projects that have posted their code on GitHub."
 
     @property
     def starting_children(self):
@@ -536,8 +539,8 @@ class GithubDescriptionMetadataStep(MetadataStep):
 
 class GithubDescriptionFileStep(Step):
     step_links = [("R DESCRIPTION file specifications", "http://r-pkgs.had.co.nz/description.html")]
-    step_intro = "This is an intro sentence."
-    step_more = "This sentence has more information."
+    step_intro = "Software written in R often includes a source file called 'DESCRIPTION' that specifies the project's title and authors."
+    step_more = "The DESCRIPTION file can be parsed to extract this attribution information."
 
 
     @property
@@ -561,8 +564,8 @@ class GithubDescriptionFileStep(Step):
 
 class GithubCitationFileStep(Step):
     step_links = [("R CITATION file specifications", "http://r-pkgs.had.co.nz/inst.html#inst-citation")]
-    step_intro = "This is an intro sentence."
-    step_more = "This sentence has more information."
+    step_intro = "Software written in R often includes a source file called 'CITATION' that specifies the project's title and authors."
+    step_more = "The CITATION file can be parsed to extract this attribution information."
 
 
     @property
@@ -622,8 +625,8 @@ class BibtexMetadataStep(MetadataStep):
 
 class BibtexStep(Step):
     step_links = [("BibTeX examples", "https://verbosus.com/bibtex-style-examples.html")]
-    step_intro = "This is an intro sentence."
-    step_more = "This sentence has more information."
+    step_intro = "BibTeX is a format for sharing reference information."
+    step_more = "BibTeX evolved from LaTeX and is frequently used in the physics and math communities."
 
     @property
     def starting_children(self):
@@ -646,9 +649,9 @@ class BibtexStep(Step):
 
 
 class GithubCodemetaFileStep(Step):
-    step_links = [("CODEMETA user guide", "https://codemeta.github.io/user-guide/")]
-    step_intro = "This is an intro sentence."
-    step_more = "This sentence has more information."
+    step_links = [("CodeMeta user guide", "https://codemeta.github.io/user-guide/")]
+    step_intro = "CodeMeta is a new standard for the exchange of software metadata across repositories and organizations."
+    step_more = "The CodeMeta standard has many contributors spanning research, education, and engineering domains."
 
     @property
     def starting_children(self):
@@ -672,8 +675,8 @@ class GithubCodemetaFileStep(Step):
 
 class GithubReadmeFileStep(Step):
     step_links = [("README description", "https://help.github.com/articles/about-readmes/")]
-    step_intro = "This is an intro sentence."
-    step_more = "This sentence has more information."
+    step_intro = "A README file contains information about other files in a directory or archive of computer software."
+    step_more = "README files often contain requests for attribution."
 
     @property
     def starting_children(self):
