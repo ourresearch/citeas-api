@@ -75,7 +75,7 @@ class Step(object):
     def config_dict(cls):
         resp = {
             "name": cls.__name__,
-            "step_links": [cls.step_links],
+            "step_links": [("Anchor text", cls.step_links)],
             "step_intro": cls.step_intro,
             "step_more": cls.step_more
         }
