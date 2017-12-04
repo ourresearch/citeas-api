@@ -65,6 +65,35 @@ def extract_bibtex(text):
         result = None
     return result
 
+def get_subject(class_name):
+    name_lower = class_name.lower()
+    if "userinput" in name_lower:
+        return "user input"
+    if "readmefile" in name_lower:
+        return "README file"
+    if "citationfile" in name_lower:
+        return "R CITATION file"
+    if "descriptionfile" in name_lower:
+        return "R DESCRIPTION file"
+    if "codemetafile" in name_lower:
+        return "CodeMeta file"
+    if "codemetaresponse" in name_lower:
+        return "CodeMeta JSON data"
+    if "crossref" in name_lower:
+        return "DOI API response"
+    if "bibtex" in name_lower:
+        return "BibTeX"
+    if "githubrepo" in name_lower:
+        return "GitHub repository main page"
+    if "githubapi" in name_lower:
+        return "GitHub repository API response"
+    if "cran" in name_lower:
+        return "R CRAN package webpage"
+    if "pypi" in name_lower:
+        return "Python PyPI package webpage"
+    if "webpage" in name_lower:
+        return "webpage"
+    return None
 
 class Step(object):
     step_links = None
@@ -77,7 +106,8 @@ class Step(object):
             "name": cls.__name__,
             "step_links": cls.step_links,
             "step_intro": cls.step_intro,
-            "step_more": cls.step_more
+            "step_more": cls.step_more,
+            "subject": get_subject(cls.__name__)
         }
         return resp
 
@@ -158,35 +188,7 @@ class Step(object):
             return "pypi"
         return None
 
-    def get_subject(self, class_name):
-        name_lower = class_name.lower()
-        if "userinput" in name_lower:
-            return "user input"
-        if "readmefile" in name_lower:
-            return "README file"
-        if "citationfile" in name_lower:
-            return "R CITATION file"
-        if "descriptionfile" in name_lower:
-            return "R DESCRIPTION file"
-        if "codemetafile" in name_lower:
-            return "CODEMETA file"
-        if "codemetaresponse" in name_lower:
-            return "CODEMETA JSON data"
-        if "crossref" in name_lower:
-            return "DOI API response"
-        if "bibtex" in name_lower:
-            return "BibTeX"
-        if "githubrepo" in name_lower:
-            return "GitHub repository main page"
-        if "githubapi" in name_lower:
-            return "GitHub repository API response"
-        if "cran" in name_lower:
-            return "R CRAN package webpage"
-        if "pypi" in name_lower:
-            return "Python PyPI package webpage"
-        if "webpage" in name_lower:
-            return "webpage"
-        return None
+
 
     def to_dict(self):
         ret = {
@@ -195,9 +197,9 @@ class Step(object):
             "name": self.get_name(),
             "host": self.host,
             "found_via_proxy_type": self.found_via_proxy_type,
-            "subject": self.get_subject(self.get_name()),
+            "subject": get_subject(self.get_name()),
             "parent_step_name": self.parent.__class__.__name__,
-            "parent_subject": self.get_subject(self.parent.__class__.__name__),
+            "parent_subject": get_subject(self.parent.__class__.__name__),
         }
         return ret
 
