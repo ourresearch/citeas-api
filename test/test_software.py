@@ -29,7 +29,7 @@ test_urls = [
     ("https://github.com/vahtras/loprop", "", u'Vahtras, O., 2014. Loprop For Dalton. Available at: https://doi.org/10.5281/zenodo.13276.'),
     ("https://github.com/cvitolo/r_BigDataAnalytics", "", u'Vitolo, C., 2015. R_Bigdataanalytics V.0.0.1. Available at: https://doi.org/10.5281/zenodo.15722.'),
     ("https://github.com/nicholasricci/DDM_Framework", "", u"Marzolla, M., D'Angelo, G. & Mandrioli, M., 2013. A Parallel Data Distribution Management Algorithm."),
-    ("http://yt-project.org", "", "Turk, M.J. et al., 2011. yt: A Multi-code Analysis Toolkit for Astrophysical Simulation Data. , 192."),
+    ("http://yt-project.org", "", u"Turk, M.J. et al., 2011. yt: A Multi-code Analysis Toolkit for Astrophysical Simulation Data. , 192."),
 
     # getting the number and page wrong at the moment
     # ("http://yt-project.org", "", "Turk, M.J. et al., 2010. Yt: A Multi-Code Analysis Toolkit For Astrophysical Simulation Data. The Astrophysical Journal Supplement Series, 192(1), p.9. Available at: http://dx.doi.org/10.1088/0067-0049/192/1/9."),
