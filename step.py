@@ -75,7 +75,7 @@ class Step(object):
     def config_dict(cls):
         resp = {
             "name": cls.__name__,
-            "step_links": [("Anchor text", cls.step_links)],
+            "step_links": cls.step_links,
             "step_intro": cls.step_intro,
             "step_more": cls.step_more
         }
@@ -193,7 +193,6 @@ class Step(object):
             "content_url": self.content_url,
             "has_content": bool(self.content),
             "name": self.get_name(),
-            "more_info_url": self.step_links,
             "host": self.host,
             "found_via_proxy_type": self.found_via_proxy_type,
             "subject": self.get_subject(self.get_name()),
@@ -245,7 +244,10 @@ class WebpageStep(Step):
 
 
 class PypiLibraryStep(Step):
-    step_links = "https://pypi.python.org/pypi"
+    step_links = [("PyPI home page", "https://pypi.python.org/pypi")]
+    step_intro = "This is an intro sentence."
+    step_more = "This sentence has more information."
+
     @property
     def starting_children(self):
         return [
@@ -274,7 +276,9 @@ class PypiLibraryStep(Step):
 
 
 class CranLibraryStep(Step):
-    step_links = "https://cran.r-project.org/"
+    step_links = [("CRAN home page", "https://cran.r-project.org/")]
+    step_intro = "This is an intro sentence."
+    step_more = "This sentence has more information."
 
     @property
     def starting_children(self):
@@ -304,7 +308,9 @@ class CrossrefResponseMetadataStep(MetadataStep):
 
 
 class CrossrefResponseStep(Step):
-    step_links = "https://project-thor.readme.io/docs/what-is-a-doi"
+    step_links = [("What is a DOI?", "https://project-thor.readme.io/docs/what-is-a-doi")]
+    step_intro = "This is an intro sentence."
+    step_more = "This sentence has more information."
 
     @property
     def starting_children(self):
@@ -366,7 +372,9 @@ class CodemetaResponseMetadataStep(MetadataStep):
 
 
 class CodemetaResponseStep(Step):
-    step_links = "https://codemeta.github.io/user-guide/"
+    step_links = [("CODEMETA user guide", "https://codemeta.github.io/user-guide/")]
+    step_intro = "This is an intro sentence."
+    step_more = "This sentence has more information."
 
     @property
     def starting_children(self):
@@ -417,7 +425,9 @@ class GithubApiResponseMetadataStep(MetadataStep):
         self.content = metadata_dict
 
 class GithubApiResponseStep(Step):
-    step_links = "https://developer.github.com/v3/repos/#get"
+    step_links = [("GITHUB API docs", "https://developer.github.com/v3/repos/#get")]
+    step_intro = "This is an intro sentence."
+    step_more = "This sentence has more information."
 
     @property
     def starting_children(self):
@@ -460,7 +470,9 @@ class GithubApiResponseStep(Step):
 
 
 class GithubRepoStep(Step):
-    step_links = "http://github.com/"
+    step_links = [("GitHub home page", "http://github.com/")]
+    step_intro = "This is an intro sentence."
+    step_more = "This sentence has more information."
 
     @property
     def starting_children(self):
@@ -523,7 +535,10 @@ class GithubDescriptionMetadataStep(MetadataStep):
 
 
 class GithubDescriptionFileStep(Step):
-    step_links = "http://r-pkgs.had.co.nz/description.html"
+    step_links = [("R DESCRIPTION file specifications", "http://r-pkgs.had.co.nz/description.html")]
+    step_intro = "This is an intro sentence."
+    step_more = "This sentence has more information."
+
 
     @property
     def starting_children(self):
@@ -545,7 +560,10 @@ class GithubDescriptionFileStep(Step):
         pass
 
 class GithubCitationFileStep(Step):
-    step_links = "http://r-pkgs.had.co.nz/inst.html#inst-citation"
+    step_links = [("R CITATION file specifications", "http://r-pkgs.had.co.nz/inst.html#inst-citation")]
+    step_intro = "This is an intro sentence."
+    step_more = "This sentence has more information."
+
 
     @property
     def starting_children(self):
@@ -603,7 +621,9 @@ class BibtexMetadataStep(MetadataStep):
 
 
 class BibtexStep(Step):
-    step_links = "https://verbosus.com/bibtex-style-examples.html"
+    step_links = [("BibTeX examples", "https://verbosus.com/bibtex-style-examples.html")]
+    step_intro = "This is an intro sentence."
+    step_more = "This sentence has more information."
 
     @property
     def starting_children(self):
@@ -626,7 +646,9 @@ class BibtexStep(Step):
 
 
 class GithubCodemetaFileStep(Step):
-    step_links = "https://codemeta.github.io/user-guide/"
+    step_links = [("CODEMETA user guide", "https://codemeta.github.io/user-guide/")]
+    step_intro = "This is an intro sentence."
+    step_more = "This sentence has more information."
 
     @property
     def starting_children(self):
@@ -649,7 +671,9 @@ class GithubCodemetaFileStep(Step):
 
 
 class GithubReadmeFileStep(Step):
-    step_links = "https://help.github.com/articles/about-readmes/"
+    step_links = [("README description", "https://help.github.com/articles/about-readmes/")]
+    step_intro = "This is an intro sentence."
+    step_more = "This sentence has more information."
 
     @property
     def starting_children(self):
