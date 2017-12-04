@@ -9,6 +9,13 @@ from bibtex import BibTeX  # use local patched version instead of citeproc.sourc
 
 from util import clean_doi
 
+def step_configs():
+    configs = {}
+    for step_class in Step.__subclasses__():
+        configs[step_class.__name__] = step_class.config_dict()
+    return configs
+
+
 class NoChildrenException(Exception):
     pass
 
@@ -60,7 +67,20 @@ def extract_bibtex(text):
 
 
 class Step(object):
-    more_info = None
+    step_links = None
+    step_intro = "This is an intro sentence."
+    step_more = "This sentence has more information."
+
+    @classmethod
+    def config_dict(cls):
+        resp = {
+            "name": cls.__name__,
+            "step_links": [cls.step_links],
+            "step_intro": cls.step_intro,
+            "step_more": cls.step_more
+        }
+        return resp
+
 
     def __init__(self):
         self.remaining_children = self.starting_children
@@ -173,7 +193,7 @@ class Step(object):
             "content_url": self.content_url,
             "has_content": bool(self.content),
             "name": self.get_name(),
-            "more_info_url": self.more_info,
+            "more_info_url": self.step_links,
             "host": self.host,
             "found_via_proxy_type": self.found_via_proxy_type,
             "subject": self.get_subject(self.get_name()),
@@ -198,30 +218,40 @@ class WebpageMetadataStep(MetadataStep):
         self.content = {}
         title = find_or_empty_string(u"<h1>(.+?)</h1>", input)
         if not title:
+            title = find_or_empty_string(u"<title>(.+?)</title>", input)
+        if not title:
             title = find_or_empty_string(u"<h2>(.+?)</h2>", input)
         self.content["type"] = "misc"
         self.content["title"] = title
+        self.content["URL"] = self.content_url
 
 
 class WebpageStep(Step):
     @property
     def starting_children(self):
         return [
-            # CrossrefResponseStep,
             GithubRepoStep,
+            CrossrefResponseStep,
+            BibtexStep,
             WebpageMetadataStep
         ]
+
     def set_content(self, input):
         self.content = get_webpage_text(input)
+
+    def set_content_url(self, input):
+        self.content_url = input
 
 
 
 class PypiLibraryStep(Step):
-    more_info = "https://pypi.python.org/pypi"
+    step_links = "https://pypi.python.org/pypi"
     @property
     def starting_children(self):
         return [
-            GithubRepoStep
+            GithubRepoStep,
+            CrossrefResponseStep,
+            BibtexStep
         ]
 
     def set_content(self, input):
@@ -244,12 +274,14 @@ class PypiLibraryStep(Step):
 
 
 class CranLibraryStep(Step):
-    more_info = "https://cran.r-project.org/"
+    step_links = "https://cran.r-project.org/"
 
     @property
     def starting_children(self):
         return [
-            GithubRepoStep
+            GithubRepoStep,
+            CrossrefResponseStep,
+            BibtexStep
         ]
 
     def set_content(self, input):
@@ -257,7 +289,7 @@ class CranLibraryStep(Step):
             self.content = get_webpage_text(self.content_url)
 
     def set_content_url(self, input):
-        print "set_content_url", input
+        # print "set_content_url", input
         if input and u"cran.r-project.org/web/packages" in input:
             package_name = find_or_empty_string(u"cran.r-project.org/web/packages/(.*)/?", input)
             if package_name:
@@ -272,7 +304,7 @@ class CrossrefResponseMetadataStep(MetadataStep):
 
 
 class CrossrefResponseStep(Step):
-    more_info = "https://project-thor.readme.io/docs/what-is-a-doi"
+    step_links = "https://project-thor.readme.io/docs/what-is-a-doi"
 
     @property
     def starting_children(self):
@@ -281,7 +313,12 @@ class CrossrefResponseStep(Step):
         ]
 
     def get_zenodo_doi(self, input):
-        return find_or_empty_string("://zenodo.org/badge/doi/(.+?).svg", input)
+        badge_doi = find_or_empty_string("://zenodo.org/badge/doi/(.+?).svg", input)
+        if badge_doi:
+            return badge_doi
+        zenodo_doi = find_or_empty_string("doi.org/(10.5281/zenodo\.\d+)", input)
+        if zenodo_doi:
+            return zenodo_doi
 
     def set_content(self, input):
         self.set_content_url(input)
@@ -290,9 +327,9 @@ class CrossrefResponseStep(Step):
             return
         try:
             headers = {'Accept': 'application/vnd.citationstyles.csl+json'}
-            print "doi_url", doi_url
             r = requests.get(doi_url, headers=headers)
             self.content = r.json()
+            self.content["URL"] = doi_url
         except Exception:
             print u"no doi metadata found for {}".format(doi_url)
             pass
@@ -307,7 +344,7 @@ class CrossrefResponseStep(Step):
             input = self.get_zenodo_doi(input)
             has_doi = True
 
-        print "has_doi", has_doi, input[0:10]
+        # print "has_doi", has_doi, input[0:10]
 
         if not has_doi:
             return
@@ -329,7 +366,7 @@ class CodemetaResponseMetadataStep(MetadataStep):
 
 
 class CodemetaResponseStep(Step):
-    more_info = "https://codemeta.github.io/user-guide/"
+    step_links = "https://codemeta.github.io/user-guide/"
 
     @property
     def starting_children(self):
@@ -380,7 +417,7 @@ class GithubApiResponseMetadataStep(MetadataStep):
         self.content = metadata_dict
 
 class GithubApiResponseStep(Step):
-    more_info = "https://developer.github.com/v3/repos/#get"
+    step_links = "https://developer.github.com/v3/repos/#get"
 
     @property
     def starting_children(self):
@@ -407,12 +444,12 @@ class GithubApiResponseStep(Step):
         (login, token) = self.get_github_token_tuple()
 
         repo_api_url = github_url.replace("github.com/", "api.github.com/repos/")
-        print "repo_api_url", repo_api_url
+        # print "repo_api_url", repo_api_url
         r = requests.get(repo_api_url, auth=(login, token), headers=h)
         self.content["repo"] = r.json()
 
         user_api_url = "https://api.github.com/users/{}".format(self.content["repo"]["owner"]["login"])
-        print "user_api_url", user_api_url
+        # print "user_api_url", user_api_url
         r = requests.get(user_api_url, auth=(login, token), headers=h)
         self.content["user"] = r.json()
 
@@ -423,7 +460,7 @@ class GithubApiResponseStep(Step):
 
 
 class GithubRepoStep(Step):
-    more_info = "http://github.com/"
+    step_links = "http://github.com/"
 
     @property
     def starting_children(self):
@@ -486,7 +523,7 @@ class GithubDescriptionMetadataStep(MetadataStep):
 
 
 class GithubDescriptionFileStep(Step):
-    more_info = "http://r-pkgs.had.co.nz/description.html"
+    step_links = "http://r-pkgs.had.co.nz/description.html"
 
     @property
     def starting_children(self):
@@ -508,7 +545,7 @@ class GithubDescriptionFileStep(Step):
         pass
 
 class GithubCitationFileStep(Step):
-    more_info = "http://r-pkgs.had.co.nz/inst.html#inst-citation"
+    step_links = "http://r-pkgs.had.co.nz/inst.html#inst-citation"
 
     @property
     def starting_children(self):
@@ -551,7 +588,7 @@ class BibtexMetadataStep(MetadataStep):
                 try:
                     # if k in ["volume", "year", "type", "title", "author", "eid", "doi", "container-title", "adsnote", "eprint", "page"]:
                     # print v.values()
-                    if k in ["volume", "year", "type", "title", "author", "eid", "doi", "container-title", "adsnote", "eprint"]:
+                    if k in ["booktitle", "address", "volume", "year", "type", "title", "author", "eid", "doi", "container-title", "adsnote", "eprint"]:
                         metadata_dict[k] = v
                     pass
                 except Exception:
@@ -566,7 +603,7 @@ class BibtexMetadataStep(MetadataStep):
 
 
 class BibtexStep(Step):
-    more_info = "https://verbosus.com/bibtex-style-examples.html"
+    step_links = "https://verbosus.com/bibtex-style-examples.html"
 
     @property
     def starting_children(self):
@@ -575,6 +612,8 @@ class BibtexStep(Step):
         ]
 
     def set_content(self, input):
+        if not u"@" in input:
+            return
         bibtex = extract_bibtex(input)
         if bibtex:
             self.content = bibtex
@@ -587,7 +626,7 @@ class BibtexStep(Step):
 
 
 class GithubCodemetaFileStep(Step):
-    more_info = "https://codemeta.github.io/user-guide/"
+    step_links = "https://codemeta.github.io/user-guide/"
 
     @property
     def starting_children(self):
@@ -610,7 +649,7 @@ class GithubCodemetaFileStep(Step):
 
 
 class GithubReadmeFileStep(Step):
-    more_info = "https://help.github.com/articles/about-readmes/"
+    step_links = "https://help.github.com/articles/about-readmes/"
 
     @property
     def starting_children(self):

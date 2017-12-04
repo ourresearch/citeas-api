@@ -177,7 +177,7 @@ class Software(object):
         while not self.completed_steps[-1].is_metadata:
             current_step = self.completed_steps[cursor]
 
-            print "current_step:", current_step
+            # print "current_step:", current_step
             try:
                 # print "before adding next step, self.completed_steps:", self.completed_steps
                 next_step = current_step.get_child()
@@ -193,12 +193,12 @@ class Software(object):
     def name(self):
         if self.metadata and self.metadata.get("title", ""):
             response = self.metadata.get("title", "")
-            print "title class", response.__class__.__name__
             if response.__class__.__name__ == "MixedString":
                 return response.pop()
             else:
                 return response
         return self.display_url
+
 
     @property
     def display_url(self):
@@ -221,10 +221,13 @@ class Software(object):
         ret = [s.to_dict() for s in self.completed_steps]
         return ret
 
+    @property
+    def citation_plain(self):
+        citations = self.to_dict()["citations"]
+        return next((i["citation"] for i in citations if i["style_shortname"] == 'harvard1'), None)
 
     def to_dict(self):
         bibtex_metadata = get_bib_source_from_dict(self.metadata)
-
 
         ret = {
             "url": self.display_url,

@@ -10,6 +10,7 @@ import sys
 import requests
 import re
 from software import Software
+from step import step_configs
 
 from app import app
 
@@ -107,6 +108,10 @@ def citeas_product_get(id):
     my_software.find_metadata()
     return jsonify(my_software.to_dict())
 
+@app.route("/steps", methods=["GET"])
+@app.route("/steps/", methods=["GET"])
+def citeas_step_configs():
+    return jsonify(step_configs())
 
 
 

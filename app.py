@@ -20,6 +20,7 @@ logger = logging.getLogger("software")
 
 libraries_to_mum = [
     "requests.packages.urllib3",
+    "requests.packages.urllib3.connectionpool",
     "requests_oauthlib",
     "stripe",
     "oauthlib",
