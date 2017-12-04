@@ -323,13 +323,17 @@ class CrossrefResponseStep(Step):
             CrossrefResponseMetadataStep
         ]
 
-    def get_zenodo_doi(self, input):
-        badge_doi = find_or_empty_string("://zenodo.org/badge/doi/(.+?).svg", input)
+    def extract_doi(self, text):
+        badge_doi = find_or_empty_string("://zenodo.org/badge/doi/(.+?).svg", text)
         if badge_doi:
             return badge_doi
-        zenodo_doi = find_or_empty_string("doi.org/(10.5281/zenodo\.\d+)", input)
+        zenodo_doi = find_or_empty_string("doi.org/(10.5281/zenodo\.\d+)", text)
         if zenodo_doi:
             return zenodo_doi
+        text = text.replace("},", "")
+        doi = find_or_empty_string(u"""(10\..+)""", text)
+        if doi:
+            return doi
 
     def set_content(self, input):
         self.set_content_url(input)
@@ -351,8 +355,8 @@ class CrossrefResponseStep(Step):
             has_doi = True
         elif input.startswith("http") and "doi.org/10." in input:
             has_doi = True
-        elif self.get_zenodo_doi(input):
-            input = self.get_zenodo_doi(input)
+        elif self.extract_doi(input):
+            input = self.extract_doi(input)
             has_doi = True
 
         # print "has_doi", has_doi, input[0:10]
