@@ -7,9 +7,9 @@ _cool examples_
 - via doi
   - http://citeas.org/cite/10.5281/zenodo.160400
   - http://citeas.org/cite/http://doi.org/10.5281/zenodo.160400
-- from github url to R CITATION file to bibtex
+- from github url to CITATION file to bibtex
   - http://citeas.org/cite/https://github.com/nicholasricci/DDM_Framework
-- from webpage url to R CITATION file to bibtex
+- from webpage url to CITATION file to bibtex
   - http://citeas.org/cite/http://yt-project.org
 - from github url to README to DOI
   - http://citeas.org/cite/https://github.com/CeON/CERMINE
