@@ -72,7 +72,7 @@ def get_subject(class_name):
     if "readmefile" in name_lower:
         return "README file"
     if "citationfile" in name_lower:
-        return "R CITATION file"
+        return "CITATION file"
     if "descriptionfile" in name_lower:
         return "R DESCRIPTION file"
     if "codemetafile" in name_lower:
@@ -569,8 +569,11 @@ class GithubDescriptionFileStep(Step):
         pass
 
 class GithubCitationFileStep(Step):
-    step_links = [("R CITATION file specifications", "http://r-pkgs.had.co.nz/inst.html#inst-citation")]
-    step_intro = "Software written in R often includes a source file called 'CITATION' that specifies the project's title and authors."
+    step_links = [
+        ("CITATION file introduction", "https://www.software.ac.uk/blog/2013-09-02-encouraging-citation-software-introducing-citation-files"),
+        ("CITATION file specifications for R", "http://r-pkgs.had.co.nz/inst.html#inst-citation")
+        ]
+    step_intro = "Software sometimes includes a plain text file called 'CITATION' that specifies the project's title and authors, particularly software written in R."
     step_more = "The CITATION file can be parsed to extract this attribution information."
 
 
