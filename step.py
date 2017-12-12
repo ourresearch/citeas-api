@@ -538,9 +538,13 @@ class GithubDescriptionMetadataStep(MetadataStep):
             authors.append(author_name_as_dict(name))
         metadata_dict["author"] = authors
         metadata_dict["year"] = datetime.datetime.utcnow().isoformat()[0:4]
-        version = find_or_empty_string(ur"Version: (.*)", text)
-        metadata_dict["note"] = u"R package version {}".format(version)
-        metadata_dict["container-title"] = metadata_dict["note"]
+
+        # this gets the version, but it gets the development (github) version which probably
+        # doesn't match the pypi/cran/etc version, and so probably isn't what the user used
+        # version = find_or_empty_string(ur"Version: (.*)", text)
+        # metadata_dict["note"] = u"R package version {}".format(version)
+        # metadata_dict["container-title"] = metadata_dict["note"]
+
         metadata_dict["URL"] = u"https://CRAN.R-project.org/package={}".format(package)
         metadata_dict["type"] = "Manual"
         self.content = metadata_dict
