@@ -556,7 +556,7 @@ class GithubDescriptionFileStep(Step):
         ]
 
     def set_content(self, github_main_page_text):
-        matches = re.findall(u"href=\"(.*blob/master/description.*?)\"", github_main_page_text, re.IGNORECASE)
+        matches = re.findall(u"href=\"(.*blob/.*/description.*?)\"", github_main_page_text, re.IGNORECASE)
         if matches:
             filename_part = matches[0]
             filename_part = filename_part.replace("/blob", "")
@@ -585,7 +585,7 @@ class GithubCitationFileStep(Step):
         ]
 
     def set_content(self, github_main_page_text):
-        matches = re.findall(u"href=\"(.*blob/master/citation.*?)\"", github_main_page_text, re.IGNORECASE)
+        matches = re.findall(u"href=\"(.*blob/.*/citation.*?)\"", github_main_page_text, re.IGNORECASE)
         if matches:
             filename_part = matches[0]
             filename_part = filename_part.replace("/blob", "")
@@ -669,7 +669,7 @@ class GithubCodemetaFileStep(Step):
         ]
 
     def set_content(self, github_main_page_text):
-        matches = re.findall(u"href=\"(.*blob/master/codemeta.json)\"", github_main_page_text, re.IGNORECASE)
+        matches = re.findall(u"href=\"(.*blob/.*/codemeta.json)\"", github_main_page_text, re.IGNORECASE)
         if matches:
             filename_part = matches[0]
             filename_part = filename_part.replace("/blob", "")
@@ -694,7 +694,8 @@ class GithubReadmeFileStep(Step):
         ]
 
     def set_content(self, github_main_page_text):
-        matches = re.findall(u"href=\"(.*blob/master/readme.*?)\"", github_main_page_text, re.IGNORECASE)
+        print github_main_page_text
+        matches = re.findall(u"href=\"(.*blob/.*/readme.*?)\"", github_main_page_text, re.IGNORECASE)
         if matches:
             filename_part = matches[0]
             filename_part = filename_part.replace("/blob", "")
