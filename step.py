@@ -701,7 +701,6 @@ class GithubReadmeFileStep(Step):
         ]
 
     def set_content(self, github_main_page_text):
-        print github_main_page_text
         matches = re.findall(u"href=\"(.*blob/.*/readme.*?)\"", github_main_page_text, re.IGNORECASE)
         if matches:
             filename_part = matches[0]
