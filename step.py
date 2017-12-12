@@ -28,6 +28,9 @@ def get_webpage_text(url):
     return r.text
 
 def author_name_as_dict(literal_name):
+    if not literal_name:
+        return {"family": ""}
+
     if len(literal_name.split(" ")) > 1:
         name_dict = HumanName(literal_name).as_dict()
         response_dict = {
