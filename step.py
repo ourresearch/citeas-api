@@ -86,6 +86,8 @@ def get_subject(class_name):
         return "DOI API response"
     if "bibtex" in name_lower:
         return "BibTeX"
+    if "citentry" in name_lower:
+        return "R CITATION format"
     if "githubrepo" in name_lower:
         return "GitHub repository main page"
     if "githubapi" in name_lower:
@@ -144,9 +146,9 @@ class Step(object):
 
         child_class = self.remaining_children.pop(0)
         child_obj = child_class()
+        child_obj.parent = self
         child_obj.set_content_url(self.content_url)
         child_obj.set_content(self.content)
-        child_obj.parent = self
 
         return child_obj
 
@@ -172,6 +174,8 @@ class Step(object):
         if "userinput" in name_lower:
             return None
         if "bibtex" in name_lower:
+            return None
+        if "citentry" in name_lower:
             return None
         return "link"
 
@@ -588,11 +592,21 @@ class GithubCitationFileStep(Step):
     def starting_children(self):
         return [
             CrossrefResponseStep,
+            CitentryStep,
             BibtexStep
         ]
 
     def set_content(self, github_main_page_text):
+        found_match = False
         matches = re.findall(u"href=\"(.*blob/.*/citation.*?)\"", github_main_page_text, re.IGNORECASE)
+        if not matches:
+            matches = re.findall(u"href=\"(.*/inst)\"", github_main_page_text, re.IGNORECASE)
+            if matches:
+                inst_url = u"http://github.com{}".format(matches[0])
+                r = requests.get(inst_url)
+                inst_page_text = r.text
+                matches = re.findall(u"href=\"(.*blob/.*/citation.*?)\"", inst_page_text, re.IGNORECASE)
+
         if matches:
             filename_part = matches[0]
             filename_part = filename_part.replace("/blob", "")
@@ -600,9 +614,10 @@ class GithubCitationFileStep(Step):
             self.content = get_webpage_text(filename)
             self.content_url = filename
 
+
     def set_content_url(self, input):
         # in this case set_content does it, because it knows the url
-        pass
+        self.parent_content_url = input
 
 
 class BibtexMetadataStep(MetadataStep):
@@ -662,6 +677,49 @@ class BibtexStep(Step):
                 r = requests.get(my_bibtex_url)
                 self.content = extract_bibtex(r.text)
                 # self.content_url = my_bibtex_url
+
+
+class CitentryStep(Step):
+    step_links = [("CitEntry example", "https://github.com/tidyverse/ggplot2/blob/master/inst/CITATION")]
+    step_intro = "CitEntry is a format for sharing reference information in CITATION files."
+    step_more = "CITATION files are used often in R."
+
+    @property
+    def starting_children(self):
+        return [
+            CitentryMetadataStep
+        ]
+
+    def set_content(self, input):
+        if not u"citEntry(" in input:
+            return
+
+        input = input.replace("\n", "")
+        # want this below to be greedy
+        matches = re.findall(u"citEntry\((.*)\)", input, re.IGNORECASE | re.MULTILINE)
+        if matches:
+            self.content = matches[0]
+
+
+class CitentryMetadataStep(MetadataStep):
+    def set_content(self, citentry_content):
+        self.content = {}
+        self.content["title"] = find_or_empty_string(u"title\s*=\s*\"(.*?)\"", citentry_content)
+        self.content["URL"] = find_or_empty_string(u"url\s*=\s*\"(.*?)\"", citentry_content)
+        self.content["volume"] = find_or_empty_string(u"volume\s*=\s*\"(.*?)\"", citentry_content)
+        self.content["number"] = find_or_empty_string(u"number\s*=\s*\"(.*?)\"", citentry_content)
+        self.content["pages"] = find_or_empty_string(u"pages\s*=\s*\"(.*?)\"", citentry_content)
+        self.content["container-title"] = find_or_empty_string(u"journal\s*=\s*\"(.*?)\"", citentry_content)
+
+        self.content["year"] = find_or_empty_string(u"year\s*=\s*\"(.*?)\"", citentry_content)
+        if self.content["year"]:
+            self.content["issued"] = {"date-parts": [[self.content["year"]]]}
+        self.content["type"] = "misc"
+
+        self.content["author"] = []
+        first_author = find_or_empty_string(u"author\s*=.*?\"(.*?)\"", citentry_content)
+        if first_author:
+            self.content["author"].append(author_name_as_dict(first_author))
 
 
 class GithubCodemetaFileStep(Step):
