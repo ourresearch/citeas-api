@@ -340,14 +340,18 @@ class CrossrefResponseStep(Step):
         zenodo_doi = find_or_empty_string("10.5281/zenodo\.\d+", text)
         if zenodo_doi:
             return zenodo_doi
-        doi = find_or_empty_string(u"""(10\..+)""", text)
-        if doi:
-            doi = doi.strip(",")  # has to be first, because comma would be last item on line
-            doi = doi.strip("'")
-            doi = doi.strip('"')
-            doi = doi.strip("}")
-            doi = clean_doi(doi)
-            return doi
+
+        possible_dois = re.findall(u"""(10\..+)""", text, re.IGNORECASE|re.MULTILINE)
+        for doi in possible_dois:
+            if "10.5063/schema/codemeta-2.0" in doi.lower():
+                pass
+            else:
+                doi = doi.strip(",")  # has to be first, because comma would be last item on line
+                doi = doi.strip("'")
+                doi = doi.strip('"')
+                doi = doi.strip("}")
+                doi = clean_doi(doi).lower()
+                return doi
 
     def set_content(self, input):
         self.set_content_url(input)
@@ -409,13 +413,21 @@ class CodemetaResponseStep(Step):
     def set_content(self, input):
         data = json.loads(input)
         self.content = {}
-        self.content["doi"] = clean_doi(data["identifier"])
+
+        # example: https://raw.githubusercontent.com/FFTW/fftw3/master/codemeta.json
+        for doi_key in ["identifier", "citation"]:
+            if doi_key in data:
+                self.content["doi"] = clean_doi(data[doi_key])
+
         if self.content["doi"]:
             doi_url = u"https://doi.org/{}".format(self.content["doi"])
             self.content["URL"] = doi_url
         else:
             self.content["URL"] = data["codeRepository"]
-        self.content["title"] = data["title"]
+
+        if "title" in data:
+            self.content["title"] = data["title"]
+
         self.content["author"] = []
         if "agents" in data:
             if isinstance(data["agents"], dict):
@@ -424,6 +436,7 @@ class CodemetaResponseStep(Step):
                 agents = data["agents"]
             for agent in agents:
                 self.content["author"].append(author_name_as_dict(data["agents"]["name"]))
+
         if "dateCreated" in data:
             self.content["issued"] = {"date-parts": [[data["dateCreated"][0:4]]]}
 
@@ -786,6 +799,7 @@ class GithubCodemetaFileStep(Step):
     @property
     def starting_children(self):
         return [
+            CrossrefResponseStep,
             CodemetaResponseStep
         ]
 
