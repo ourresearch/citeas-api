@@ -337,13 +337,16 @@ class CrossrefResponseStep(Step):
         badge_doi = find_or_empty_string("://zenodo.org/badge/doi/(.+?).svg", text)
         if badge_doi:
             return badge_doi
-        zenodo_doi = find_or_empty_string("doi.org/(10.5281/zenodo\.\d+)", text)
+        zenodo_doi = find_or_empty_string("10.5281/zenodo\.\d+", text)
         if zenodo_doi:
             return zenodo_doi
         doi = find_or_empty_string(u"""(10\..+)""", text)
         if doi:
-            doi = doi.strip(",")
+            doi = doi.strip(",")  # has to be first, because comma would be last item on line
+            doi = doi.strip("'")
+            doi = doi.strip('"')
             doi = doi.strip("}")
+            doi = clean_doi(doi)
             return doi
 
     def set_content(self, input):
