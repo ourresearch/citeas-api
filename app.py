@@ -16,15 +16,17 @@ logging.basicConfig(
     level=logging.DEBUG,
     format='%(name)s - %(message)s'
 )
-logger = logging.getLogger("software")
+logger = logging.getLogger("citeas")
 
 libraries_to_mum = [
     "requests.packages.urllib3",
     "requests.packages.urllib3.connectionpool",
     "requests_oauthlib",
+    "urllib3.connectionpool"
     "stripe",
     "oauthlib",
     "boto",
+    "citeproc",
     "newrelic",
     "RateLimiter",
 ]

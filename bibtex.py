@@ -252,7 +252,8 @@ class BibTeX(BibliographySource):
         csl_date = self._bibtex_to_csl_date(bibtex_entry)
         if csl_date:
             csl_fields['issued'] = csl_date
-        return Reference(key, csl_type, **csl_fields)
+        ref = Reference(key, csl_type, **csl_fields)
+        return ref
 
 
 # BibTeX name handling

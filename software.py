@@ -7,7 +7,6 @@ from citeproc import CitationStylesBibliography
 from citeproc import formatter
 from citeproc import Citation
 from citeproc import CitationItem
-from bibtex import BibTeX  # use local patched version instead of citeproc.source.bibtex
 
 from step import UserInputStep
 from step import NoChildrenException

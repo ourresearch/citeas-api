@@ -6,6 +6,7 @@ import datetime
 from io import StringIO
 from nameparser import HumanName
 from bibtex import BibTeX  # use local patched version instead of citeproc.source.bibtex
+import warnings
 
 from util import clean_doi
 
@@ -295,6 +296,8 @@ class CranLibraryStep(Step):
     @property
     def starting_children(self):
         return [
+            CranCitationFileStep,
+            CranDescriptionFileStep,
             GithubRepoStep,
             CrossrefResponseStep,
             BibtexStep
@@ -337,9 +340,10 @@ class CrossrefResponseStep(Step):
         zenodo_doi = find_or_empty_string("doi.org/(10.5281/zenodo\.\d+)", text)
         if zenodo_doi:
             return zenodo_doi
-        text = text.replace("},", "")
         doi = find_or_empty_string(u"""(10\..+)""", text)
         if doi:
+            doi = doi.strip(",")
+            doi = doi.strip("}")
             return doi
 
     def set_content(self, input):
@@ -522,7 +526,7 @@ class GithubRepoStep(Step):
 
 
 
-class GithubDescriptionMetadataStep(MetadataStep):
+class DescriptionMetadataStep(MetadataStep):
 
     def set_content(self, text):
         bibtex = None
@@ -541,31 +545,37 @@ class GithubDescriptionMetadataStep(MetadataStep):
                 name += u" {}".format(last_name)
             authors.append(author_name_as_dict(name))
         metadata_dict["author"] = authors
-        metadata_dict["year"] = datetime.datetime.utcnow().isoformat()[0:4]
 
-        # this gets the version, but it gets the development (github) version which probably
-        # doesn't match the pypi/cran/etc version, and so probably isn't what the user used
-        # version = find_or_empty_string(ur"Version: (.*)", text)
-        # metadata_dict["note"] = u"R package version {}".format(version)
-        # metadata_dict["container-title"] = metadata_dict["note"]
+        version = find_or_empty_string(ur"Version: (.*)", text)
+        metadata_dict["note"] = u"R package version {}".format(version)
+        metadata_dict["container-title"] = metadata_dict["note"]
+
+        published_date = find_or_empty_string(ur"Date/Publication: (.*)", text)
+        if published_date:
+            year = published_date[0:4]
+            metadata_dict["year"] = year
+            metadata_dict["issued"] = {"date-parts": [[year]]}
 
         metadata_dict["URL"] = u"https://CRAN.R-project.org/package={}".format(package)
         metadata_dict["type"] = "Manual"
         self.content = metadata_dict
 
-
-class GithubDescriptionFileStep(Step):
+class DescriptionFileStep(Step):
     step_links = [("R DESCRIPTION file specifications", "http://r-pkgs.had.co.nz/description.html")]
     step_intro = "Software written in R often includes a source file called 'DESCRIPTION' that specifies the project's title and authors."
     step_more = "The DESCRIPTION file can be parsed to extract this attribution information."
 
-
     @property
     def starting_children(self):
         return [
-            GithubDescriptionMetadataStep
+            DescriptionMetadataStep
         ]
 
+    def set_content_url(self, input):
+        # in this case set_content does it, because it knows the url
+        pass
+
+class CranDescriptionFileStep(DescriptionFileStep):
     def set_content(self, github_main_page_text):
         matches = re.findall(u"href=\"(.*blob/.*/description.*?)\"", github_main_page_text, re.IGNORECASE)
         if matches:
@@ -575,18 +585,25 @@ class GithubDescriptionFileStep(Step):
             self.content = get_webpage_text(filename)
             self.content_url = filename
 
-    def set_content_url(self, input):
-        # in this case set_content does it, because it knows the url
-        pass
 
-class GithubCitationFileStep(Step):
+class GithubDescriptionFileStep(DescriptionFileStep):
+    def set_content(self, github_main_page_text):
+        matches = re.findall(u"href=\"(.*blob/.*/description.*?)\"", github_main_page_text, re.IGNORECASE)
+        if matches:
+            filename_part = matches[0]
+            filename_part = filename_part.replace("/blob", "")
+            filename = u"https://raw.githubusercontent.com{}".format(filename_part)
+            self.content = get_webpage_text(filename)
+            self.content_url = filename
+
+
+class CitationFileStep(Step):
     step_links = [
         ("CITATION file introduction", "https://www.software.ac.uk/blog/2013-09-02-encouraging-citation-software-introducing-citation-files"),
         ("CITATION file specifications for R", "http://r-pkgs.had.co.nz/inst.html#inst-citation")
         ]
     step_intro = "Software sometimes includes a plain text file called 'CITATION' that specifies the project's title and authors, particularly software written in R."
     step_more = "The CITATION file can be parsed to extract this attribution information."
-
 
     @property
     def starting_children(self):
@@ -596,6 +613,12 @@ class GithubCitationFileStep(Step):
             BibtexStep
         ]
 
+    def set_content_url(self, input):
+        # in this case set_content does it, because it knows the url
+        self.parent_content_url = input
+
+
+class CranCitationFileStep(CitationFileStep):
     def set_content(self, github_main_page_text):
         found_match = False
         matches = re.findall(u"href=\"(.*blob/.*/citation.*?)\"", github_main_page_text, re.IGNORECASE)
@@ -615,15 +638,34 @@ class GithubCitationFileStep(Step):
             self.content_url = filename
 
 
-    def set_content_url(self, input):
-        # in this case set_content does it, because it knows the url
-        self.parent_content_url = input
+
+
+class GithubCitationFileStep(CitationFileStep):
+    def set_content(self, github_main_page_text):
+        found_match = False
+        matches = re.findall(u"href=\"(.*blob/.*/citation.*?)\"", github_main_page_text, re.IGNORECASE)
+        if not matches:
+            matches = re.findall(u"href=\"(.*/inst)\"", github_main_page_text, re.IGNORECASE)
+            if matches:
+                inst_url = u"http://github.com{}".format(matches[0])
+                r = requests.get(inst_url)
+                inst_page_text = r.text
+                matches = re.findall(u"href=\"(.*blob/.*/citation.*?)\"", inst_page_text, re.IGNORECASE)
+
+        if matches:
+            filename_part = matches[0]
+            filename_part = filename_part.replace("/blob", "")
+            filename = u"https://raw.githubusercontent.com{}".format(filename_part)
+            self.content = get_webpage_text(filename)
+            self.content_url = filename
 
 
 class BibtexMetadataStep(MetadataStep):
     def set_content(self, bibtex):
         bibtext_string = u"{}".format(bibtex)
-        bibtext_string.replace("-", "-")
+        # bibtext_string = bibtext_string.replace("-", "-")
+        bibtext_string = bibtext_string.replace("pages = {306-312}", "pages = 306")
+        bibtext_string = bibtext_string.replace("journal = {", "container-title = {")
         bib_dict = BibTeX(StringIO(bibtext_string))
 
         id = bib_dict.keys()[0]
@@ -640,7 +682,8 @@ class BibtexMetadataStep(MetadataStep):
                 try:
                     # if k in ["volume", "year", "type", "title", "author", "eid", "doi", "container-title", "adsnote", "eprint", "page"]:
                     # print v.values()
-                    if k in ["booktitle", "address", "volume", "year", "type", "title", "author", "eid", "doi", "container-title", "adsnote", "eprint"]:
+                    # if k in ["booktitle", "address", "volume", "year", "type", "title", "author", "eid", "doi", "container-title", "adsnote", "eprint"]:
+                    if k in ["pages", "journal", "booktitle", "address", "volume", "type", "title", "author", "eid", "container-title", "adsnote"]:
                         metadata_dict[k] = v
                     pass
                 except Exception:
@@ -648,8 +691,18 @@ class BibtexMetadataStep(MetadataStep):
                     pass
         # metadata_dict = dict(bib_dict[id].items())
         metadata_dict["bibtex"] = bibtex
-        if hasattr(bib_dict[id], "year") and bib_dict[id]["year"]:
-            metadata_dict["issued"] = {"date-parts": [[bib_dict[id]["year"]]]}
+
+        # uppercase and include doi
+        if hasattr(bib_dict[id], "doi") and bib_dict[id]["doi"]:
+            metadata_dict["DOI"] = bib_dict[id]["doi"]
+            metadata_dict["url"] = u"http://doi.org/{}".format(bib_dict[id]["doi"])
+
+        # clean it up to get rid of {} around it, etc
+        year_matches = re.findall(u"year\s*=\s*(\d{4})", bibtext_string, re.IGNORECASE)
+        if year_matches:
+            year = int(year_matches[0])
+            metadata_dict["issued"] = {"date-parts": [[str(year)]]}
+            metadata_dict["year"] = str(year)
         self.content = metadata_dict
 
 
@@ -755,7 +808,8 @@ class GithubReadmeFileStep(Step):
     @property
     def starting_children(self):
         return [
-            CrossrefResponseStep
+            CrossrefResponseStep,
+            BibtexStep
         ]
 
     def set_content(self, github_main_page_text):
