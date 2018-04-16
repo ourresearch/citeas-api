@@ -698,7 +698,7 @@ class BibtexMetadataStep(MetadataStep):
             metadata_dict["url"] = u"http://doi.org/{}".format(bib_dict[id]["doi"])
 
         # clean it up to get rid of {} around it, etc
-        year_matches = re.findall(u"year\s*=\s*(\d{4})", bibtext_string, re.IGNORECASE)
+        year_matches = re.findall(u"year\s*=\s*.(\d{4}).", bibtext_string, re.IGNORECASE)
         if year_matches:
             year = int(year_matches[0])
             metadata_dict["issued"] = {"date-parts": [[str(year)]]}

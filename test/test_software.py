@@ -24,7 +24,7 @@ test_urls = [
     ("https://github.com/gcowan/hyperk", "10.5281/zenodo.160400", "Cowan, G., 2016. Gcowan/Hyperk: Mcp Data Processing Code. Available at: https://doi.org/10.5281/zenodo.160400."),
     ("https://github.com/NSLS-II-XPD/xpdView", "10.5281/zenodo.60479", "Duff, C. & Kaming-Thanassi, J., 2016. xpdView: xpdView initial release. Available at: https://doi.org/10.5281/zenodo.60479."),
     ("https://github.com/impactstory/depsy", "", "Impactstory, 2015. depsy. Available at: https://github.com/Impactstory/depsy."),
-    ("https://github.com/abianchetti/blick", "", u"Bianchetti, A., <i>Determinación del diámetro pupilar ocular en tiempo real</i>."),
+    ("https://github.com/abianchetti/blick", "", u"Bianchetti, A., 2012. <i>Determinación del diámetro pupilar ocular en tiempo real</i>."),
     ("https://github.com/jasonpriem/FeedVis", "", u"Priem, J., 2011. FeedVis. Available at: https://github.com/jasonpriem/FeedVis."),
     ("https://github.com/vahtras/loprop", "", u'Vahtras, O., 2014. Loprop For Dalton. Available at: https://doi.org/10.5281/zenodo.13276.'),
     ("https://github.com/cvitolo/r_BigDataAnalytics", "", u'Vitolo, C., 2015. R_Bigdataanalytics V.0.0.1. Available at: https://doi.org/10.5281/zenodo.15722.'),
