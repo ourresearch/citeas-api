@@ -375,6 +375,10 @@ class CrossrefResponseStep(Step):
             if "10.5063/schema/codemeta-2.0" in doi.lower():
                 pass
             else:
+                if '">' in doi:
+                    doi = doi.split('">')[0]
+                if "</a>" in doi:
+                    doi = doi.split("</a>")[0]
                 doi = doi.strip(",")  # has to be first, because comma would be last item on line
                 doi = doi.strip("'")
                 doi = doi.strip('"')
@@ -403,13 +407,15 @@ class CrossrefResponseStep(Step):
         elif input.startswith("http") and "doi.org/10." in input:
             has_doi = True
         elif self.extract_doi(input):
-            input = self.extract_doi(input)
             has_doi = True
-
-        # print "has_doi", has_doi, input[0:10]
 
         if not has_doi:
             return
+
+        input = self.extract_doi(input)
+        print input
+
+        # print "has_doi", has_doi, input[0:10]
 
         try:
             doi = clean_doi(input)
