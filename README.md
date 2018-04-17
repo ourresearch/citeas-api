@@ -4,6 +4,7 @@ _cool examples_
 
 - via codemeta
   - http://citeas.org/cite/https://github.com/datacite/maremma
+  - http://citeas.org/cite/http://fftw.org/
 - via doi
   - http://citeas.org/cite/10.5281/zenodo.160400
   - http://citeas.org/cite/http://doi.org/10.5281/zenodo.160400
