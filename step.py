@@ -9,6 +9,7 @@ from bibtex import BibTeX  # use local patched version instead of citeproc.sourc
 import urllib2
 import urlparse
 import re
+from arxiv2bib import arxiv2bib_dict
 
 from util import clean_doi
 
@@ -414,6 +415,28 @@ class CrossrefResponseStep(Step):
 
         doi_url = u"https://doi.org/{}".format(doi)
         self.content_url = doi_url
+
+
+class ArxivResponseStep(Step):
+    step_links = [("What is a DOI?", "https://project-thor.readme.io/docs/what-is-a-doi")]
+    step_intro = "A Digital Object Identifier (DOI) is a persistent identifier commonly used to uniquely identify scholarly papers, and increasingly used to identify datasets, software, and other research outputs."
+    step_more = "A DOI is associated with all information needed to properly attribute it, including authors, title, and date of publication."
+
+    @property
+    def starting_children(self):
+        return [
+            BibtexMetadataStep
+        ]
+
+    def set_content(self, input):
+        input = input.split(":", 1)[1]
+        my_dict = arxiv2bib_dict([input])
+        self.content = my_dict[input].bibtex()
+
+    def set_content_url(self, input):
+        if input.startswith("arxiv:"):
+            arxiv_id = input.split(":", 1)[1]
+            self.content_url = "https://arxiv.org/abs/{}".format(arxiv_id)
 
 
 class CodemetaResponseMetadataStep(MetadataStep):
@@ -872,6 +895,7 @@ class UserInputStep(Step):
     def starting_children(self):
         return [
             CrossrefResponseStep,
+            ArxivResponseStep,
             GithubRepoStep,
             CranLibraryStep,
             PypiLibraryStep,
@@ -881,6 +905,8 @@ class UserInputStep(Step):
     def clean_input(self, input):
         if input.startswith("10.") or input.startswith("http"):
             return input
+        if input.lower().startswith("arxiv"):
+            return input.lower()
         return u"http://{}".format(input)
 
     def set_content(self, input):
