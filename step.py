@@ -442,7 +442,7 @@ class ArxivResponseStep(Step):
         self.content["URL"] = my_reference.url
         self.content["container-title"] = "arXiv"
         self.content["year"] = my_reference.year
-        self.content["number"] = my_reference.id
+        self.content["eprint"] = my_reference.id
         self.content["issued"] = {"date-parts": [[my_reference.year]]}
         self.content["type"] = "article"
 
@@ -766,7 +766,7 @@ class BibtexMetadataStep(MetadataStep):
                     # if k in ["volume", "year", "type", "title", "author", "eid", "doi", "container-title", "adsnote", "eprint", "page"]:
                     # print v.values()
                     # if k in ["booktitle", "address", "volume", "year", "type", "title", "author", "eid", "doi", "container-title", "adsnote", "eprint"]:
-                    if k in ["url", "note", "journal", "booktitle", "address", "volume", "type", "title", "eid", "container-title", "adsnote"]:
+                    if k in ["url", "note", "journal", "booktitle", "address", "volume", "issue", "number", "type", "title", "eid", "container-title", "adsnote", "eprint"]:
                         if isinstance(v, basestring):
                             metadata_dict[k] = v
                         else:
