@@ -26,4 +26,7 @@ _cool examples_
 - the same project, inputted via cran or a cran vignette file 
   - http://citeas.org/cite/https://cran.r-project.org/web/packages/stringr
   - http://citeas.org/cite/https://cran.r-project.org/web/packages/stringr/vignettes/stringr.html
+- via arXiv ID
+  - http://citeas.org/cite/arXiv:1802.02689
+
 

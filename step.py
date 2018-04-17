@@ -106,6 +106,8 @@ def get_subject(class_name):
         return "R DESCRIPTION file"
     if "codemetafile" in name_lower:
         return "CodeMeta file"
+    if "arxiv" in name_lower:
+        return "ArXiv page"
     if "codemetaresponse" in name_lower:
         return "CodeMeta JSON data"
     if "crossref" in name_lower:
@@ -197,6 +199,8 @@ class Step(object):
             return None
         if "crossref" in name_lower:
             return "doi"
+        if "arxiv" in name_lower:
+            return "arXiv ID"
         if "userinput" in name_lower:
             return None
         if "bibtex" in name_lower:
@@ -418,26 +422,43 @@ class CrossrefResponseStep(Step):
 
 
 class ArxivResponseStep(Step):
-    step_links = [("What is a DOI?", "https://project-thor.readme.io/docs/what-is-a-doi")]
-    step_intro = "A Digital Object Identifier (DOI) is a persistent identifier commonly used to uniquely identify scholarly papers, and increasingly used to identify datasets, software, and other research outputs."
-    step_more = "A DOI is associated with all information needed to properly attribute it, including authors, title, and date of publication."
+    step_links = [("What is arXiv?", "https://arxiv.org/help/general")]
+    step_intro = "ArXiv is a website that hosts research articles."
+    step_more = "An arXiv paper is associated with all information needed to properly attribute it, including authors, title, and date of publication."
 
     @property
     def starting_children(self):
         return [
-            BibtexMetadataStep
+            ArxivMetadataStep
         ]
 
-    def set_content(self, input):
-        input = input.split(":", 1)[1]
-        my_dict = arxiv2bib_dict([input])
-        self.content = my_dict[input].bibtex()
+    def set_content(self, full_input):
+        input = full_input.split(":", 1)[1].lower()
+        response = arxiv2bib_dict([input])
+        my_reference = response[input]
+        self.content = {}
+        self.content["title"] = re.sub("\s+", " ", my_reference.title)
+        self.content["DOI"] = my_reference.doi
+        self.content["URL"] = my_reference.url
+        self.content["container-title"] = "arXiv"
+        self.content["year"] = my_reference.year
+        self.content["number"] = my_reference.id
+        self.content["issued"] = {"date-parts": [[my_reference.year]]}
+        self.content["type"] = "article"
+
+        self.content["author"] = []
+        for author in my_reference.authors:
+            self.content["author"].append(author_name_as_dict(author))
 
     def set_content_url(self, input):
         if input.startswith("arxiv:"):
             arxiv_id = input.split(":", 1)[1]
             self.content_url = "https://arxiv.org/abs/{}".format(arxiv_id)
 
+class ArxivMetadataStep(MetadataStep):
+    def set_content(self, input_dict):
+        print self.content
+        self.content = input_dict
 
 class CodemetaResponseMetadataStep(MetadataStep):
     def set_content(self, input_dict):
@@ -727,7 +748,6 @@ class BibtexMetadataStep(MetadataStep):
     def set_content(self, bibtex):
         bibtext_string = u"{}".format(bibtex)
         # bibtext_string = bibtext_string.replace("-", "-")
-        bibtext_string = bibtext_string.replace("pages = {306-312}", "pages = 306")
         bibtext_string = bibtext_string.replace("journal = {", "container-title = {")
         bib_dict = BibTeX(StringIO(bibtext_string))
 
@@ -746,9 +766,13 @@ class BibtexMetadataStep(MetadataStep):
                     # if k in ["volume", "year", "type", "title", "author", "eid", "doi", "container-title", "adsnote", "eprint", "page"]:
                     # print v.values()
                     # if k in ["booktitle", "address", "volume", "year", "type", "title", "author", "eid", "doi", "container-title", "adsnote", "eprint"]:
-                    if k in ["pages", "journal", "booktitle", "address", "volume", "type", "title", "author", "eid", "container-title", "adsnote"]:
+                    if k in ["url", "note", "journal", "booktitle", "address", "volume", "type", "title", "eid", "container-title", "adsnote"]:
+                        if isinstance(v, basestring):
+                            metadata_dict[k] = v
+                        else:
+                            metadata_dict[k] = v.pop()
+                    if k in ["pages", "author"]:
                         metadata_dict[k] = v
-                    pass
                 except Exception:
                     print "ERROR on ", k, v
                     pass
@@ -766,7 +790,13 @@ class BibtexMetadataStep(MetadataStep):
             year = int(year_matches[0])
             metadata_dict["issued"] = {"date-parts": [[str(year)]]}
             metadata_dict["year"] = str(year)
+
+        # get rid of extra spaces
+        if "title" in metadata_dict and metadata_dict["title"]:
+            metadata_dict["title"] = re.sub("\s+", " ", metadata_dict["title"])
+
         self.content = metadata_dict
+
 
 
 
@@ -913,4 +943,10 @@ class UserInputStep(Step):
         self.content = self.clean_input(input)
 
     def set_content_url(self, input):
-        self.content_url = self.clean_input(input)
+        cleaned = self.clean_input(input)
+        if cleaned.startswith("10."):
+            cleaned = u"http://doi.org/{}".format(cleaned)
+        if cleaned.startswith("arxiv"):
+            id = cleaned.split(":", 1)[1]
+            cleaned = u"http://arxiv.org/abs/{}".format(id)
+        self.content_url = cleaned
