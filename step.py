@@ -9,7 +9,7 @@ from bibtex import BibTeX  # use local patched version instead of citeproc.sourc
 import urllib2
 import urlparse
 import re
-from arxiv2bib import arxiv2bib_dict
+from arxiv2bib import arxiv2bib_dict, is_valid
 
 from util import clean_doi
 
@@ -434,16 +434,22 @@ class ArxivResponseStep(Step):
 
     def set_content(self, full_input):
         input = full_input.split(":", 1)[1].lower()
+        if not is_valid(input):
+            return
+
         response = arxiv2bib_dict([input])
         my_reference = response[input]
         self.content = {}
-        self.content["title"] = re.sub("\s+", " ", my_reference.title)
-        self.content["DOI"] = my_reference.doi
-        self.content["URL"] = my_reference.url
-        self.content["container-title"] = "arXiv"
-        self.content["year"] = my_reference.year
-        self.content["eprint"] = my_reference.id
-        self.content["issued"] = {"date-parts": [[my_reference.year]]}
+        try:
+            self.content["title"] = re.sub("\s+", " ", my_reference.title)
+            self.content["URL"] = my_reference.url
+            self.content["container-title"] = "arXiv"
+            self.content["year"] = my_reference.year
+            self.content["eprint"] = my_reference.id
+            self.content["issued"] = {"date-parts": [[my_reference.year]]}
+        except AttributeError:
+            pass
+
         self.content["type"] = "article"
 
         self.content["author"] = []

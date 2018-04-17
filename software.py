@@ -92,7 +92,10 @@ def export_contents(export_type, metadata_dict):
     if export_type == "csv":
         items = metadata_dict.items()
         header_row = u",".join([name for (name, value) in items])
-        value_row = u",".join([str(value) for (name, value) in items])
+        try:
+            value_row = u",".join([str(value) for (name, value) in items])
+        except UnicodeEncodeError:
+            value_row = ""
         response = u"{}\n{}".format(header_row, value_row)
         return response
     elif export_type == "ris":
