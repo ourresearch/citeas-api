@@ -6,7 +6,9 @@ import datetime
 from io import StringIO
 from nameparser import HumanName
 from bibtex import BibTeX  # use local patched version instead of citeproc.source.bibtex
-import warnings
+import urllib2
+import urlparse
+import re
 
 from util import clean_doi
 
@@ -20,8 +22,30 @@ def step_configs():
 class NoChildrenException(Exception):
     pass
 
-def get_webpage_text(url):
+# from https://stackoverflow.com/a/2345877/596939 to handle meta redirects like www.simvascular.org
+def get_hops(url):
+    redirect_re = re.compile('<meta[^>]*?url=(.*?)["\']', re.IGNORECASE)
+    hops = []
+    while url:
+        if url in hops:
+            url = None
+        else:
+            hops.insert(0, url)
+            r = requests.get(url)
+            if r.url != url:
+                hops.insert(0, r.url)
+            # check for redirect meta tag
+            match = redirect_re.search(r.text)
+            if match:
+                url = urlparse.urljoin(url, match.groups()[0].strip())
+            else:
+                url = None
+    return hops
+
+def get_webpage_text(starting_url):
+    hops = get_hops(starting_url)
     try:
+        url = hops[0]
         r = requests.get(url)
     except Exception:
         # print u"exception getting the webpage {}".format(url)
@@ -854,8 +878,13 @@ class UserInputStep(Step):
             WebpageStep
         ]
 
+    def clean_input(self, input):
+        if input.startswith("10.") or input.startswith("http"):
+            return input
+        return u"http://{}".format(input)
+
     def set_content(self, input):
-        self.content = input
+        self.content = self.clean_input(input)
 
     def set_content_url(self, input):
-        self.content_url = input
+        self.content_url = self.clean_input(input)
