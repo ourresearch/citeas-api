@@ -362,30 +362,35 @@ class CrossrefResponseStep(Step):
             CrossrefResponseMetadataStep
         ]
 
+    def strip_junk_from_end_of_doi(self, doi):
+        doi = re.sub("\s+", "", doi)
+        if '">' in doi:
+            doi = doi.split('">')[0]
+        if "</a>" in doi:
+            doi = doi.split("</a>")[0]
+        doi = doi.strip(",")  # has to be first, because comma would be last item on line
+        doi = doi.strip(".")  # has to be near first, because period would be last item on line
+        doi = doi.strip("'")
+        doi = doi.strip('"')
+        doi = doi.strip("}")
+        doi = clean_doi(doi).lower()
+        return doi
+
     def extract_doi(self, text):
         badge_doi = find_or_empty_string("://zenodo.org/badge/doi/(.+?).svg", text)
         if badge_doi:
-            return badge_doi
+            return self.strip_junk_from_end_of_doi(badge_doi)
         zenodo_doi = find_or_empty_string("10.5281/zenodo\.\d+", text)
         if zenodo_doi:
-            return zenodo_doi
+            return self.strip_junk_from_end_of_doi(zenodo_doi)
 
         possible_dois = re.findall(u"""(10\..+)""", text, re.IGNORECASE|re.MULTILINE)
         for doi in possible_dois:
             if "10.5063/schema/codemeta-2.0" in doi.lower():
                 pass
             else:
-                if '">' in doi:
-                    doi = doi.split('">')[0]
-                if "</a>" in doi:
-                    doi = doi.split("</a>")[0]
-                doi = doi.strip(",")  # has to be first, because comma would be last item on line
-                doi = doi.strip(".")  # has to be near first, because period would be last item on line
-                doi = doi.strip("'")
-                doi = doi.strip('"')
-                doi = doi.strip("}")
-                doi = clean_doi(doi).lower()
-                return doi
+                print "HERE I AM", doi
+                return self.strip_junk_from_end_of_doi(doi)
 
     def set_content(self, input):
         self.set_content_url(input)
@@ -414,7 +419,6 @@ class CrossrefResponseStep(Step):
             return
 
         input = self.extract_doi(input)
-        print input
 
         # print "has_doi", has_doi, input[0:10]
 
@@ -572,14 +576,17 @@ class GithubApiResponseStep(Step):
 
         repo_api_url = github_url.replace("github.com/", "api.github.com/repos/")
         # print "repo_api_url", repo_api_url
-        r = requests.get(repo_api_url, auth=(login, token), headers=h)
-        self.content["repo"] = r.json()
+        r_repo = requests.get(repo_api_url, auth=(login, token), headers=h)
+        try:
+            user_api_url = "https://api.github.com/users/{}".format(r_repo["repo"]["owner"]["login"])
+        except (KeyError, TypeError):
+            print u"bad github request"
+            return
 
-        user_api_url = "https://api.github.com/users/{}".format(self.content["repo"]["owner"]["login"])
         # print "user_api_url", user_api_url
-        r = requests.get(user_api_url, auth=(login, token), headers=h)
-        self.content["user"] = r.json()
-
+        r_login = requests.get(user_api_url, auth=(login, token), headers=h)
+        self.content["repo"] = r_repo.json()
+        self.content["user"] = r_login.json()
         self.content_url = repo_api_url
 
 
