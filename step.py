@@ -352,7 +352,7 @@ class CrossrefResponseMetadataStep(MetadataStep):
 
 
 class CrossrefResponseStep(Step):
-    step_links = [("What is a DOI?", "https://project-thor.readme.io/docs/what-is-a-doi")]
+    step_links = [("What is a DOI?", "https://project-thor.readme.io/docs/what-is-a-doi"), ("DOI metadata", "https://project-thor.readme.io/docs/accessing-doi-metadata")]
     step_intro = "A Digital Object Identifier (DOI) is a persistent identifier commonly used to uniquely identify scholarly papers, and increasingly used to identify datasets, software, and other research outputs."
     step_more = "A DOI is associated with all information needed to properly attribute it, including authors, title, and date of publication."
 
