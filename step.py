@@ -380,6 +380,7 @@ class CrossrefResponseStep(Step):
                 if "</a>" in doi:
                     doi = doi.split("</a>")[0]
                 doi = doi.strip(",")  # has to be first, because comma would be last item on line
+                doi = doi.strip(".")  # has to be near first, because period would be last item on line
                 doi = doi.strip("'")
                 doi = doi.strip('"')
                 doi = doi.strip("}")
