@@ -617,6 +617,8 @@ class GithubRepoStep(Step):
             url = find_or_empty_string('\"(https?://github.com/.+?)\"', input)
             url = url.replace("/issues", "")
             url = url.replace("/new", "")
+            if url.endswith(u".png"):
+                url = None
             if not url:
                 return
 
