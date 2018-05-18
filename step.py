@@ -254,9 +254,9 @@ class MetadataStep(Step):
 class WebpageMetadataStep(MetadataStep):
     def set_content(self, input):
         self.content = {}
-        title = find_or_empty_string(u"<h1>(.+?)</h1>", input)
+        title = find_or_empty_string(u"<title>(.+?)</title>", input)
         if not title:
-            title = find_or_empty_string(u"<title>(.+?)</title>", input)
+            title = find_or_empty_string(u"<h1>(.+?)</h1>", input)
         if not title:
             title = find_or_empty_string(u"<h2>(.+?)</h2>", input)
         self.content["type"] = "misc"
@@ -617,8 +617,6 @@ class GithubRepoStep(Step):
             url = find_or_empty_string('\"(https?://github.com/.+?)\"', input)
             url = url.replace("/issues", "")
             url = url.replace("/new", "")
-            if url.endswith(u".png"):
-                url = None
             if not url:
                 return
 
