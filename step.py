@@ -3,6 +3,7 @@ import re
 import os
 import json
 import datetime
+import json5
 from io import StringIO
 from nameparser import HumanName
 from bibtex import BibTeX  # use local patched version instead of citeproc.source.bibtex
@@ -496,13 +497,15 @@ class CodemetaResponseStep(Step):
 
 
     def set_content(self, input):
-        data = json.loads(input)
+        data = json5.loads(input)
         self.content = {}
 
         # example: https://raw.githubusercontent.com/FFTW/fftw3/master/codemeta.json
         for doi_key in ["identifier", "citation"]:
             if doi_key in data:
                 self.content["doi"] = clean_doi(data[doi_key])
+            else:
+                self.content["doi"] = None
 
         if self.content["doi"]:
             doi_url = u"https://doi.org/{}".format(self.content["doi"])
