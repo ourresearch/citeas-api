@@ -517,6 +517,11 @@ class CodemetaResponseStep(Step):
             self.content["title"] = data["title"]
 
         self.content["author"] = []
+        if "author" in data:
+            authors = data["author"]
+            for author in authors:
+                self.content["author"].append(author_name_as_dict('{} {}'.format(author["givenName"], author["familyName"])))
+
         if "agents" in data:
             if isinstance(data["agents"], dict):
                 agents = [data["agents"]]
