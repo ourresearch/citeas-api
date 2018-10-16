@@ -585,15 +585,16 @@ class GithubApiResponseStep(Step):
         repo_api_url = github_url.replace("github.com/", "api.github.com/repos/")
         # print "repo_api_url", repo_api_url
         r_repo = requests.get(repo_api_url, auth=(login, token), headers=h)
+        r_repo = r_repo.json()
         try:
-            user_api_url = "https://api.github.com/users/{}".format(r_repo["repo"]["owner"]["login"])
+            user_api_url = "https://api.github.com/users/{}".format(r_repo["owner"]["login"])
         except (KeyError, TypeError):
             print u"bad github request"
             return
 
         # print "user_api_url", user_api_url
         r_login = requests.get(user_api_url, auth=(login, token), headers=h)
-        self.content["repo"] = r_repo.json()
+        self.content["repo"] = r_repo
         self.content["user"] = r_login.json()
         self.content_url = repo_api_url
 
