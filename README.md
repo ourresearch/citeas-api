@@ -42,7 +42,7 @@ _Note: for best results, view in an API browser such as [Postman](https://www.ge
 Install on Heroku
 =================
 
-To install on [heroku](https://www.heroku.com/), while in the citeas-api directory run [heroku create](https://devcenter.heroku.com/articles/creating-apps), replacing 'my_app_name' with a unique name of your choice.
+To install on [heroku](https://www.heroku.com/), while in the citeas-api directory from previous steps run [heroku create](https://devcenter.heroku.com/articles/creating-apps), replacing 'my_app_name' with a unique name of your choice.
 
 `$ heroku create my_app_name`
 
