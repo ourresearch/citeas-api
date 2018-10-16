@@ -498,12 +498,14 @@ class CodemetaResponseStep(Step):
 
     def set_content(self, input):
         data = json5.loads(input)
+        if data:
+            code_meta_exists = True
         self.content = {}
 
         # example: https://raw.githubusercontent.com/FFTW/fftw3/master/codemeta.json
         for doi_key in ["identifier", "citation"]:
             if doi_key in data:
-                self.content["doi"] = clean_doi(data[doi_key])
+                self.content["doi"] = clean_doi(data[doi_key], code_meta_exists)
             else:
                 self.content["doi"] = None
 
@@ -511,10 +513,18 @@ class CodemetaResponseStep(Step):
             doi_url = u"https://doi.org/{}".format(self.content["doi"])
             self.content["URL"] = doi_url
         else:
-            self.content["URL"] = data["codeRepository"]
+            if "codeRepository" in data:
+                self.content["URL"] = data["codeRepository"]
+                self.content["repo"] = data["codeRepository"]
+            elif "url" in data:
+                self.content["URL"] = data["url"]
+                self.content["repo"] = data["url"]
 
-        if "title" in data:
-            self.content["title"] = data["title"]
+        if "name" in data:
+            self.content["title"] = data["name"]
+
+        if "name" and "description" in data:
+            self.content["title"] = "{}: {}".format(data["name"], data["description"])
 
         self.content["author"] = []
         if "author" in data:
@@ -533,11 +543,11 @@ class CodemetaResponseStep(Step):
         if "dateCreated" in data:
             self.content["issued"] = {"date-parts": [[data["dateCreated"][0:4]]]}
 
-        self.content["publisher"] = "DataCite"
+        # should this be removed?
+        # self.content["publisher"] = "DataCite"
 
         self.content["type"] = "software"
 
-        self.content["repo"] = data["codeRepository"]
         print self.content
 
 

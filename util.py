@@ -156,7 +156,7 @@ def is_doi_url(url):
         return True
     return False
 
-def clean_doi(dirty_doi):
+def clean_doi(dirty_doi, code_meta_exists=False):
     if not dirty_doi:
         raise NoDoiException("There's no DOI at all.")
 
@@ -167,7 +167,9 @@ def clean_doi(dirty_doi):
     p = re.compile(ur'.*?(10.+)')
 
     matches = re.findall(p, dirty_doi)
-    if len(matches) == 0:
+    if len(matches) == 0 and code_meta_exists is True:
+        return None
+    elif len(matches) == 0:
         raise NoDoiException("There's no valid DOI.")
 
     match = matches[0]
