@@ -544,10 +544,7 @@ class CodemetaResponseStep(Step):
 class GithubApiResponseMetadataStep(MetadataStep):
     def set_content(self, input_dict):
         metadata_dict = {}
-        if input_dict["repo"]["name"] and input_dict["repo"]["description"]:
-            metadata_dict["title"] = "{}: {}".format(input_dict["repo"]["name"], input_dict["repo"]["description"])
-        else:
-            metadata_dict["title"] = input_dict["repo"].get("name", input_dict["repo"]["html_url"])
+        metadata_dict["title"] = input_dict["repo"].get("name", input_dict["repo"]["html_url"])
         metadata_dict["author"] = [author_name_as_dict(input_dict["user"]["name"])]
         metadata_dict["publisher"] = "GitHub repository"
         metadata_dict["URL"] = input_dict["repo"]["html_url"]
