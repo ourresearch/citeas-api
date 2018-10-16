@@ -1,4 +1,5 @@
 arxiv2bib==1.0.8
+bugsnag==3.4.3
 citeproc-py==0.3.0
 citeproc-py-styles==0.1.0
 ddt==1.1.1
@@ -18,4 +19,5 @@ requests==2.9.1
 requests-cache==0.4.12
 shortuuid==0.4.3
 unidecode==0.04.21
+WebOb==1.8.3
 Werkzeug==0.14.1
