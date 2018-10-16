@@ -20,10 +20,10 @@ requests_cache.install_cache('my_requests_cache', expire_after=60*60*24*7)  # ex
 
 test_urls = [
     ("http://cnn.com", "", u'Anon, CNN - Breaking News, Latest News and Videos. Available at: http://cnn.com.'),
-    ("https://github.com/pvlib/pvlib-python", "10.5281/zenodo.50141", "Holmgren, W. et al., 2016. Pvlib-python: 0.3.1. Available at: https://doi.org/10.5281/zenodo.50141."),
+    ("https://github.com/pvlib/pvlib-python", "10.5281/zenodo.1420548", "Holmgren, W. et al., 2018. Pvlib/Pvlib-Python: V0.6.0. Available at: https://doi.org/10.5281/zenodo.1420548."),
     ("https://github.com/gcowan/hyperk", "10.5281/zenodo.160400", "Cowan, G., 2016. Gcowan/Hyperk: Mcp Data Processing Code. Available at: https://doi.org/10.5281/zenodo.160400."),
-    ("https://github.com/NSLS-II-XPD/xpdView", "10.5281/zenodo.60479", "Duff, C. & Kaming-Thanassi, J., 2016. XpdView: xpdView initial release. Available at: https://doi.org/10.5281/zenodo.60479."),
-    ("https://github.com/impactstory/depsy", "", "Anon, GitHub - Impactstory/depsy: Track the impact of research software.. Available at: https://github.com/impactstory/depsy."),
+    ("https://github.com/NSLS-II-XPD/xpdView", "10.5281/zenodo.60479", "Duff, C. & Kaming-Thanassi, J., 2016. Xpdview: Xpdview Initial Release. Available at: https://doi.org/10.5281/zenodo.60479."),
+    ("https://github.com/impactstory/depsy", "", "Impactstory, 2015. depsy. Available at: https://github.com/Impactstory/depsy."),
     ("https://github.com/abianchetti/blick", "", u"Bianchetti, A., 2012. <i>Determinación del diámetro pupilar ocular en tiempo real</i>."),
     ("https://github.com/jasonpriem/FeedVis", "", u"Priem, J., 2011. FeedVis. Available at: https://github.com/jasonpriem/FeedVis."),
     ("https://github.com/vahtras/loprop", "", u'Vahtras, O., 2014. Loprop For Dalton. Available at: https://doi.org/10.5281/zenodo.13276.'),
