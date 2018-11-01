@@ -2,16 +2,11 @@
  # -*- coding: utf-8 -*-
 
 import unittest
-from nose.tools import nottest
 from nose.tools import assert_equals
-from nose.tools import assert_not_equals
-from nose.tools import assert_true
-import requests
 from ddt import ddt, data
 import requests_cache
 
 from software import Software
-from app import libraries_to_mum
 
 requests_cache.install_cache('my_requests_cache', expire_after=60*60*24*7)  # expire_after is in seconds
 
@@ -35,7 +30,8 @@ test_urls = [
     ("http://fftw.org/", "", u'Frigo, M. & Johnson, S.G., 2005. The Design and Implementation of FFTW3. <i>Proceedings of the IEEE</i>, 93(2), pp.216–231. Available at: https://doi.org/10.1109/jproc.2004.840301.'),
     ("www.simvascular.org", "", u' 2015. SimVascular. Available at: https://github.com/SimVascular/SimVascular.'),
     ("arXiv:1802.02689", "", u'Borgman, C., Scharnhorst, A. & Golshan, M., 2018. Digital Data Archives as Knowledge Infrastructures: Mediating Data Sharing and Reuse. <i>arXiv</i>. Available at: http://arxiv.org/abs/1802.02689v1.'),
-    ("https://bioconductor.org/packages/release/bioc/html/edgeR.html", "", u'Yunshun Chen <Yuchen@Wehi.Edu.Au>, A., Davis McCarthy <Dmccarthy@Wehi.Edu.Au>, Xiaobei Zhou <Xiaobei.Zhou@Uzh.Ch>, Mark Robinson<Mark.Robinson@Imls.Uzh.Ch>, Gordon Smyth <Smyth@Wehi.Edu.Au>, 2017. edgeR. Available at: https://doi.org/10.18129/b9.bioc.edger.')
+    ("https://bioconductor.org/packages/release/bioc/html/edgeR.html", "", u'Yunshun Chen <Yuchen@Wehi.Edu.Au>, A., Davis McCarthy <Dmccarthy@Wehi.Edu.Au>, Xiaobei Zhou <Xiaobei.Zhou@Uzh.Ch>, Mark Robinson<Mark.Robinson@Imls.Uzh.Ch>, Gordon Smyth <Smyth@Wehi.Edu.Au>, 2017. edgeR. Available at: https://doi.org/10.18129/b9.bioc.edger.'),
+    ("https://slicer.org/", "", u"Punzo, D., 2015. SlicerAstro. Available at: https://github.com/Punzo/SlicerAstro.")
 
     # getting the number and page wrong at the moment
     # ("http://yt-project.org", "", "Turk, M.J. et al., 2010. Yt: A Multi-Code Analysis Toolkit For Astrophysical Simulation Data. The Astrophysical Journal Supplement Series, 192(1), p.9. Available at: http://dx.doi.org/10.1088/0067-0049/192/1/9."),
