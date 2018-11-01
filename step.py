@@ -592,7 +592,14 @@ class GithubApiResponseStep(Step):
         h = {"User-Agent": "CiteAs"}
         (login, token) = self.get_github_token_tuple()
 
-        repo_api_url = github_url.replace("github.com/", "api.github.com/repos/")
+        # clean github URL for API
+        # remove /wiki
+        repo_api_url = github_url.replace("/wiki", "")
+        # strip trailing /
+        if repo_api_url.endswith("/"):
+            repo_api_url = repo_api_url[:-1]
+        # switch to API URL
+        repo_api_url = repo_api_url.replace("github.com/", "api.github.com/repos/")
         # print "repo_api_url", repo_api_url
         r_repo = requests.get(repo_api_url, auth=(login, token), headers=h)
         r_repo = r_repo.json()
