@@ -801,12 +801,7 @@ class BibtexMetadataStep(MetadataStep):
                     # if k in ["volume", "year", "type", "title", "author", "eid", "doi", "container-title", "adsnote", "eprint", "page"]:
                     # print v.values()
                     # if k in ["booktitle", "address", "volume", "year", "type", "title", "author", "eid", "doi", "container-title", "adsnote", "eprint"]:
-                    if k in ["url", "note", "journal", "booktitle", "address", "volume", "issue", "number", "type", "title", "eid", "container-title", "adsnote", "eprint"]:
-                        if isinstance(v, basestring):
-                            metadata_dict[k] = v
-                        else:
-                            metadata_dict[k] = v.pop()
-                    if k in ["pages", "author"]:
+                    if k in ["url", "note", "journal", "booktitle", "address", "volume", "issue", "number", "type", "title", "eid", "container-title", "adsnote", "eprint", "pages", "author", "year"]:
                         metadata_dict[k] = v
                 except Exception:
                     print "ERROR on ", k, v
@@ -820,15 +815,12 @@ class BibtexMetadataStep(MetadataStep):
             metadata_dict["url"] = u"http://doi.org/{}".format(bib_dict[id]["doi"])
 
         # clean it up to get rid of {} around it, etc
-        year_matches = re.findall(u"year\s*=\s*.(\d{4}).", bibtext_string, re.IGNORECASE)
+        year_raw = str(metadata_dict['year'])
+        year_matches = re.findall('(\d{4})', year_raw)
         if year_matches:
             year = int(year_matches[0])
             metadata_dict["issued"] = {"date-parts": [[str(year)]]}
             metadata_dict["year"] = str(year)
-
-        # get rid of extra spaces
-        if "title" in metadata_dict and metadata_dict["title"]:
-            metadata_dict["title"] = re.sub("\s+", " ", metadata_dict["title"])
 
         self.content = metadata_dict
 
