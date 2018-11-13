@@ -341,10 +341,11 @@ class CranLibraryStep(Step):
         # print "set_content_url", input
         if input and u"cran.r-project.org/web/packages" in input:
             package_name = find_or_empty_string(u"cran.r-project.org/web/packages/(.*)/?", input)
-            if package_name:
-                package_name = package_name.split("/")[0]
-                self.content_url = u"https://cran.r-project.org/web/packages/{}".format(package_name)
-
+            self.content_url = u"https://cran.r-project.org/web/packages/{}".format(package_name)
+        elif input and  u"cran.r-project.org/package=" in input.lower():
+            package_name = find_or_empty_string(u"cran.r-project.org/package=(.*)/?", input)
+            package_name = package_name.split("/")[0]
+            self.content_url = u"https://cran.r-project.org/web/packages/{}".format(package_name)
 
 
 class CrossrefResponseMetadataStep(MetadataStep):
@@ -749,25 +750,13 @@ class CitationFileStep(Step):
 
 
 class CranCitationFileStep(CitationFileStep):
-    def set_content(self, github_main_page_text):
-        found_match = False
-        matches = re.findall(u"href=\"(.*blob/.*/citation.*?)\"", github_main_page_text, re.IGNORECASE)
-        if not matches:
-            matches = re.findall(u"href=\"(.*/inst)\"", github_main_page_text, re.IGNORECASE)
-            if matches:
-                inst_url = u"http://github.com{}".format(matches[0])
-                r = requests.get(inst_url)
-                inst_page_text = r.text
-                matches = re.findall(u"href=\"(.*blob/.*/citation.*?)\"", inst_page_text, re.IGNORECASE)
+    def set_content(self, cran_main_page_text):
+        cran_citation_url = self.parent_content_url + '/citation.html'
+        r = requests.get(cran_citation_url)
 
-        if matches:
-            filename_part = matches[0]
-            filename_part = filename_part.replace("/blob", "")
-            filename = u"https://raw.githubusercontent.com{}".format(filename_part)
-            self.content = get_webpage_text(filename)
-            self.content_url = filename
-
-
+        if r.status_code is 200:
+            self.content = r.text
+            self.content_url = cran_citation_url
 
 
 class GithubCitationFileStep(CitationFileStep):
