@@ -822,6 +822,11 @@ class BibtexMetadataStep(MetadataStep):
             metadata_dict["issued"] = {"date-parts": [[str(year)]]}
             metadata_dict["year"] = str(year)
 
+        metadata_dict["container-title"] = metadata_dict["note"]
+
+        metadata_dict["URL"] = metadata_dict["url"]
+        metadata_dict["type"] = "Manual"
+
         self.content = metadata_dict
 
 
