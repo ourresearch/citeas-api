@@ -5,8 +5,8 @@ import sys
 import os
 import requests
 import requests_cache
-import bugsnag
-from bugsnag.flask import handle_exceptions
+import sentry_sdk
+from sentry_sdk.integrations.flask import FlaskIntegration
 
 requests_cache.install_cache('my_requests_cache', expire_after=60*60*24*1)  # expire_after is in seconds
 requests_cache.clear()
@@ -40,11 +40,10 @@ for a_library in libraries_to_mum:
 
 requests.packages.urllib3.disable_warnings()
 
-app = Flask(__name__)
-
-# bugsnag for error reporting
-bugsnag.configure(
-  api_key = os.environ.get('BUGSNAG_API_KEY', ''),
-  project_root = app.root_path,
+# error reporting with sentry
+sentry_sdk.init(
+    dsn=os.environ.get('SENTRY_DSN'),
+    integrations=[FlaskIntegration()]
 )
-handle_exceptions(app)
+
+app = Flask(__name__)
