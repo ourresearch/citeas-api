@@ -503,12 +503,14 @@ class CodemetaResponseStep(Step):
             code_meta_exists = True
         self.content = {}
 
-        # example: https://raw.githubusercontent.com/FFTW/fftw3/master/codemeta.json
-        for doi_key in ["identifier", "citation"]:
-            if doi_key in data:
-                self.content["doi"] = clean_doi(data[doi_key], code_meta_exists)
-            else:
-                self.content["doi"] = None
+        if "id" in data:
+            self.content["doi"] = find_or_empty_string("zenodo\.org\/record\/(\d+)", data["id"])
+        elif "identifier" in data:
+            self.content["doi"] = clean_doi(data["identifier"], code_meta_exists)
+        elif "citation" in data:
+            self.content["doi"] = clean_doi(data["citation"], code_meta_exists)
+        else:
+            self.content["doi"] = None
 
         if self.content["doi"]:
             doi_url = u"https://doi.org/{}".format(self.content["doi"])
@@ -529,9 +531,13 @@ class CodemetaResponseStep(Step):
 
         self.content["author"] = []
         if "author" in data:
-            authors = data["author"]
-            for author in authors:
+            if type(data["author"]) is dict:
+                author = data["author"]
                 self.content["author"].append(author_name_as_dict('{} {}'.format(author["givenName"], author["familyName"])))
+            elif type(data["author"]) is list:
+                authors = data["author"]
+                for author in authors:
+                    self.content["author"].append(author_name_as_dict('{} {}'.format(author["givenName"], author["familyName"])))
 
         if "agents" in data:
             if isinstance(data["agents"], dict):
