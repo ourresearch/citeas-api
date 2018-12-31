@@ -976,6 +976,10 @@ class UserInputStep(Step):
             return input
         if input.lower().startswith("arxiv"):
             return input.lower()
+        # check for arxiv format that only contains ID, like 1812.02329
+        r = re.compile('\d{4}.\d{5}')
+        if r.match(input.lower()):
+            return "arxiv:" + input.lower()
         return u"http://{}".format(input)
 
     def set_content(self, input):
