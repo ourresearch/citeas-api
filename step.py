@@ -90,6 +90,10 @@ def extract_bibtex(text):
     if not text:
         return None
     try:
+        # catch non-bibtex entries such as @font-face
+        fields = re.findall(ur"(@\w+-?\w+)", text, re.MULTILINE | re.DOTALL)[0]
+        if fields == '@context' or fields == '@font-face' or fields=='@media':
+            return None
         result = re.findall(ur"(@.+{.+})", text, re.MULTILINE | re.DOTALL)[0]
     except IndexError:
         result = None
@@ -851,7 +855,9 @@ class BibtexStep(Step):
         ]
 
     def set_content(self, input):
-        if not u"@" in input:
+        # if u"@font-face" in input:
+        #     return
+        if u"@" not in input:
             return
         bibtex = extract_bibtex(input)
         if bibtex:
