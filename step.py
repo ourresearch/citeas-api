@@ -748,11 +748,18 @@ class CitationFileStep(Step):
 
     @property
     def starting_children(self):
-        return [
-            CrossrefResponseStep,
-            CitentryStep,
-            BibtexStep
-        ]
+        if self.host == 'cran':
+            return [
+                BibtexStep,
+                CrossrefResponseStep,
+                CitentryStep
+            ]
+        else:
+            return [
+                CrossrefResponseStep,
+                CitentryStep,
+                BibtexStep
+            ]
 
     def set_content_url(self, input):
         # in this case set_content does it, because it knows the url
