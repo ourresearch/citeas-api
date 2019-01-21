@@ -33,9 +33,9 @@ test_urls = [
     ("https://bioconductor.org/packages/release/bioc/html/edgeR.html", "", u'Yunshun Chen <Yuchen@Wehi.Edu.Au>, A., Davis McCarthy <Dmccarthy@Wehi.Edu.Au>, Xiaobei Zhou <Xiaobei.Zhou@Uzh.Ch>, Mark Robinson<Mark.Robinson@Imls.Uzh.Ch>, Gordon Smyth <Smyth@Wehi.Edu.Au>, 2017. edgeR. Available at: https://doi.org/10.18129/b9.bioc.edger.'),
     ("https://slicer.org/", "", u"Punzo, D., 2015. SlicerAstro. Available at: https://github.com/Punzo/SlicerAstro."),
     ("1807.09464", "", u"Duchene, J. et al., 2018. Specification-Based Protocol Obfuscation. <i>arXiv</i>. Available at: http://arxiv.org/abs/1807.09464v1."),
-    ("CRAN.R-project.org/package=surveillance", "", u"Meyer, S., Held, L. & HÃ¶hle, M., 2017. Spatio-Temporal Analysis of Epidemic Phenomena Using the R Package surveillance. <i>Journal of Statistical Software</i>, 77(11). Available at: http://doi.org/10.18637/jss.v077.i11."),
-    ("CRAN.R-project.org/package=changepoint", "", u"Killick, R., Haynes, K. & Eckley, I.A., 2016. changepoint: An R package for changepoint analysis. <i>R package version 2.2.2</i>. Available at: https://CRAN.R-project.org/package=changepoint."),
-    ("CRAN.R-project.org/package=tidyverse", "", " tidyverse: Easily Install and Load the 'Tidyverse'. <i>R package version 1.2.1.9000</i>. Available at: https://CRAN.R-project.org/package=tidyverse.")
+    ("CRAN.R-project.org/package=surveillance", "", u"Paul, M. et al., 2018. surveillance: Temporal and Spatio-Temporal Modeling and Monitoring of Epidemic. <i>R package version 1.16.2</i>. Available at: https://CRAN.R-project.org/package=surveillance."),
+    ("CRAN.R-project.org/package=changepoint", "", u"Haynes, K., Eckley, I. & Fearnhead, P., 2016. changepoint: Methods for Changepoint Detection. <i>R package version 2.2.2</i>. Available at: https://CRAN.R-project.org/package=changepoint."),
+    ("CRAN.R-project.org/package=tidyverse", "", "Wickham, H. & RStudio, 2017. tidyverse: Easily Install and Load the 'Tidyverse'. <i>R package version 1.2.1</i>. Available at: https://CRAN.R-project.org/package=tidyverse.")
 
     # getting the number and page wrong at the moment
     # ("http://yt-project.org", "", "Turk, M.J. et al., 2010. Yt: A Multi-Code Analysis Toolkit For Astrophysical Simulation Data. The Astrophysical Journal Supplement Series, 192(1), p.9. Available at: http://dx.doi.org/10.1088/0067-0049/192/1/9."),
