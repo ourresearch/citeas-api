@@ -330,8 +330,8 @@ class CranLibraryStep(Step):
     @property
     def starting_children(self):
         return [
-            CranCitationFileStep,
             CranDescriptionFileStep,
+            CranCitationFileStep,
             GithubRepoStep,
             CrossrefResponseStep,
             BibtexStep
@@ -713,18 +713,26 @@ class DescriptionFileStep(Step):
         ]
 
     def set_content_url(self, input):
-        # in this case set_content does it, because it knows the url
-        pass
+        self.parent_content_url = input
 
 class CranDescriptionFileStep(DescriptionFileStep):
-    def set_content(self, github_main_page_text):
-        matches = re.findall(u"href=\"(.*blob/.*/description.*?)\"", github_main_page_text, re.IGNORECASE)
-        if matches:
-            filename_part = matches[0]
-            filename_part = filename_part.replace("/blob", "")
-            filename = u"https://raw.githubusercontent.com{}".format(filename_part)
-            self.content = get_webpage_text(filename)
-            self.content_url = filename
+    def set_content(self, input):
+        filename = self.parent_content_url + '/DESCRIPTION'
+        # meta_dict = {}
+        page = get_webpage_text(filename)
+
+        # get package name
+        # r = re.search('Package: (.*)', page)
+        # package_name = r.group(1)
+        # meta_dict['package_name'] = package_name
+        #
+        # # get package title
+        # r = re.search('Title: (.*)', page)
+        # title = r.group(1)
+        # meta_dict['title'] = title
+
+        self.content = page
+        self.content_url = filename
 
 
 class GithubDescriptionFileStep(DescriptionFileStep):
@@ -940,6 +948,8 @@ class GithubCodemetaFileStep(Step):
             filename = u"https://raw.githubusercontent.com{}".format(filename_part)
             self.content = get_webpage_text(filename)
             self.content_url = filename
+
+        # get content from description
 
     def set_content_url(self, input):
         # in this case set_content does it, because it knows the url
