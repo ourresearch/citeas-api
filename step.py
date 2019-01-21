@@ -718,18 +718,7 @@ class DescriptionFileStep(Step):
 class CranDescriptionFileStep(DescriptionFileStep):
     def set_content(self, input):
         filename = self.parent_content_url + '/DESCRIPTION'
-        # meta_dict = {}
         page = get_webpage_text(filename)
-
-        # get package name
-        # r = re.search('Package: (.*)', page)
-        # package_name = r.group(1)
-        # meta_dict['package_name'] = package_name
-        #
-        # # get package title
-        # r = re.search('Title: (.*)', page)
-        # title = r.group(1)
-        # meta_dict['title'] = title
 
         self.content = page
         self.content_url = filename
