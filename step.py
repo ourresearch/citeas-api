@@ -330,8 +330,8 @@ class CranLibraryStep(Step):
     @property
     def starting_children(self):
         return [
-            CranDescriptionFileStep,
             CranCitationFileStep,
+            CranDescriptionFileStep,
             GithubRepoStep,
             CrossrefResponseStep,
             BibtexStep
@@ -676,16 +676,16 @@ class DescriptionMetadataStep(MetadataStep):
         package = find_or_empty_string(ur"Package: (.*)", text)
         title = find_or_empty_string(ur"Title: (.*)", text)
         metadata_dict["title"] = u"{}: {}".format(package, title)
-        person_list = re.findall(ur"person\((.*)\)", text)
-        authors = []
-        for person in person_list:
-            section = person.replace('"', '').split(",")
-            name = section[0]
-            last_name = section[1].strip()
-            if not last_name.startswith("role"):
-                name += u" {}".format(last_name)
-            authors.append(author_name_as_dict(name))
-        metadata_dict["author"] = authors
+        # person_list = re.findall(ur"person\((.*)\)", text)
+        # authors = []
+        # for person in person_list:
+        #     section = person.replace('"', '').split(",")
+        #     name = section[0]
+        #     last_name = section[1].strip()
+        #     if not last_name.startswith("role"):
+        #         name += u" {}".format(last_name)
+        #     authors.append(author_name_as_dict(name))
+        # metadata_dict["author"] = authors
 
         version = find_or_empty_string(ur"Version: (.*)", text)
         metadata_dict["note"] = u"R package version {}".format(version)
