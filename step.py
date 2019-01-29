@@ -904,12 +904,14 @@ class CitentryMetadataStep(MetadataStep):
         self.content["volume"] = find_or_empty_string(u"volume\s*=\s*\"(.*?)\"", citentry_content)
         self.content["number"] = find_or_empty_string(u"number\s*=\s*\"(.*?)\"", citentry_content)
         self.content["pages"] = find_or_empty_string(u"pages\s*=\s*\"(.*?)\"", citentry_content)
+        self.content["publisher"] = find_or_empty_string(u"publisher\s*=\s*\"(.*?)\"", citentry_content)
+        self.content["isbn"] = find_or_empty_string(u"isbn\s*=\s*\"(.*?)\"", citentry_content)
         self.content["container-title"] = find_or_empty_string(u"journal\s*=\s*\"(.*?)\"", citentry_content)
 
         self.content["year"] = find_or_empty_string(u"year\s*=\s*\"(.*?)\"", citentry_content)
         if self.content["year"]:
             self.content["issued"] = {"date-parts": [[self.content["year"]]]}
-        self.content["type"] = "misc"
+        self.content["type"] = find_or_empty_string(u"entry\s*=\s*\"(.*?)\"", citentry_content)
 
         self.content["author"] = []
         first_author = find_or_empty_string(u"author\s*=.*?\"(.*?)\"", citentry_content)

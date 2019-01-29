@@ -128,7 +128,10 @@ def export_contents(export_type, metadata_dict):
         response = u"\n".join(u"{} {}".format(k, v) for (k, v) in response_list)
         return response
     elif export_type == "bibtex":
-        response = "@article{ITEM1, "
+        if metadata_dict.get("type") == "book":
+            response = "@book{ITEM1, "
+        else:
+            response = "@article{ITEM1, "
 
         response_list = []
         response_list.append(("title", metadata_dict.get("title", "")))
@@ -137,7 +140,7 @@ def export_contents(export_type, metadata_dict):
         response_list.append(("number", metadata_dict.get("number", "")))
         response_list.append(("pages", metadata_dict.get("pages", "")))
         response_list.append(("year", metadata_dict.get("year", "")))
-        response_list.append(("publisher", metadata_dict.get("year", "")))
+        response_list.append(("publisher", metadata_dict.get("publisher", "")))
         for author in metadata_dict.get("author", []):
             response_list.append(("author", u", ".join([author["family"], author.get("given", "")])))
 
