@@ -88,14 +88,17 @@ def get_bibtex_url(text):
     return result
 
 def extract_bibtex(text):
+    valid_entry_types = ['article', 'book', 'booklet', 'conference', 'inbook', 'incollection', \
+                        'inproceedings', 'manual', 'mastersthesis', 'misc', 'phdthesis', 'proceedings', \
+                         'techreport', 'unpublished']
     if not text:
         return None
     try:
-        # catch non-bibtex entries such as @font-face
-        fields = re.findall(ur"(@\w+-?\w+)", text, re.MULTILINE | re.DOTALL)[0]
-        if fields == '@context' or fields == '@font-face' or fields=='@media':
+        entry_type = re.findall(ur"(@\w+-?\w+)", text, re.MULTILINE | re.DOTALL)[0]
+        myvar = entry_type[1:]
+        if entry_type[1:] not in valid_entry_types:
             return None
-        result = re.findall(ur"(@.+{.+})", text, re.MULTILINE | re.DOTALL)[0]
+        result = entry_type
     except IndexError:
         result = None
     return result
