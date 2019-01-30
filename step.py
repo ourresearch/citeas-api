@@ -1023,7 +1023,7 @@ class UserInputStep(Step):
         self.content = self.clean_input(input)
 
     def set_content_url(self, input):
-        cleaned = self.clean_input(input)
+        cleaned = self.content
         if cleaned.startswith("10."):
             cleaned = u"http://doi.org/{}".format(cleaned)
         if cleaned.startswith("arxiv"):
