@@ -7,6 +7,7 @@ import json5
 from io import StringIO
 from nameparser import HumanName
 from bibtex import BibTeX  # use local patched version instead of citeproc.source.bibtex
+from googlesearch import search
 import urllib2
 import urlparse
 import re
@@ -986,15 +987,34 @@ class UserInputStep(Step):
         ]
 
     def clean_input(self, input):
+        # doi
         if input.startswith("10.") or input.startswith("http"):
             return input
+
+        # arvix
         if input.lower().startswith("arxiv"):
             return input.lower()
-        # check for arxiv format that only contains ID, like 1812.02329
+
+        # arvix ID only, like 1812.02329
         r = re.compile('\d{4}.\d{5}')
         if r.match(input.lower()):
             return "arxiv:" + input.lower()
-        return u"http://{}".format(input)
+
+        # web page
+        url = u"http://{}".format(input)
+
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+        except requests.exceptions.RequestException:
+            pass
+        else:
+            return url
+
+        # google search
+        query = '{} software'.format(input)
+        for url in search(query, num=1, only_standard=True, stop=1):
+            return url
 
     def set_content(self, input):
         self.content = self.clean_input(input)
