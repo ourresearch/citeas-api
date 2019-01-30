@@ -1016,7 +1016,7 @@ class UserInputStep(Step):
 
         # google search
         query = '{} software'.format(input)
-        for url in search(query, num=1, only_standard=True, stop=1):
+        for url in search(query, only_standard=True, stop=1):
             return url
 
     def set_content(self, input):
