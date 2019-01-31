@@ -681,14 +681,23 @@ class DescriptionMetadataStep(MetadataStep):
         title = find_or_empty_string(ur"Title: (.*)", text)
         metadata_dict["title"] = u"{}: {}".format(package, title)
         person_list = re.findall(ur"person\((.*)", text)
+        role_list = re.findall(ur"role(.*)\)", text)
         authors = []
-        for person in person_list:
+        for person, roles in zip(person_list, role_list):
+            # parse name
             section = person.replace('"', '').split(",")
             name = section[0]
             last_name = section[1].strip()
             if not last_name.startswith("role"):
                 name += u" {}".format(last_name)
-            authors.append(author_name_as_dict(name))
+
+            # parse roles
+            roles = re.findall('"([^"]*)"', roles)
+
+            # if author ('aut') or creator ('cre') then add to author list
+            if 'aut' in roles or 'cre' in roles:
+                authors.append(author_name_as_dict(name))
+
         metadata_dict["author"] = authors
 
         version = find_or_empty_string(ur"Version: (.*)", text)
