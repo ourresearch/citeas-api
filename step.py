@@ -534,9 +534,6 @@ class CodemetaResponseStep(Step):
         if "name" in data:
             self.content["title"] = data["name"]
 
-        if "name" and "description" in data:
-            self.content["title"] = "{}: {}".format(data["name"], data["description"])
-
         self.content["author"] = []
         if "author" in data:
             if type(data["author"]) is dict:
