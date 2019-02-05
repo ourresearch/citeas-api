@@ -507,6 +507,8 @@ class CodemetaResponseStep(Step):
 
     def set_content(self, input):
         data = json5.loads(input)
+        if "citation" in data:
+            data = data["citation"]
         if data:
             code_meta_exists = True
         self.content = {}
@@ -515,8 +517,6 @@ class CodemetaResponseStep(Step):
             self.content["doi"] = find_or_empty_string("zenodo\.org\/record\/(\d+)", data["id"])
         elif "identifier" in data:
             self.content["doi"] = clean_doi(data["identifier"], code_meta_exists)
-        elif "citation" in data:
-            self.content["doi"] = clean_doi(data["citation"], code_meta_exists)
         else:
             self.content["doi"] = None
 
@@ -554,6 +554,9 @@ class CodemetaResponseStep(Step):
 
         if "dateCreated" in data:
             self.content["issued"] = {"date-parts": [[data["dateCreated"][0:4]]]}
+
+        if "version" in data:
+            self.content["version"] = data["version"]
 
         # should this be removed?
         # self.content["publisher"] = "DataCite"
