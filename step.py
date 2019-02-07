@@ -387,6 +387,9 @@ class CrossrefResponseStep(Step):
         return doi
 
     def extract_doi(self, text):
+        if text.startswith('https://zenodo.org/record/'):
+            text = get_webpage_text(text)
+
         badge_doi = find_or_empty_string("://zenodo.org/badge/doi/(.+?).svg", text)
         if badge_doi:
             return self.strip_junk_from_end_of_doi(badge_doi)
