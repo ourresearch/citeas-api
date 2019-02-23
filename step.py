@@ -281,6 +281,7 @@ class WebpageStep(Step):
     def starting_children(self):
         return [
             GithubRepoStep,
+            BitbucketRepoStep,
             CrossrefResponseStep,
             BibtexStep,
             WebpageMetadataStep
@@ -303,6 +304,7 @@ class PypiLibraryStep(Step):
     def starting_children(self):
         return [
             GithubRepoStep,
+            BitbucketRepoStep,
             CrossrefResponseStep,
             BibtexStep
         ]
@@ -337,6 +339,7 @@ class CranLibraryStep(Step):
             CranCitationFileStep,
             CranDescriptionFileStep,
             GithubRepoStep,
+            BitbucketRepoStep,
             CrossrefResponseStep,
             BibtexStep
         ]
@@ -661,6 +664,8 @@ class GithubRepoStep(Step):
             url = find_or_empty_string('\"(https?://github.com/.+?)\"', input)
             url = url.replace("/issues", "")
             url = url.replace("/new", "")
+            if 'sphinx' and 'theme' in url:
+                url = None
             if not url:
                 return
 
@@ -996,6 +1001,7 @@ class UserInputStep(Step):
             CrossrefResponseStep,
             ArxivResponseStep,
             GithubRepoStep,
+            BitbucketRepoStep,
             CranLibraryStep,
             PypiLibraryStep,
             WebpageStep
@@ -1042,3 +1048,31 @@ class UserInputStep(Step):
             id = cleaned.split(":", 1)[1]
             cleaned = u"http://arxiv.org/abs/{}".format(id)
         self.content_url = cleaned
+
+
+class BitbucketRepoStep(Step):
+    step_links = [("Bitbucket home page", "https://bitbucket.com/")]
+    step_intro = "Bitbucket is a web-based software version control repository hosting service."
+    step_more = "Attribution information is often included in software source code, which can be inspected for software projects that have posted their code on Bitbucket."
+
+    @property
+    def starting_children(self):
+        return [
+            ]
+
+    def set_content(self, input):
+        if not "bitbucket.org" in input:
+            return
+        if input.startswith("http"):
+            url = "/".join(input.split("/", 5)[0:5])
+        else:
+            url = find_or_empty_string('https?:\/\/bitbucket.org\/.*\/.*\/src', input)
+            if not url:
+                return
+
+        self.content = get_webpage_text(url)
+        self.content_url = url
+
+    def set_content_url(self, input):
+        # set in set_content
+        pass
