@@ -548,7 +548,10 @@ class CodemetaResponseStep(Step):
             elif type(data["author"]) is list:
                 authors = data["author"]
                 for author in authors:
-                    self.content["author"].append(author_name_as_dict('{} {}'.format(author["givenName"], author["familyName"])))
+                    try:
+                        self.content["author"].append(author_name_as_dict('{} {}'.format(author["givenName"], author["familyName"])))
+                    except UnicodeEncodeError:
+                        continue
 
         if "agents" in data:
             if isinstance(data["agents"], dict):
@@ -1058,6 +1061,7 @@ class BitbucketRepoStep(Step):
     @property
     def starting_children(self):
         return [
+            BitbucketCodemetaFileStep,
             BitbucketReadmeFileStep
             ]
 
@@ -1067,15 +1071,44 @@ class BitbucketRepoStep(Step):
         if input.startswith("http"):
             url = "/".join(input.split("/", 5)[0:5])
         else:
-            url = find_or_empty_string('https?:\/\/bitbucket.org\/.*\/.*\/src', input)
+            url = find_or_empty_string('\"(https?:\/\/bitbucket.org\/.*\/.*\/).*\"', input)
             if not url:
                 return
+            else:
+                url = "/".join(url.split("/")[0:5])
+                url = url + '/src'
 
         self.content = get_webpage_text(url)
         self.content_url = url
 
     def set_content_url(self, input):
         # set in set_content
+        pass
+
+
+class BitbucketCodemetaFileStep(Step):
+    step_links = [("CodeMeta user guide", "https://codemeta.github.io/user-guide/")]
+    step_intro = "CodeMeta is a new standard for the exchange of software metadata across repositories and organizations."
+    step_more = "The CodeMeta standard has many contributors spanning research, education, and engineering domains."
+
+    @property
+    def starting_children(self):
+        return [
+            CrossrefResponseStep,
+            CodemetaResponseStep
+        ]
+
+    def set_content(self, bitbucket_main_page_text):
+        matches = re.findall('href=\"(.*\/codemeta\.json.*?\?.*)\"', bitbucket_main_page_text, re.IGNORECASE)
+        if matches:
+            filename_part = matches[0]
+            filename = get_raw_bitbucket_url(filename_part)
+
+            self.content = get_webpage_text(filename)
+            self.content_url = filename
+
+    def set_content_url(self, input):
+        # in this case set_content does it, because it knows the url
         pass
 
 
