@@ -13,7 +13,7 @@ import urlparse
 import re
 from arxiv2bib import arxiv2bib_dict, is_valid
 
-from util import clean_doi
+from util import clean_doi, get_raw_bitbucket_url
 
 def step_configs():
     configs = {}
@@ -1058,6 +1058,7 @@ class BitbucketRepoStep(Step):
     @property
     def starting_children(self):
         return [
+            BitbucketReadmeFileStep
             ]
 
     def set_content(self, input):
@@ -1075,4 +1076,30 @@ class BitbucketRepoStep(Step):
 
     def set_content_url(self, input):
         # set in set_content
+        pass
+
+
+class BitbucketReadmeFileStep(Step):
+    step_links = [("README description", "https://confluence.atlassian.com/bitbucket/readme-content-221449772.html")]
+    step_intro = "A README file contains information about other files in a directory or archive of computer software."
+    step_more = "README files often contain requests for attribution."
+
+    @property
+    def starting_children(self):
+        return [
+            CrossrefResponseStep,
+            BibtexStep
+        ]
+
+    def set_content(self, bitbucket_main_page_text):
+        matches = re.findall('href=\"(.*\/readme.*?\?.*)\"', bitbucket_main_page_text, re.IGNORECASE)
+        if matches:
+            filename_part = matches[0]
+            filename = get_raw_bitbucket_url(filename_part)
+
+            self.content = get_webpage_text(filename)
+            self.content_url = filename
+
+    def set_content_url(self, input):
+        # in this case set_content does it, because it knows the url
         pass

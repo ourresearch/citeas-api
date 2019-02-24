@@ -403,3 +403,11 @@ def restart_dyno(app_name, dyno_name):
     process = app.processes[dyno_name]
     process.restart()
     print u"restarted {} on {}!".format(dyno_name, app_name)
+
+
+def get_raw_bitbucket_url(url):
+    s = url.split('/')
+    raw_url = u"https://bitbucket.org/{}/{}/raw/{}".format(s[1], s[2], '/'.join(s[4:]))
+    if raw_url.endswith('?at=default'):
+        raw_url = raw_url[:-11]
+    return raw_url
