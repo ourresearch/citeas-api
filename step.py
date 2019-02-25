@@ -1062,7 +1062,9 @@ class BitbucketRepoStep(Step):
     def starting_children(self):
         return [
             BitbucketCodemetaFileStep,
-            BitbucketReadmeFileStep
+            BitbucketCitationFileStep,
+            BitbucketReadmeFileStep,
+            BitbucketDescriptionFileStep
             ]
 
     def set_content(self, input):
@@ -1112,6 +1114,19 @@ class BitbucketCodemetaFileStep(Step):
         pass
 
 
+class BitbucketCitationFileStep(CitationFileStep):
+    def set_content(self, bitbucket_main_page_text):
+        found_match = False
+        matches = re.findall('href=\"(.*\/citation.*?)\"', bitbucket_main_page_text, re.IGNORECASE)
+
+        if matches:
+            filename_part = matches[0]
+            filename = get_raw_bitbucket_url(filename_part)
+
+            self.content = get_webpage_text(filename)
+            self.content_url = filename
+
+
 class BitbucketReadmeFileStep(Step):
     step_links = [("README description", "https://confluence.atlassian.com/bitbucket/readme-content-221449772.html")]
     step_intro = "A README file contains information about other files in a directory or archive of computer software."
@@ -1136,3 +1151,16 @@ class BitbucketReadmeFileStep(Step):
     def set_content_url(self, input):
         # in this case set_content does it, because it knows the url
         pass
+
+
+class BitbucketDescriptionFileStep(CitationFileStep):
+    def set_content(self, bitbucket_main_page_text):
+        found_match = False
+        matches = re.findall('href=\"(.*\/description.*?)\"', bitbucket_main_page_text, re.IGNORECASE)
+
+        if matches:
+            filename_part = matches[0]
+            filename = get_raw_bitbucket_url(filename_part)
+
+            self.content = get_webpage_text(filename)
+            self.content_url = filename
