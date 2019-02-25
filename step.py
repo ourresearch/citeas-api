@@ -127,6 +127,8 @@ def get_subject(class_name):
         return "R CITATION format"
     if "githubrepo" in name_lower:
         return "GitHub repository main page"
+    if "bitbucketrepo" in name_lower:
+        return "Bitbucket repository main page"
     if "githubapi" in name_lower:
         return "GitHub repository API response"
     if "cran" in name_lower:
