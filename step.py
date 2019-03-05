@@ -1074,6 +1074,7 @@ class BitbucketRepoStep(Step):
             return
         if input.startswith("http"):
             url = "/".join(input.split("/", 5)[0:5])
+            url = url + '/src'
         else:
             url = find_or_empty_string('\"(https?:\/\/bitbucket.org\/.*\/.*\/).*\"', input)
             if not url:
