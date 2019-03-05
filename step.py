@@ -402,7 +402,7 @@ class CrossrefResponseStep(Step):
         if zenodo_doi:
             return self.strip_junk_from_end_of_doi(zenodo_doi)
 
-        possible_dois = re.findall(u"""(10\..+)""", text, re.IGNORECASE|re.MULTILINE)
+        possible_dois = re.findall("10.\d{4,9}/[-._;()/:A-Z0-9]+", text, re.IGNORECASE|re.MULTILINE)
         for doi in possible_dois:
             if "10.5063/schema/codemeta-2.0" in doi.lower():
                 pass
