@@ -14,16 +14,16 @@ requests_cache.install_cache('my_requests_cache', expire_after=60*60*24*7)  # ex
 # nosetests --processes=10 test/
 
 test_urls = [
-    ("http://cnn.com", "", u'Anon, CNN - Breaking News, Latest News and Videos. Available at: http://cnn.com.'),
-    ("https://github.com/pvlib/pvlib-python", "10.5281/zenodo.1420548", "Holmgren, W. et al., 2018. Pvlib/Pvlib-Python: V0.6.0. Available at: https://doi.org/10.5281/zenodo.1420548."),
+    # ("http://cnn.com", "", u'Anon, CNN - Breaking News, Latest News and Videos. Available at: http://cnn.com.'),
+    ("https://github.com/pvlib/pvlib-python", "10.5281/zenodo.2554311", "Holmgren, W. et al., 2019. pvlib/pvlib-python: v0.6.1. Available at: https://doi.org/10.5281/zenodo.2554311."),
     ("https://github.com/gcowan/hyperk", "10.5281/zenodo.160400", "Cowan, G., 2016. Gcowan/Hyperk: Mcp Data Processing Code. Available at: https://doi.org/10.5281/zenodo.160400."),
     ("https://github.com/NSLS-II-XPD/xpdView", "10.5281/zenodo.60479", "Duff, C. & Kaming-Thanassi, J., 2016. Xpdview: Xpdview Initial Release. Available at: https://doi.org/10.5281/zenodo.60479."),
     ("https://github.com/impactstory/depsy", "", "Impactstory, 2015. depsy. Available at: https://github.com/Impactstory/depsy."),
-    ("https://github.com/abianchetti/blick", "", u"Bianchetti, A., 2012. <i>Determinación del diámetro pupilar ocular en tiempo real</i>."),
+    ("https://github.com/abianchetti/blick", "", u"Bianchetti, A., 2012. blick. Available at: https://github.com/abianchetti/blick."),
     ("https://github.com/jasonpriem/FeedVis", "", u"Priem, J., 2011. FeedVis. Available at: https://github.com/jasonpriem/FeedVis."),
     ("https://github.com/vahtras/loprop", "", u'Vahtras, O., 2014. Loprop For Dalton. Available at: https://doi.org/10.5281/zenodo.13276.'),
     ("https://github.com/cvitolo/r_BigDataAnalytics", "", u'Vitolo, C., 2015. R_Bigdataanalytics V.0.0.1. Available at: https://doi.org/10.5281/zenodo.15722.'),
-    ("https://github.com/nicholasricci/DDM_Framework", "", u"Marzolla, M., D'Angelo, G. & Mandrioli, M., 2013. A Parallel Data Distribution Management Algorithm."),
+    # ("https://github.com/nicholasricci/DDM_Framework", "", u"Marzolla, M., D'Angelo, G. & Mandrioli, M., 2013. A Parallel Data Distribution Management Algorithm."),
     ("http://yt-project.org", "", u"Turk, M.J. et al., 2010. Yt: A Multi-Code Analysis Toolkit For Astrophysical Simulation Data. <i>The Astrophysical Journal Supplement Series</i>, 192(1), p.9. Available at: https://doi.org/10.1088/0067-0049/192/1/9."),
     ("https://github.com/dfm/emcee", "", u'Foreman-Mackey, D. et al., 2013. emcee: The MCMC Hammer. <i>Publications of the Astronomical Society of the Pacific</i>, 125(925), pp.306\u2013312. Available at: https://doi.org/10.1086/670067.'),
     ("https://github.com/robintw/Py6S", "", u'Wilson, R.T., 2013. Py6S: A Python interface to the 6S radiative transfer model. <i>Computers & Geosciences</i>, 51, pp.166–171. Available at: https://doi.org/10.1016/j.cageo.2012.08.002.'),
@@ -33,9 +33,9 @@ test_urls = [
     ("https://bioconductor.org/packages/release/bioc/html/edgeR.html", "", u'Yunshun Chen <Yuchen@Wehi.Edu.Au>, A., Davis McCarthy <Dmccarthy@Wehi.Edu.Au>, Xiaobei Zhou <Xiaobei.Zhou@Uzh.Ch>, Mark Robinson<Mark.Robinson@Imls.Uzh.Ch>, Gordon Smyth <Smyth@Wehi.Edu.Au>, 2017. edgeR. Available at: https://doi.org/10.18129/b9.bioc.edger.'),
     ("https://slicer.org/", "", u"Punzo, D., 2015. SlicerAstro. Available at: https://github.com/Punzo/SlicerAstro."),
     ("1807.09464", "", u"Duchene, J. et al., 2018. Specification-Based Protocol Obfuscation. <i>arXiv</i>. Available at: http://arxiv.org/abs/1807.09464v1."),
-    ("CRAN.R-project.org/package=surveillance", "", u"Paul, M. et al., 2018. surveillance: Temporal and Spatio-Temporal Modeling and Monitoring of Epidemic. <i>R package version 1.16.2</i>. Available at: https://CRAN.R-project.org/package=surveillance."),
-    ("CRAN.R-project.org/package=changepoint", "", u"Haynes, K., Eckley, I. & Fearnhead, P., 2016. changepoint: Methods for Changepoint Detection. <i>R package version 2.2.2</i>. Available at: https://CRAN.R-project.org/package=changepoint."),
-    ("CRAN.R-project.org/package=tidyverse", "", "Wickham, H. & RStudio, 2017. tidyverse: Easily Install and Load the 'Tidyverse'. <i>R package version 1.2.1</i>. Available at: https://CRAN.R-project.org/package=tidyverse.")
+    ("CRAN.R-project.org/package=surveillance", "", u"Salmon, M., Schumacher, D. & H\xf6hle, M., 2016. Monitoring Count Time Series inR: Aberration Detection in Public Health Surveillance. <i>Journal of Statistical Software</i>, 70(10). Available at: https://doi.org/10.18637/jss.v070.i10."),
+    ("CRAN.R-project.org/package=changepoint", "", u"Killick, R., Haynes, K. & Eckley, I., 2016. changepoint: Methods for Changepoint Detection. <i>R package version 2.2.2</i>. Available at: https://CRAN.R-project.org/package=changepoint."),
+    ("CRAN.R-project.org/package=tidyverse", "", "Wickham, H., 2017. tidyverse: Easily Install and Load the 'Tidyverse'. <i>R package version 1.2.1</i>. Available at: https://CRAN.R-project.org/package=tidyverse.")
 
     # getting the number and page wrong at the moment
     # ("http://yt-project.org", "", "Turk, M.J. et al., 2010. Yt: A Multi-Code Analysis Toolkit For Astrophysical Simulation Data. The Astrophysical Journal Supplement Series, 192(1), p.9. Available at: http://dx.doi.org/10.1088/0067-0049/192/1/9."),
