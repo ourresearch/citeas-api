@@ -109,7 +109,7 @@ def export_contents(export_type, metadata_dict):
         response_list.append(("V1", metadata_dict.get("year", "")))
         response_list.append(("PB", metadata_dict.get("publisher", "")))
         for author in metadata_dict.get("author", []):
-            response_list.append(("A1", u", ".join([author["family"], author.get("given", "")])))
+            response_list.append(("A1", u", ".join([author.get("family", ""), author.get("given", "")])))
         response = u"\n".join(u"{} - {}".format(k, v) for (k, v) in response_list)
         response += "\nER - "
         return response
@@ -124,7 +124,7 @@ def export_contents(export_type, metadata_dict):
         response_list.append(("%I", metadata_dict.get("publisher", "")))
         response_list.append(("0%", "Journal Article"))
         for author in metadata_dict.get("author", []):
-            response_list.append(("%A", u", ".join([author["family"], author.get("given", "")])))
+            response_list.append(("%A", u", ".join([author.get("family", ""), author.get("given", "")])))
         response = u"\n".join(u"{} {}".format(k, v) for (k, v) in response_list)
         return response
     elif export_type == "bibtex":
@@ -150,7 +150,7 @@ def export_contents(export_type, metadata_dict):
         response_list.append(("year", metadata_dict.get("year", "")))
         response_list.append(("publisher", metadata_dict.get("publisher", "")))
         for author in metadata_dict.get("author", []):
-            response_list.append(("author", u", ".join([author["family"], author.get("given", "")])))
+            response_list.append(("author", u", ".join([author.get("family", ""), author.get("given", "")])))
 
         response += u",\n".join(u"{}={{{}}}".format(k, v) for (k, v) in response_list)
         response += "}"
