@@ -693,7 +693,16 @@ class DescriptionMetadataStep(MetadataStep):
         package = find_or_empty_string(ur"Package: (.*)", text)
         title = find_or_empty_string(ur"Title: (.*)", text)
         metadata_dict["title"] = u"{}: {}".format(package, title)
-        person_list = re.findall(ur"person\((.*)", text)
+
+        # authors
+        person_list = []
+        given_names = re.findall(ur"given\s?=\s?\"(.*)\"", text)
+        family_names = re.findall(ur"family\s?=\s?\"(.*)\"", text)
+        for given_name, family_name in zip(given_names, family_names):
+            person_list.append(family_name + ", " + given_name)
+
+        if not person_list:
+            person_list = re.findall(ur"person\((.*)", text)
         role_list = re.findall(ur"role(.*)\)", text)
         authors = []
         for person, roles in zip(person_list, role_list):
