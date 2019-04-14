@@ -85,6 +85,14 @@ def get_bibtex_url(text):
         result = re.findall(u'(http"?\'?[^"\']*data_type=BIBTEX[^"\']*)', text, re.MULTILINE | re.DOTALL)[0]
     except IndexError:
         result = None
+
+    # vhub bibtex pattern
+    try:
+        result = re.findall(u'(\/resources\/.*\/citation\?citationFormat=bibtex.*no_html=1&.*rev=\d*)', text, re.MULTILINE)[0]
+        result = 'https://vhub.org' + result
+    except IndexError:
+        result = None
+
     return result
 
 def extract_bibtex(text):
@@ -896,8 +904,6 @@ class BibtexStep(Step):
     def set_content(self, input):
         # if u"@font-face" in input:
         #     return
-        if u"@" not in input:
-            return
         bibtex = extract_bibtex(input)
         if bibtex:
             self.content = bibtex
@@ -905,8 +911,11 @@ class BibtexStep(Step):
             my_bibtex_url = get_bibtex_url(input)
             if my_bibtex_url:
                 r = requests.get(my_bibtex_url)
-                self.content = extract_bibtex(r.text)
-                # self.content_url = my_bibtex_url
+                if my_bibtex_url.startswith('https://vhub.org'):
+                    self.content = r.text
+                    self.content_url = my_bibtex_url.replace('amp;', '')
+                else:
+                    self.content = extract_bibtex(r.text)
 
 
 class CitentryStep(Step):
