@@ -7,12 +7,11 @@ from flask import jsonify
 import json
 import os
 import sys
-import requests
-import re
 from software import Software
 from step import step_configs
 
 from app import app
+
 
 def json_dumper(obj):
     """
@@ -65,33 +64,9 @@ def after_request_stuff(resp):
     return resp
 
 
-
-# FUNCTIONS. move this to another file later.
-#
-######################################################################################
-
-
-
-def print_ip():
-    user_agent = request.headers.get('User-Agent')
-    # from http://stackoverflow.com/a/12771438/596939
-    if request.headers.getlist("X-Forwarded-For"):
-       ip = request.headers.getlist("X-Forwarded-For")[0]
-    else:
-       ip = request.remote_addr
-    print u"calling from IP {ip}. User-Agent is '{user_agent}'.".format(
-        ip=ip,
-        user_agent=user_agent
-    )
-
-
-
-
 # ENDPOINTS
 #
 ######################################################################################
-
-
 @app.route('/', methods=["GET"])
 def index_endpoint():
     return jsonify({
@@ -101,12 +76,12 @@ def index_endpoint():
     })
 
 
-
 @app.route("/product/<path:id>", methods=["GET"])
 def citeas_product_get(id):
     my_software = Software(id)
     my_software.find_metadata()
     return jsonify(my_software.to_dict())
+
 
 @app.route("/steps", methods=["GET"])
 @app.route("/steps/", methods=["GET"])
@@ -114,26 +89,6 @@ def citeas_step_configs():
     return jsonify(step_configs())
 
 
-
-
-
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=True, threaded=True)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
