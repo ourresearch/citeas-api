@@ -27,6 +27,25 @@ def get_author_list(data_author):
     return author_list
 
 
+def build_bibtex_author_list(authors):
+    author_list = ''
+    for i, author in enumerate(authors):
+        if i > 0:
+            author_list += ' and '
+
+        if author.get("family"):
+            author_list += author.get("family")
+
+        if author.get("given"):
+            author_list += ', ' + author.get("given")
+
+    return author_list
+
+
+def bibtex_pages_format(pages):
+    return pages.replace('-', '--')
+
+
 def get_bib_source_from_dict(data):
 
     data["id"] = "ITEM-1"
@@ -145,11 +164,11 @@ def export_contents(export_type, metadata_dict):
             response_list.append(("volume", metadata_dict.get("volume", "")))
             response_list.append(("number", metadata_dict.get("number", "")))
 
-        response_list.append(("pages", metadata_dict.get("page", "")))
+        response_list.append(("pages", bibtex_pages_format(metadata_dict.get("page", ""))))
         response_list.append(("year", metadata_dict.get("year", "")))
         response_list.append(("publisher", metadata_dict.get("publisher", "")))
-        for author in metadata_dict.get("author", []):
-            response_list.append(("author", u", ".join([author.get("family", ""), author.get("given", "")])))
+        author_list = build_bibtex_author_list(metadata_dict.get("author", []))
+        response_list.append(("author", author_list))
 
         response += u",\n".join(u"{}={{{}}}".format(k, v) for (k, v) in response_list)
         response += "}"
