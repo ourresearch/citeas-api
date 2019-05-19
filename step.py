@@ -592,7 +592,9 @@ class GithubApiResponseMetadataStep(MetadataStep):
         metadata_dict["author"] = [author_name_as_dict(input_dict["user"]["name"])]
         metadata_dict["publisher"] = "GitHub repository"
         metadata_dict["URL"] = input_dict["repo"]["html_url"]
-        metadata_dict["issued"] = {"date-parts": [[input_dict["repo"]["created_at"][0:4]]]}
+        year = [[input_dict["repo"]["created_at"][0:4]]]
+        metadata_dict["issued"] = {"date-parts": year}
+        metadata_dict["year"] = year
         metadata_dict["type"] = "software"
 
         self.content = metadata_dict

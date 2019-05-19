@@ -135,7 +135,6 @@ def export_contents(export_type, metadata_dict):
 
         response_list = []
 
-
         response_list.append(("title", metadata_dict.get("title", "")))
 
         # handle book type differently
@@ -146,7 +145,7 @@ def export_contents(export_type, metadata_dict):
             response_list.append(("volume", metadata_dict.get("volume", "")))
             response_list.append(("number", metadata_dict.get("number", "")))
 
-        response_list.append(("pages", metadata_dict.get("pages", "")))
+        response_list.append(("pages", metadata_dict.get("page", "")))
         response_list.append(("year", metadata_dict.get("year", "")))
         response_list.append(("publisher", metadata_dict.get("publisher", "")))
         for author in metadata_dict.get("author", []):
@@ -220,6 +219,13 @@ class Software(object):
     @property
     def metadata(self):
         metadata_step = self.completed_steps[-1]
+        if metadata_step.content.get('issued'):
+            try:
+                year = metadata_step.content['issued']['date-parts'][0][0]
+            except IndexError:
+                year = ''
+            metadata_step.content['year'] = year
+
         metadata_dict = metadata_step.content
 
         for step in reversed(self.completed_steps):
