@@ -159,6 +159,11 @@ def export_contents(export_type, metadata_dict):
         # handle book type differently
         if metadata_dict.get("type") == "book":
             response_list.append(("isbn", metadata_dict.get("isbn", "")))
+        elif metadata_dict.get("type") == "software":
+            response_list.append(("url", metadata_dict.get("URL", "")))
+            response_list.append(("journal", metadata_dict.get("container-title", "")))
+            response_list.append(("volume", metadata_dict.get("volume", "")))
+            response_list.append(("number", metadata_dict.get("number", "")))
         else:
             response_list.append(("journal", metadata_dict.get("container-title", "")))
             response_list.append(("volume", metadata_dict.get("volume", "")))
