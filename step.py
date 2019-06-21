@@ -361,7 +361,7 @@ class CranLibraryStep(Step):
     def set_content_url(self, input):
         # print "set_content_url", input
         if input and u"cran.r-project.org/web/packages" in input:
-            package_name = find_or_empty_string(u"cran.r-project.org/web/packages/(.*)/?", input)
+            package_name = find_or_empty_string(u"cran.r-project.org/web/packages/(\w+)/", input)
             self.content_url = u"https://cran.r-project.org/web/packages/{}".format(package_name)
         elif input and  u"cran.r-project.org/package=" in input.lower():
             package_name = find_or_empty_string(u"cran.r-project.org/package=(.*)/?", input)
