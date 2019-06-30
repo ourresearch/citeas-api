@@ -57,11 +57,12 @@ def get_bib_source_from_dict(data):
     if not "type" in data:
         data["type"] = "misc"
 
-    for k, val in data.iteritems():
-        if val and (k in ["title", "container-title"]):
-            num_upper = sum([1 for c in val if c.isupper()])
-            if num_upper > 0.75*len(val):
-                data[k] = val.title()
+    if data["type"] is not "software":
+        for k, val in data.iteritems():
+            if val and (k in ["title", "container-title"]):
+                num_upper = sum([1 for c in val if c.isupper()])
+                if num_upper > 0.75*len(val):
+                    data[k] = val.title()
 
     if "page" in data and data["page"]=="-":
         del data["page"]
