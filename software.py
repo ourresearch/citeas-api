@@ -89,6 +89,11 @@ def display_citation(bibtex_metadata, bib_stylename, formatter=formatter.html):
     citation_parts = u"".join(bibliography.bibliography()[0])
     citation_text = u"".join(citation_parts)
 
+    if bib_stylename is 'apa':
+        # strip extra periods and spaces that can occur in APA format
+        citation_text = citation_text.replace('..', '.')
+        citation_text = citation_text.replace('  ', ' ')
+
     html_parser = HTMLParser()
     citation_text = html_parser.unescape(citation_text)
 
