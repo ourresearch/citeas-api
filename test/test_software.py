@@ -36,8 +36,9 @@ test_urls = [
     ("CRAN.R-project.org/package=surveillance", "", u"Salmon, M., Schumacher, D. & H\xf6hle, M., 2016. Monitoring Count Time Series inR: Aberration Detection in Public Health Surveillance. <i>Journal of Statistical Software</i>, 70(10). Available at: https://doi.org/10.18637/jss.v070.i10."),
     ("CRAN.R-project.org/package=changepoint", "", u"Killick, R., Haynes, K. & Eckley, I., 2016. changepoint: Methods for Changepoint Detection. <i>R package version 2.2.2</i>. Available at: https://CRAN.R-project.org/package=changepoint."),
     ("CRAN.R-project.org/package=tidyverse", "", "Wickham, H., 2017. tidyverse: Easily Install and Load the 'Tidyverse'. <i>R package version 1.2.1</i>. Available at: https://CRAN.R-project.org/package=tidyverse."),
-    ("https://vhub.org/resources/puffin", "", "Bursik, M.I. et al., 2013. puffin. Available at: https://vhub.org/resources/puffin.")
-
+    ("https://vhub.org/resources/puffin", "", "Bursik, M.I. et al., 2013. puffin. Available at: https://vhub.org/resources/puffin."),
+    ("https://cran.r-project.org/web/packages/BDP2/", "", "Kopp-Schneider, A., Wiesenfarth, M. & Abel, U., 2018. BDP2: Bayesian Adaptive Designs for Phase II Trials with Binary. <i>R package version 0.1.3</i>. Available at: https://CRAN.R-project.org/package=BDP2."),
+    ("https://cran.r-project.org/web/packages/rowr", "", "Varrichio, C., 2016. rowr: Row-Based Functions for R Objects. <i>R package version 1.1.3</i>. Available at: https://CRAN.R-project.org/package=rowr.")
     # getting the number and page wrong at the moment
     # ("http://yt-project.org", "", "Turk, M.J. et al., 2010. Yt: A Multi-Code Analysis Toolkit For Astrophysical Simulation Data. The Astrophysical Journal Supplement Series, 192(1), p.9. Available at: http://dx.doi.org/10.1088/0067-0049/192/1/9."),
 

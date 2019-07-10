@@ -2,13 +2,11 @@ import requests
 import re
 import os
 import json
-import datetime
 import json5
 from io import StringIO
 from nameparser import HumanName
 from bibtex import BibTeX  # use local patched version instead of citeproc.source.bibtex
 from googlesearch import search
-import urllib2
 import urlparse
 import re
 from arxiv2bib import arxiv2bib_dict, is_valid
@@ -728,6 +726,14 @@ class DescriptionMetadataStep(MetadataStep):
 
             # if author ('aut') or creator ('cre') then add to author list
             if 'aut' in roles or 'cre' in roles:
+                authors.append(author_name_as_dict(name))
+
+        if not authors:
+            # try format like 'Author: Annette Kopp-Schneider, Manuel Wiesenfarth, Ulrich Abel'
+            raw_authors = re.findall(ur"Author: (.*)", text)
+            raw_authors = raw_authors[0].split(',')
+            for name in raw_authors:
+                name = name.split('<')[0].strip()  # remove email addresses
                 authors.append(author_name_as_dict(name))
 
         metadata_dict["author"] = authors
