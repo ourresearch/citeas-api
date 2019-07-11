@@ -633,7 +633,13 @@ class GithubApiResponseStep(Step):
         if repo_api_url.endswith("/"):
             repo_api_url = repo_api_url[:-1]
         # switch to API URL
-        repo_api_url = repo_api_url.replace("github.com/", "api.github.com/repos/")
+        if "gist.github.com" in repo_api_url:
+            # repos/rxaviers/7360908
+            # https://api.github.com/gists/7360908
+            gist_id = find_or_empty_string("gist.github.com\/\w+\/(\w+|\d+)", repo_api_url)
+            repo_api_url = "https://api.github.com/gists/{}".format(gist_id)
+        else:
+            repo_api_url = repo_api_url.replace("github.com/", "api.github.com/repos/")
         # print "repo_api_url", repo_api_url
         r_repo = requests.get(repo_api_url, auth=(login, token), headers=h)
         r_repo = r_repo.json()
@@ -1016,6 +1022,7 @@ class GithubReadmeFileStep(Step):
         if matches:
             filename_part = matches[0]
             filename_part = filename_part.replace("/blob", "")
+            filename_part = filename_part.replace("https://github.com", "")
             filename = u"https://raw.githubusercontent.com{}".format(filename_part)
             self.content = get_webpage_text(filename)
             self.content_url = filename
