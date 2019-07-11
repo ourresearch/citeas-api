@@ -586,7 +586,12 @@ class CodemetaResponseStep(Step):
 class GithubApiResponseMetadataStep(MetadataStep):
     def set_content(self, input_dict):
         metadata_dict = {}
-        metadata_dict["title"] = input_dict["repo"].get("name", input_dict["repo"]["html_url"])
+        if "gist.github.com" in input_dict["repo"]["html_url"]:
+            for key, value in input_dict["repo"]["files"].iteritems():
+                file_name = key
+            metadata_dict["title"] = file_name
+        else:
+            metadata_dict["title"] = input_dict["repo"].get("name", input_dict["repo"]["html_url"])
         metadata_dict["author"] = [author_name_as_dict(input_dict["user"]["name"])]
         metadata_dict["publisher"] = "GitHub repository"
         metadata_dict["URL"] = input_dict["repo"]["html_url"]
@@ -634,13 +639,10 @@ class GithubApiResponseStep(Step):
             repo_api_url = repo_api_url[:-1]
         # switch to API URL
         if "gist.github.com" in repo_api_url:
-            # repos/rxaviers/7360908
-            # https://api.github.com/gists/7360908
             gist_id = find_or_empty_string("gist.github.com\/\w+\/(\w+|\d+)", repo_api_url)
             repo_api_url = "https://api.github.com/gists/{}".format(gist_id)
         else:
             repo_api_url = repo_api_url.replace("github.com/", "api.github.com/repos/")
-        # print "repo_api_url", repo_api_url
         r_repo = requests.get(repo_api_url, auth=(login, token), headers=h)
         r_repo = r_repo.json()
         try:
@@ -649,7 +651,6 @@ class GithubApiResponseStep(Step):
             print u"bad github request"
             return
 
-        # print "user_api_url", user_api_url
         r_login = requests.get(user_api_url, auth=(login, token), headers=h)
         self.content["repo"] = r_repo
         self.content["user"] = r_login.json()

@@ -39,7 +39,7 @@ test_urls = [
     ("https://vhub.org/resources/puffin", "", "Bursik, M.I. et al., 2013. puffin. Available at: https://vhub.org/resources/puffin."),
     ("https://cran.r-project.org/web/packages/BDP2/", "", "Kopp-Schneider, A., Wiesenfarth, M. & Abel, U., 2018. BDP2: Bayesian Adaptive Designs for Phase II Trials with Binary. <i>R package version 0.1.3</i>. Available at: https://CRAN.R-project.org/package=BDP2."),
     ("https://cran.r-project.org/web/packages/rowr", "", "Varrichio, C., 2016. rowr: Row-Based Functions for R Objects. <i>R package version 1.1.3</i>. Available at: https://CRAN.R-project.org/package=rowr."),
-    ("https://gist.github.com/rxaviers/7360908", "", "de Souza, R., 2013. https://gist.github.com/7360908. Available at: https://gist.github.com/7360908.")
+    ("https://gist.github.com/rxaviers/7360908", "", "de Souza, R., 2013. gistfile1.md. Available at: https://gist.github.com/7360908.")
     # getting the number and page wrong at the moment
     # ("http://yt-project.org", "", "Turk, M.J. et al., 2010. Yt: A Multi-Code Analysis Toolkit For Astrophysical Simulation Data. The Astrophysical Journal Supplement Series, 192(1), p.9. Available at: http://dx.doi.org/10.1088/0067-0049/192/1/9."),
 
