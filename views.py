@@ -71,7 +71,7 @@ def after_request_stuff(resp):
 def index_endpoint():
     return jsonify({
         "version": "0.1",
-        "documentation_url": "none yet",
+        "documentation_url": "http://citeas.org/api",
         "msg": "Don't panic"
     })
 
