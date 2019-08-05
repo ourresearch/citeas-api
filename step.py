@@ -846,6 +846,8 @@ class GithubCitationFileStep(CitationFileStep):
         if matches:
             filename_part = matches[0]
             filename_part = filename_part.replace("/blob", "")
+            filename_part = filename_part.replace("https://github.com", "")
+            filename_part = filename_part.replace("http://github.com", "")
             filename = u"https://raw.githubusercontent.com{}".format(filename_part)
             self.content = get_webpage_text(filename)
             self.content_url = filename
