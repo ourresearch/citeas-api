@@ -1014,8 +1014,7 @@ class GithubReadmeFileStep(Step):
     @property
     def starting_children(self):
         return [
-            CrossrefResponseStep,
-            BibtexStep
+            CrossrefResponseStep
         ]
 
     def set_content(self, github_main_page_text):
