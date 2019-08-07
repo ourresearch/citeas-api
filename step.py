@@ -271,13 +271,14 @@ class MetadataStep(Step):
 class WebpageMetadataStep(MetadataStep):
     def set_content(self, input):
         self.content = {}
+        input = input.replace("\n", " ").replace("\r", "")
         title = find_or_empty_string(u"<title>(.+?)</title>", input)
         if not title:
             title = find_or_empty_string(u"<h1>(.+?)</h1>", input)
         if not title:
             title = find_or_empty_string(u"<h2>(.+?)</h2>", input)
         self.content["type"] = "misc"
-        self.content["title"] = title
+        self.content["title"] = title.lstrip(" ").rstrip(" ")
         self.content["URL"] = self.content_url
 
 
