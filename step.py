@@ -76,6 +76,9 @@ def find_or_empty_string(pattern, text):
         response = ""
     return response
 
+def strip_new_lines(text):
+    return text.replace("\n", " ").replace("\r", "")
+
 def get_bibtex_url(text):
     if not text:
         return None
@@ -271,7 +274,7 @@ class MetadataStep(Step):
 class WebpageMetadataStep(MetadataStep):
     def set_content(self, input):
         self.content = {}
-        input = input.replace("\n", " ").replace("\r", "")
+        input = strip_new_lines(input)
         title = find_or_empty_string(u"<title>(.+?)</title>", input)
         if not title:
             title = find_or_empty_string(u"<h1>(.+?)</h1>", input)
@@ -1027,12 +1030,20 @@ class GithubReadmeFileStep(Step):
             filename_part = filename_part.replace("/blob", "")
             filename_part = filename_part.replace("https://github.com", "")
             filename = u"https://raw.githubusercontent.com{}".format(filename_part)
-            self.content = get_webpage_text(filename)
+            readme_text = get_webpage_text(filename)
+            self.content = self.strip_dependencies(readme_text)
             self.content_url = filename
 
     def set_content_url(self, input):
         # in this case set_content does it, because it knows the url
         pass
+
+    @staticmethod
+    def strip_dependencies(readme_text):
+        readme_text = strip_new_lines(readme_text)
+        dependencies = find_or_empty_string('# Dependencies #(.+)#?.+#?', readme_text)
+        readme_text = readme_text.replace(dependencies, '')
+        return readme_text
 
 
 class UserInputStep(Step):
