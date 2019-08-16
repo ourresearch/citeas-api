@@ -207,6 +207,7 @@ class BibTeX(BibliographySource):
             string_cls = NoCase if fixed_case else String
             return string_cls(unlatexed)
 
+        title = str(title)
         title = title.replace('\n','')
         title = " ".join(title.split())
 

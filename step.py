@@ -107,7 +107,7 @@ def extract_bibtex(text):
         myvar = entry_type[1:]
         if entry_type[1:] not in valid_entry_types:
             return None
-        result = entry_type
+        result = find_or_empty_string('@\w+-?\w+{.*}', text)
     except IndexError:
         result = None
     return result
@@ -903,7 +903,8 @@ class BibtexMetadataStep(MetadataStep):
         if "note" in metadata_dict:
             metadata_dict["container-title"] = metadata_dict["note"]
 
-        metadata_dict["URL"] = metadata_dict["url"]
+        if "URL" in metadata_dict:
+            metadata_dict["URL"] = metadata_dict["url"]
         metadata_dict["type"] = "Manual"
 
         self.content = metadata_dict
