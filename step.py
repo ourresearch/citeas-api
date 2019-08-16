@@ -903,8 +903,7 @@ class BibtexMetadataStep(MetadataStep):
         if "note" in metadata_dict:
             metadata_dict["container-title"] = metadata_dict["note"]
 
-        if "URL" in metadata_dict:
-            metadata_dict["URL"] = metadata_dict["url"]
+        metadata_dict["URL"] = metadata_dict["url"]
         metadata_dict["type"] = "Manual"
 
         self.content = metadata_dict
