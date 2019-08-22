@@ -41,8 +41,8 @@ def random_doi():
     """
     Returns a random DOI.
     """
-    r = requests.get('https://api.test.datacite.org/dois?random=true&page[size]=1')
-    return r.json()['data'][0]['id']
+    r = requests.get('https://api.crossref.org/works?sample=1')
+    return r.json()['message']['items'][0]['DOI']
 
 
 def random_github_url():
