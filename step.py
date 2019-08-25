@@ -836,6 +836,10 @@ class CranCitationFileStep(CitationFileStep):
 
 
 class GithubCitationFileStep(CitationFileStep):
+    step_links = [("Citation File Format (CFF)", "https://citation-file-format.github.io/")]
+    step_intro = "Software repositories sometimes includes a plain text citation file named 'CITATION' or 'CITATION.cff' " \
+                 "that includes the author, software title, and other additional information."
+    step_more = "The CITATION file can be parsed to extract this attribution information."
     def set_content(self, github_main_page_text):
         found_match = False
         matches = re.findall(u"href=\"(.*blob/.*/citation.*?)\"", github_main_page_text, re.IGNORECASE)
