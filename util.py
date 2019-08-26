@@ -411,3 +411,13 @@ def get_raw_bitbucket_url(url):
     if raw_url.endswith('?at=default'):
         raw_url = raw_url[:-11]
     return raw_url
+
+
+def get_all_subclasses(cls):
+    all_subclasses = []
+
+    for subclass in cls.__subclasses__():
+        all_subclasses.append(subclass)
+        all_subclasses.extend(get_all_subclasses(subclass))
+
+    return all_subclasses

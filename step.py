@@ -1,22 +1,25 @@
-import requests
-import re
 import os
-import json
-import json5
-from io import StringIO
-from nameparser import HumanName
-from bibtex import BibTeX  # use local patched version instead of citeproc.source.bibtex
-from googlesearch import search
-import urlparse
 import re
-from arxiv2bib import arxiv2bib_dict, is_valid
+import urlparse
+from io import StringIO
 
-from util import clean_doi, get_raw_bitbucket_url
+import json5
+import requests
+from arxiv2bib import arxiv2bib_dict, is_valid
+from googlesearch import search
+from nameparser import HumanName
+
+from bibtex import \
+    BibTeX  # use local patched version instead of citeproc.source.bibtex
+from util import clean_doi, get_all_subclasses, get_raw_bitbucket_url
+
 
 def step_configs():
     configs = {}
-    for step_class in Step.__subclasses__():
-        configs[step_class.__name__] = step_class.config_dict()
+    subclasses = get_all_subclasses(Step)
+    for step_class in subclasses:
+        if step_class.step_intro:
+            configs[step_class.__name__] = step_class.config_dict()
     return configs
 
 
@@ -147,6 +150,7 @@ def get_subject(class_name):
     if "webpage" in name_lower:
         return "webpage"
     return None
+
 
 class Step(object):
     step_links = None
@@ -661,9 +665,6 @@ class GithubApiResponseStep(Step):
         self.content_url = repo_api_url
 
 
-
-
-
 class GithubRepoStep(Step):
     step_links = [("GitHub home page", "http://github.com/")]
     step_intro = "GitHub is a Web-based software version control repository hosting service."
@@ -699,8 +700,6 @@ class GithubRepoStep(Step):
     def set_content_url(self, input):
         # set in set_content
         pass
-
-
 
 
 class DescriptionMetadataStep(MetadataStep):
@@ -763,6 +762,7 @@ class DescriptionMetadataStep(MetadataStep):
         metadata_dict["type"] = "Manual"
         self.content = metadata_dict
 
+
 class DescriptionFileStep(Step):
     step_links = [("R DESCRIPTION file specifications", "http://r-pkgs.had.co.nz/description.html")]
     step_intro = "Software written in R often includes a source file called 'DESCRIPTION' that specifies the project's title and authors."
@@ -776,6 +776,7 @@ class DescriptionFileStep(Step):
 
     def set_content_url(self, input):
         self.parent_content_url = input
+
 
 class CranDescriptionFileStep(DescriptionFileStep):
     def set_content(self, input):
@@ -912,8 +913,6 @@ class BibtexMetadataStep(MetadataStep):
         metadata_dict["type"] = "Manual"
 
         self.content = metadata_dict
-
-
 
 
 class BibtexStep(Step):
