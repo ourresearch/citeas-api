@@ -476,7 +476,11 @@ class ArxivResponseStep(Step):
         ]
 
     def set_content(self, full_input):
-        input = full_input.split(":", 1)[1].lower()
+        try:
+            input = full_input.split(":", 1)[1].lower()
+        except IndexError:
+            return
+
         if not is_valid(input):
             return
 
@@ -1065,7 +1069,7 @@ class UserInputStep(Step):
 
     def clean_input(self, input):
         # doi
-        if input.startswith("10.") or input.startswith("http"):
+        if input.startswith("10.") or input.startswith(("http://", "https://")):
             return input
 
         # arvix
