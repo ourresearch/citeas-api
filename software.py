@@ -70,6 +70,10 @@ def get_bib_source_from_dict(data):
     if "bibtex" in data:
         del data["bibtex"]
 
+    if "issued" in data:
+        if data["issued"]["date-parts"][0][0] is None:
+            del data["issued"]
+
     bib_source = CiteProcJSON([data])
 
     return bib_source
