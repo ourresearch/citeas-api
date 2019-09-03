@@ -59,7 +59,7 @@ def http_get(url, headers={}, read_timeout=20, stream=False, cache_enabled=True,
 
     if not doi:
         headers["User-Agent"] = "oaDOI.org"
-        headers["From"] = "team@impactstory.org"
+        headers["From"] = "team@ourresearch.org"
 
     try:
         try:
