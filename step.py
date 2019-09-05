@@ -669,7 +669,7 @@ class GithubApiResponseStep(Step):
         self.content["repo"] = r_repo
         self.content["user"] = r_login.json()
         self.content_url = repo_api_url
-        self.additional_content_url = {'url': user_api_url, 'description': 'author data'}
+        self.additional_content_url = {'url': user_api_url, 'description': 'author source'}
 
 
 class GithubRepoStep(Step):
