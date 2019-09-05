@@ -175,6 +175,7 @@ class Step(object):
         #     self, self.starting_children, self.remaining_children)
         self.url = None
         self.content_url = None
+        self.additional_content_url = None
         self.content = None
         self.parent = None
 
@@ -254,6 +255,7 @@ class Step(object):
     def to_dict(self):
         ret = {
             "content_url": self.content_url,
+            "additional_content_url": self.additional_content_url,
             "has_content": bool(self.content),
             "name": self.get_name(),
             "host": self.host,
@@ -667,6 +669,7 @@ class GithubApiResponseStep(Step):
         self.content["repo"] = r_repo
         self.content["user"] = r_login.json()
         self.content_url = repo_api_url
+        self.additional_content_url = user_api_url
 
 
 class GithubRepoStep(Step):
