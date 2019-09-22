@@ -421,3 +421,13 @@ def get_all_subclasses(cls):
         all_subclasses.extend(get_all_subclasses(subclass))
 
     return all_subclasses
+
+
+def build_source_preview(url, source_text, citation_part, citation_content):
+    result = 'Snapshot of {} data found at {}.'.format(citation_part, url)
+    # trim text based on first result of info
+    location_index = source_text.index(citation_content)
+    source_text = source_text[location_index - 200:location_index + 200]
+    source_text = source_text.replace(citation_content, '<b>' + citation_content + '</b>', 1)
+    result += '\n\n' + source_text
+    return result

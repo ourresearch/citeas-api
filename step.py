@@ -11,7 +11,7 @@ from nameparser import HumanName
 
 from bibtex import \
     BibTeX  # use local patched version instead of citeproc.source.bibtex
-from util import clean_doi, get_all_subclasses, get_raw_bitbucket_url
+from util import build_source_preview, clean_doi, get_all_subclasses, get_raw_bitbucket_url
 
 
 def step_configs():
@@ -178,7 +178,9 @@ class Step(object):
         self.additional_content_url = None
         self.content = None
         self.parent = None
-
+        self.source_preview = {
+            'title': None
+        }
     @property
     def starting_children(self):
         return []
@@ -263,6 +265,7 @@ class Step(object):
             "subject": get_subject(self.get_name()),
             "parent_step_name": self.parent.__class__.__name__,
             "parent_subject": get_subject(self.parent.__class__.__name__),
+            "source_preview": self.source_preview
         }
         return ret
 
@@ -289,6 +292,7 @@ class WebpageMetadataStep(MetadataStep):
         self.content["type"] = "misc"
         self.content["title"] = title.lstrip(" ").rstrip(" ")
         self.content["URL"] = self.content_url
+        self.source_preview["title"] = build_source_preview(self.content_url, input, 'title', title)
 
 
 class WebpageStep(Step):
