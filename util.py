@@ -424,11 +424,38 @@ def get_all_subclasses(cls):
 
 
 def build_source_preview(url, source_text, citation_part, citation_content):
-    result = 'Snapshot of {} data found at {}.'.format(citation_part, url)
-    # trim text based on first result of info
-    location_index = source_text.index(citation_content)
-    start = 0 if location_index < 200 else location_index - 200
-    source_text = source_text[start:location_index + 200]
-    source_text = source_text.replace(citation_content, '<b>' + citation_content + '</b>', 1)
+    result = header(citation_part, url)
+    source_text = trim_source_text(citation_content, source_text)
+    source_text = source_text.replace(citation_content, '<span class="highlight">' + citation_content + '</span>', 1)
     result += '\n\n' + source_text
     return result
+
+
+def build_author_source_preview(url, source_text, citation_part, author_list):
+    result = header(citation_part, url)
+    source_text = trim_source_text(author_list[0]['family'], source_text)
+    for author in author_list:
+        source_text = source_text.replace(
+            author['given'],
+            '<span class="highlight">' + author['given'] + '</span>',
+            1
+        )
+        source_text = source_text.replace(
+            author['family'],
+            '<span class="highlight">' + author['family'] + '</span>',
+            1
+        )
+    result += '\n\n' + source_text
+    return result
+
+
+def trim_source_text(citation_content, source_text):
+    characters_to_display = 500
+    location_index = source_text.index(citation_content)
+    start = 0 if location_index < characters_to_display else location_index - characters_to_display
+    source_text = source_text[start:location_index + characters_to_display]
+    return source_text
+
+
+def header(citation_part, url):
+    return 'Snapshot of {} data found at {}.'.format(citation_part, url)

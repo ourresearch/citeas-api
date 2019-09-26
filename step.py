@@ -11,7 +11,7 @@ from nameparser import HumanName
 
 from bibtex import \
     BibTeX  # use local patched version instead of citeproc.source.bibtex
-from util import build_source_preview, clean_doi, get_all_subclasses, get_raw_bitbucket_url
+from util import build_source_preview, build_author_source_preview, clean_doi, get_all_subclasses, get_raw_bitbucket_url
 
 
 def step_configs():
@@ -721,6 +721,7 @@ class DescriptionMetadataStep(MetadataStep):
 
         package = find_or_empty_string(ur"Package: (.*)", text)
         title = find_or_empty_string(ur"Title: (.*)", text)
+        self.source_preview["title"] = build_source_preview(self.content_url, text, 'title', title)
         metadata_dict["title"] = u"{}: {}".format(package, title)
 
         # authors
@@ -766,6 +767,7 @@ class DescriptionMetadataStep(MetadataStep):
                 authors.append(author_name_as_dict(name))
 
         metadata_dict["author"] = authors
+        self.source_preview["author"] = build_author_source_preview(self.content_url, text, 'author', authors)
 
         version = find_or_empty_string(ur"Version: (.*)", text)
         metadata_dict["note"] = u"R package version {}".format(version)
@@ -776,6 +778,7 @@ class DescriptionMetadataStep(MetadataStep):
             year = published_date[0:4]
             metadata_dict["year"] = year
             metadata_dict["issued"] = {"date-parts": [[year]]}
+            self.source_preview["year"] = build_source_preview(self.content_url, text, 'year', published_date)
 
         metadata_dict["URL"] = u"https://CRAN.R-project.org/package={}".format(package)
         metadata_dict["type"] = "Manual"
