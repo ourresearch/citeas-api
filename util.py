@@ -1,4 +1,5 @@
 import datetime
+from cgi import escape
 import time
 import unicodedata
 import sqlalchemy
@@ -426,9 +427,9 @@ def get_all_subclasses(cls):
 def build_source_preview(url, source_text, citation_part, citation_content):
     result = header(citation_part, url)
     source_text = trim_source_text(citation_content, source_text)
-    source_text = source_text.replace(citation_content, '<span class="highlight">' + citation_content + '</span>', 1)
-    result += '\n\n' + source_text
-    return result
+    source_text = source_text.replace(citation_content, '<span class=highlight>' + citation_content + '</span>', 1)
+    result += '<br>' + source_text
+    return escape(result)
 
 
 def build_author_source_preview(url, source_text, citation_part, author_list):
@@ -437,16 +438,16 @@ def build_author_source_preview(url, source_text, citation_part, author_list):
     for author in author_list:
         source_text = source_text.replace(
             author['given'],
-            '<span class="highlight">' + author['given'] + '</span>',
+            '<span class=highlight>' + author['given'] + '</span>',
             1
         )
         source_text = source_text.replace(
             author['family'],
-            '<span class="highlight">' + author['family'] + '</span>',
+            '<span class=highlight>' + author['family'] + '</span>',
             1
         )
-    result += '\n\n' + source_text
-    return result
+    result += '<br>' + source_text
+    return escape(result)
 
 
 def trim_source_text(citation_content, source_text):
@@ -454,6 +455,7 @@ def trim_source_text(citation_content, source_text):
     location_index = source_text.index(citation_content)
     start = 0 if location_index < characters_to_display else location_index - characters_to_display
     source_text = source_text[start:location_index + characters_to_display]
+    source_text = source_text.replace('"', '&quot;').replace('\n', '<br>').replace('\'', '')
     return source_text
 
 
