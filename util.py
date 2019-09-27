@@ -435,16 +435,18 @@ def build_author_source_preview(url, source_text, citation_part, author_list):
     result = header(citation_part, url)
     source_text = trim_source_text(author_list[0]['family'], source_text)
     for author in author_list:
-        source_text = source_text.replace(
-            author['given'],
-            '<span class="highlight">' + author['given'] + '</span>',
-            1
-        )
-        source_text = source_text.replace(
-            author['family'],
-            '<span class="highlight">' + author['family'] + '</span>',
-            1
-        )
+        if 'given' in author:
+            source_text = source_text.replace(
+                author['given'],
+                '<span class="highlight">' + author['given'] + '</span>',
+                1
+            )
+        if 'family' in author:
+            source_text = source_text.replace(
+                author['family'],
+                '<span class="highlight">' + author['family'] + '</span>',
+                1
+            )
     result += '<br>' + source_text
     return result
 
@@ -459,4 +461,4 @@ def trim_source_text(citation_content, source_text):
 
 
 def header(citation_part, url):
-    return 'Snapshot of {} data found at {}.'.format(citation_part, url)
+    return '<i>Snapshot of {} data found at {}.</i>'.format(citation_part, url)
