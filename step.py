@@ -1131,7 +1131,7 @@ class UserInputStep(Step):
             return url
 
         # google search
-        query = '{} software'.format(input)
+        query = '{} software citation'.format(input)
         for url in search(query, only_standard=True, stop=1):
             return url
 
