@@ -716,7 +716,6 @@ class GithubRepoStep(Step):
 class DescriptionMetadataStep(MetadataStep):
 
     def set_content(self, text):
-        bibtex = None
         metadata_dict = {}
 
         package = find_or_empty_string(ur"Package: (.*)", text)
@@ -724,16 +723,40 @@ class DescriptionMetadataStep(MetadataStep):
         self.source_preview["title"] = build_source_preview(self.content_url, text, 'title', title)
         metadata_dict["title"] = u"{}: {}".format(package, title)
 
-        # authors
+        metadata_dict["author"] = self.find_authors(text)
+        self.source_preview["author"] = build_author_source_preview(self.content_url, text, 'author', metadata_dict["author"])
+
+        version = find_or_empty_string(ur"Version: (.*)", text)
+        metadata_dict["note"] = u"R package version {}".format(version)
+        metadata_dict["container-title"] = metadata_dict["note"]
+
+        published_date = find_or_empty_string(ur"Date/Publication: (.*)", text)
+        if published_date:
+            year = published_date[0:4]
+            metadata_dict["year"] = year
+            metadata_dict["issued"] = {"date-parts": [[year]]}
+            self.source_preview["year"] = build_source_preview(self.content_url, text, 'year', published_date)
+
+        metadata_dict["URL"] = u"https://CRAN.R-project.org/package={}".format(package)
+        metadata_dict["type"] = "Manual"
+        self.content = metadata_dict
+
+    def find_authors(self, text):
+        authors = self.find_authors_method_1(text)
+        if not authors:
+            authors = self.find_authors_method_2(text)
+        return authors
+
+    @staticmethod
+    def find_authors_method_1(text):
         person_list = []
-        given_names = re.findall(ur"given\s?=\s?\"(.*)\"", text)
-        family_names = re.findall(ur"family\s?=\s?\"(.*)\"", text)
+        given_names = re.findall("given\s?=\s?\"(.*)\"", text)
+        family_names = re.findall("family\s?=\s?\"(.*)\"", text)
         for given_name, family_name in zip(given_names, family_names):
             person_list.append(family_name + ", " + given_name)
-
         if not person_list:
-            person_list = re.findall(ur"person\((.*)", text)
-        role_list = re.findall(ur"role(.*)\)", text)
+            person_list = re.findall("person\(\n?(.*)", text)
+        role_list = re.findall("role(.*)\)", text)
         authors = []
         if role_list:
             for person, roles in zip(person_list, role_list):
@@ -757,32 +780,29 @@ class DescriptionMetadataStep(MetadataStep):
                 last_name = section[1].strip()
                 name += u" {}".format(last_name)
                 authors.append(author_name_as_dict(name))
+        return authors
 
-        if not authors:
-            # try format like 'Author: Annette Kopp-Schneider, Manuel Wiesenfarth, Ulrich Abel'
-            raw_authors = re.findall(ur"Author: (.*)", text)
-            raw_authors = raw_authors[0].split(',')
-            for name in raw_authors:
+    @staticmethod
+    def find_authors_method_2(text):
+        # format 'Author: Krzysztof Byrski [aut, cre], Przemyslaw Spurek [ctb]'
+        authors = []
+        raw_authors = find_or_empty_string("Author: (.*)", text)
+        roles = re.findall("\[\w+,?\s?\w+\,?\s?\w+]", raw_authors)
+        if roles:
+            for role in roles:
+                raw_authors = raw_authors.replace(role, '')
+
+        names = raw_authors.split(',')
+        if roles:
+            for name, role in zip(names, roles):
+                if 'aut' in role or 'cre' in role:
+                    name = name.split('<')[0].strip() # remove email addresses
+                    authors.append(author_name_as_dict(name))
+        else:
+            for name in names:
                 name = name.split('<')[0].strip()  # remove email addresses
                 authors.append(author_name_as_dict(name))
-
-        metadata_dict["author"] = authors
-        self.source_preview["author"] = build_author_source_preview(self.content_url, text, 'author', authors)
-
-        version = find_or_empty_string(ur"Version: (.*)", text)
-        metadata_dict["note"] = u"R package version {}".format(version)
-        metadata_dict["container-title"] = metadata_dict["note"]
-
-        published_date = find_or_empty_string(ur"Date/Publication: (.*)", text)
-        if published_date:
-            year = published_date[0:4]
-            metadata_dict["year"] = year
-            metadata_dict["issued"] = {"date-parts": [[year]]}
-            self.source_preview["year"] = build_source_preview(self.content_url, text, 'year', published_date)
-
-        metadata_dict["URL"] = u"https://CRAN.R-project.org/package={}".format(package)
-        metadata_dict["type"] = "Manual"
-        self.content = metadata_dict
+        return authors
 
 
 class DescriptionFileStep(Step):
