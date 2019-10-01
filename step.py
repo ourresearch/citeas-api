@@ -750,8 +750,8 @@ class DescriptionMetadataStep(MetadataStep):
     @staticmethod
     def find_authors_method_1(text):
         person_list = []
-        given_names = re.findall("given\s?=\s?\"(.*)\"", text)
-        family_names = re.findall("family\s?=\s?\"(.*)\"", text)
+        given_names = re.findall("given\s?=\s?\"(.*?)\"", text)
+        family_names = re.findall("family\s?=\s?\"(.*?)\"", text)
         for given_name, family_name in zip(given_names, family_names):
             person_list.append(family_name + ", " + given_name)
         if not person_list:

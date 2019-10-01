@@ -42,7 +42,8 @@ test_urls = [
     ("https://gist.github.com/rxaviers/7360908", "", "de Souza, R., 2013. gistfile1.md. Available at: https://gist.github.com/7360908."),
     ("https://github.com/nicholasricci/DDM_Framework", "", "Marzolla, M., D'Angelo, G. & Mandrioli, M., 2013. A Parallel Data Distribution Management Algorithm."),
     ("https://cran.r-project.org/web/packages/vistime/index.html", "", "Raabe, S., 2019. vistime: Pretty Timeline Creation. <i>R package version 0.8.1</i>. Available at: https://CRAN.R-project.org/package=vistime."),
-    ("https://cran.r-project.org/web/packages/afCEC/index.html", "", "Byrski, K., 2018. afCEC: Active Function Cross-Entropy Clustering. <i>R package version 1.0.2</i>. Available at: https://CRAN.R-project.org/package=afCEC.")
+    ("https://cran.r-project.org/web/packages/afCEC/index.html", "", "Byrski, K., 2018. afCEC: Active Function Cross-Entropy Clustering. <i>R package version 1.0.2</i>. Available at: https://CRAN.R-project.org/package=afCEC."),
+    ("http://cran.r-project.org/package=arcos", "", "Steven, R., Andrew, B. & Aaron, W., 2019. arcos: Load ARCOS Prescription Data Prepared by the Washington Post. <i>R package version 0.8.2</i>. Available at: https://CRAN.R-project.org/package=arcos.")
     # getting the number and page wrong at the moment
     # ("http://yt-project.org", "", "Turk, M.J. et al., 2010. Yt: A Multi-Code Analysis Toolkit For Astrophysical Simulation Data. The Astrophysical Journal Supplement Series, 192(1), p.9. Available at: http://dx.doi.org/10.1088/0067-0049/192/1/9."),
 
