@@ -18,7 +18,7 @@ test_urls = [
     ("https://github.com/pvlib/pvlib-python", "10.5281/zenodo.2554311", "Holmgren, W. et al., 2019. pvlib/pvlib-python: v0.6.1. Available at: https://doi.org/10.5281/zenodo.2554311."),
     ("https://github.com/gcowan/hyperk", "10.5281/zenodo.160400", "Cowan, G., 2016. Gcowan/Hyperk: Mcp Data Processing Code. Available at: https://doi.org/10.5281/zenodo.160400."),
     ("https://github.com/NSLS-II-XPD/xpdView", "10.5281/zenodo.60479", "Duff, C. & Kaming-Thanassi, J., 2016. Xpdview: Xpdview Initial Release. Available at: https://doi.org/10.5281/zenodo.60479."),
-    ("https://github.com/impactstory/depsy", "", "Impactstory, 2015. depsy. Available at: https://github.com/Impactstory/depsy."),
+    ("https://github.com/impactstory/depsy", "", "Research, O., 2015. depsy. Available at: https://github.com/ourresearch/depsy."),
     ("https://github.com/abianchetti/blick", "", u"Bianchetti, A., 2012. blick. Available at: https://github.com/abianchetti/blick."),
     ("https://github.com/jasonpriem/FeedVis", "", u"Priem, J., 2011. FeedVis. Available at: https://github.com/jasonpriem/FeedVis."),
     ("https://github.com/vahtras/loprop", "", u'Vahtras, O., 2014. Loprop For Dalton. Available at: https://doi.org/10.5281/zenodo.13276.'),
