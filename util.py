@@ -1,21 +1,23 @@
+import bisect
+import collections
 import datetime
-import time
-import unicodedata
-import sqlalchemy
 import logging
 import math
-import bisect
-import re
 import os
-import collections
-import requests
-import json
-from unidecode import unidecode
+import re
+import time
+import unicodedata
+from cgi import escape
+
 import heroku
+import requests
+import sqlalchemy
+from unidecode import unidecode
 
 
 class NoDoiException(Exception):
     pass
+
 
 # from http://stackoverflow.com/a/3233356/596939
 def update_recursive_sum(d, u):
@@ -30,6 +32,7 @@ def update_recursive_sum(d, u):
                 d[k] = u[k]
     return d
 
+
 # returns dict with values that are proportion of all values
 def as_proportion(my_dict):
     if not my_dict:
@@ -39,6 +42,7 @@ def as_proportion(my_dict):
     for k, v in my_dict.iteritems():
         resp[k] = round(float(v)/total, 2)
     return resp
+
 
 def calculate_percentile(refset, value):
     if value is None:  # distinguish between that and zero
@@ -50,10 +54,12 @@ def calculate_percentile(refset, value):
 
     return percentile
 
+
 def clean_html(raw_html):
   cleanr = re.compile(u'<.*?>')
   cleantext = re.sub(cleanr, u'', raw_html)
   return cleantext
+
 
 # good for deduping strings.  warning: output removes spaces so isn't readable.
 def normalize(text):
@@ -66,12 +72,14 @@ def normalize(text):
         response = response.replace(stop_word, "")
     return response
 
+
 def remove_punctuation(input_string):
     # from http://stackoverflow.com/questions/265960/best-way-to-strip-punctuation-from-a-string-in-python
     no_punc = input_string
     if input_string:
         no_punc = u"".join(e for e in input_string if (e.isalnum() or e.isspace()))
     return no_punc
+
 
 # from http://stackoverflow.com/a/11066579/596939
 def replace_punctuation(text, sub):
@@ -93,6 +101,7 @@ def json_serial(obj):
         serial = obj.isoformat()
         return serial
     raise TypeError ("Type not serializable")
+
 
 def conversational_number(number):
     words = {
@@ -128,7 +137,6 @@ def conversational_number(number):
     return short_number + " " + unit
 
 
-
 def safe_commit(db):
     try:
         db.session.commit()
@@ -146,8 +154,6 @@ def safe_commit(db):
     return False
 
 
-
-
 def is_doi_url(url):
     # test urls at https://regex101.com/r/yX5cK0/2
     p = re.compile("https?:\/\/(?:dx.)?doi.org\/(.*)")
@@ -155,6 +161,7 @@ def is_doi_url(url):
     if len(matches) > 0:
         return True
     return False
+
 
 def clean_doi(dirty_doi, code_meta_exists=False):
     if not dirty_doi:
@@ -205,6 +212,7 @@ def pick_best_url(urls):
 
     return response
 
+
 def date_as_iso_utc(datetime_object):
     if datetime_object is None:
         return None
@@ -227,7 +235,6 @@ def dict_from_dir(obj, keys_to_ignore=None, keys_to_show="all"):
             ret[key] = getattr(obj, key)
 
         return ret
-
 
     for k in dir(obj):
         value = getattr(obj, k)
@@ -274,6 +281,7 @@ def underscore_to_camelcase(value):
 
     return "".join(capitalized_words)
 
+
 def chunks(l, n):
     """
     Yield successive n-sized chunks from l.
@@ -282,6 +290,7 @@ def chunks(l, n):
     """
     for i in xrange(0, len(l), n):
         yield l[i:i+n]
+
 
 def page_query(q, page_size=1000):
     offset = 0
@@ -295,9 +304,9 @@ def page_query(q, page_size=1000):
         if not r:
             break
 
+
 def elapsed(since, round_places=2):
     return round(time.time() - since, round_places)
-
 
 
 def truncate(str, max=100):
@@ -315,8 +324,10 @@ def str_to_bool(x):
     else:
         raise ValueError("This string can't be cast to a boolean.")
 
+
 # from http://stackoverflow.com/a/20007730/226013
 ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(n/10%10!=1)*(n%10<4)*n%10::4])
+
 
 #from http://farmdev.com/talks/unicode/
 def to_unicode_or_bust(obj, encoding='utf-8'):
@@ -324,6 +335,7 @@ def to_unicode_or_bust(obj, encoding='utf-8'):
         if not isinstance(obj, unicode):
             obj = unicode(obj, encoding)
     return obj
+
 
 def remove_nonprinting_characters(input, encoding='utf-8'):
     input_was_unicode = True
@@ -342,6 +354,7 @@ def remove_nonprinting_characters(input, encoding='utf-8'):
         response = response.encode(encoding)
 
     return response
+
 
 # getting a "decoding Unicode is not supported" error in this function?
 # might need to reinstall libaries as per
@@ -378,24 +391,6 @@ def get_random_dois(n):
     dois = [item["DOI"] for item in items]
     print dois
 
-# from https://github.com/elastic/elasticsearch-py/issues/374
-# to work around unicode problem
-# import elasticsearch
-# class JSONSerializerPython2(elasticsearch.serializer.JSONSerializer):
-#     """Override elasticsearch library serializer to ensure it encodes utf characters during json dump.
-#     See original at: https://github.com/elastic/elasticsearch-py/blob/master/elasticsearch/serializer.py#L42
-#     A description of how ensure_ascii encodes unicode characters to ensure they can be sent across the wire
-#     as ascii can be found here: https://docs.python.org/2/library/json.html#basic-usage
-#     """
-#     def dumps(self, data):
-#         # don't serialize strings
-#         if isinstance(data, elasticsearch.compat.string_types):
-#             return data
-#         try:
-#             return json.dumps(data, default=self.default, ensure_ascii=True)
-#         except (ValueError, TypeError) as e:
-#             raise elasticsearch.exceptions.SerializationError(data, e)
-
 
 def restart_dyno(app_name, dyno_name):
     cloud = heroku.from_key(os.getenv("HEROKU_API_KEY"))
@@ -425,6 +420,7 @@ def get_all_subclasses(cls):
 
 def build_source_preview(url, source_text, citation_part, citation_content):
     result = header(citation_part, url)
+    source_text = escape(source_text)
     source_text = trim_source_text(citation_content, source_text)
     source_text = source_text.replace(citation_content, '<span class="highlight">' + citation_content + '</span>', 1)
     result += '<br>' + source_text
@@ -457,7 +453,6 @@ def trim_source_text(citation_content, source_text):
     start = 0 if location_index < characters_to_display else location_index - characters_to_display
     source_text = source_text[start:location_index + characters_to_display]
     source_text = source_text.replace('\n', '<br />').replace('\'', '')
-    source_text = source_text.replace('<!DOCTYPE html>', '').replace('<html lang="en">', '')
     return source_text
 
 
