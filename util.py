@@ -457,6 +457,7 @@ def trim_source_text(citation_content, source_text):
     start = 0 if location_index < characters_to_display else location_index - characters_to_display
     source_text = source_text[start:location_index + characters_to_display]
     source_text = source_text.replace('\n', '<br />').replace('\'', '')
+    source_text = source_text.replace('<!DOCTYPE html>', '').replace('<html lang="en">', '')
     return source_text
 
 
