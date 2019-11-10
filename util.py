@@ -421,6 +421,7 @@ def get_all_subclasses(cls):
 def build_source_preview(url, source_text, citation_part, citation_content):
     result = header(citation_part, url)
     source_text = escape(source_text)
+    citation_content = escape(citation_content)
     source_text = trim_source_text(citation_content, source_text)
     source_text = source_text.replace(citation_content, '<span class="highlight">' + citation_content + '</span>', 1)
     result += '<br>' + source_text
