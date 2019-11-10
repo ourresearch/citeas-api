@@ -98,9 +98,22 @@ def display_citation(bibtex_metadata, bib_stylename, formatter=formatter.html):
         citation_text = citation_text.replace('..', '.')
         citation_text = citation_text.replace('  ', ' ')
 
+        citation_text = strip_duplicate_apa_title(bibtex_metadata, citation_text)
+
     html_parser = HTMLParser()
     citation_text = html_parser.unescape(citation_text)
 
+    return citation_text
+
+
+def strip_duplicate_apa_title(bibtex_metadata, citation_text):
+    title = bibtex_metadata['item-1']['title']
+    title = u"".join(title).replace('  ', ' ')
+    if citation_text.count(title) == 2:
+        citation_text = citation_text.replace(title, '', 1)
+    if citation_text[0] == '.':
+        citation_text = citation_text.replace('.', '', 1)
+        citation_text = citation_text.lstrip()
     return citation_text
 
 
