@@ -1132,7 +1132,7 @@ class UserInputStep(Step):
 
         # google search
         query = '{} software citation'.format(input)
-        for url in search(query, only_standard=True, stop=1):
+        for url in search(query, stop=1):
             return url
 
     def set_content(self, input):
