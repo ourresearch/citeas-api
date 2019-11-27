@@ -98,6 +98,12 @@ def display_citation(bibtex_metadata, bib_stylename, formatter=formatter.html):
         citation_text = citation_text.replace('..', '.')
         citation_text = citation_text.replace('  ', ' ')
 
+        citation_text = citation_text.strip()
+
+        # strip leading comma
+        if citation_text.startswith(','):
+            citation_text = citation_text.lstrip(',').strip()
+
         citation_text = strip_duplicate_apa_title(bibtex_metadata, citation_text)
 
     html_parser = HTMLParser()
