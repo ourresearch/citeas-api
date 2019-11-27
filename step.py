@@ -1,3 +1,4 @@
+import base64
 import os
 import re
 import urlparse
@@ -883,8 +884,8 @@ class GithubCitationFileStep(CitationFileStep):
     step_intro = "Software repositories sometimes includes a plain text citation file named 'CITATION' or 'CITATION.cff' " \
                  "that includes the author, software title, and other additional information."
     step_more = "The CITATION file can be parsed to extract this attribution information."
+
     def set_content(self, github_main_page_text):
-        found_match = False
         matches = re.findall(u"href=\"(.*blob/.*/citation.*?)\"", github_main_page_text, re.IGNORECASE)
         if not matches:
             matches = re.findall(u"href=\"(.*/inst)\"", github_main_page_text, re.IGNORECASE)
@@ -900,8 +901,25 @@ class GithubCitationFileStep(CitationFileStep):
             filename_part = filename_part.replace("https://github.com", "")
             filename_part = filename_part.replace("http://github.com", "")
             filename = u"https://raw.githubusercontent.com{}".format(filename_part)
-            self.content = get_webpage_text(filename)
+
+            # check if symlink
+            decoded_content = self.get_symlink_content(matches)
+
+            if decoded_content:
+                self.content = decoded_content
+            else:
+                self.content = get_webpage_text(filename)
             self.content_url = filename
+
+    @staticmethod
+    def get_symlink_content(matches):
+        repo_path = matches[0].replace("/blob/master/CITATION", "")
+        api_url = 'https://api.github.com/repos{}/contents/CITATION?ref=master'.format(repo_path)
+        r = requests.get(api_url)
+        api_resp = r.json()
+        encoded_content = api_resp.get('content')
+        decoded_content = base64.b64decode(encoded_content).decode('utf-8')
+        return decoded_content
 
 
 class BibtexMetadataStep(MetadataStep):
