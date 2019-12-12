@@ -28,6 +28,7 @@ def step_configs():
 class NoChildrenException(Exception):
     pass
 
+
 # from https://stackoverflow.com/a/2345877/596939 to handle meta redirects like www.simvascular.org
 def get_hops(url):
     redirect_re = re.compile('<meta[^>]*?url=(.*?)["\']', re.IGNORECASE)
@@ -59,6 +60,7 @@ def get_webpage_text(starting_url):
         return
     return r.text
 
+
 def author_name_as_dict(literal_name):
     if not literal_name:
         return {"family": ""}
@@ -75,6 +77,7 @@ def author_name_as_dict(literal_name):
 
     return response_dict
 
+
 def find_or_empty_string(pattern, text):
     try:
         response = re.findall(pattern, text, re.IGNORECASE|re.MULTILINE)[0]
@@ -82,8 +85,10 @@ def find_or_empty_string(pattern, text):
         response = ""
     return response
 
+
 def strip_new_lines(text):
     return text.replace("\n", " ").replace("\r", "")
+
 
 def get_bibtex_url(text):
     if not text:
@@ -102,6 +107,7 @@ def get_bibtex_url(text):
 
     return result
 
+
 def extract_bibtex(text):
     valid_entry_types = ['article', 'book', 'booklet', 'conference', 'inbook', 'incollection', \
                         'inproceedings', 'manual', 'mastersthesis', 'misc', 'phdthesis', 'proceedings', \
@@ -117,6 +123,7 @@ def extract_bibtex(text):
     except IndexError:
         result = None
     return result
+
 
 def get_subject(class_name):
     name_lower = class_name.lower()
@@ -209,7 +216,6 @@ class Step(object):
         child_obj.set_content(self.content)
 
         return child_obj
-
 
     def get_name(self):
         return self.__class__.__name__
@@ -313,7 +319,7 @@ class UserInputStep(Step):
         url = u"http://{}".format(input)
 
         try:
-            response = requests.get(url)
+            response = requests.get(url, timeout=2)
             response.raise_for_status()
         except requests.exceptions.RequestException:
             pass
@@ -321,7 +327,11 @@ class UserInputStep(Step):
             return url
 
         # google search
-        query = '{} software citation'.format(input)
+        # check if input is PMID
+        if len(input) == 8 and input.isdigit():
+            query = input
+        else:
+            query = '{} software citation'.format(input)
         for url in search(query, stop=1):
             return url
 
