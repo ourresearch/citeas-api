@@ -7,6 +7,7 @@ from io import StringIO
 import json5
 import requests
 from arxiv2bib import arxiv2bib_dict, is_valid
+from flask import abort
 from googlesearch import search
 from nameparser import HumanName
 
@@ -46,6 +47,7 @@ def get_hops(url):
             else:
                 url = None
     return hops
+
 
 def get_webpage_text(starting_url):
     hops = get_hops(starting_url)
@@ -280,6 +282,63 @@ class MetadataStep(Step):
         return True
 
 
+class UserInputStep(Step):
+    @property
+    def starting_children(self):
+        return [
+            CrossrefResponseStep,
+            ArxivResponseStep,
+            GithubRepoStep,
+            BitbucketRepoStep,
+            CranLibraryStep,
+            PypiLibraryStep,
+            WebpageStep
+        ]
+
+    def clean_input(self, input):
+        # doi
+        if input.startswith("10.") or input.startswith(("http://", "https://")):
+            return input
+
+        # arvix
+        if input.lower().startswith("arxiv"):
+            return input.lower()
+
+        # arvix ID only, like 1812.02329
+        r = re.compile('\d{4}.\d{5}')
+        if r.match(input.lower()):
+            return "arxiv:" + input.lower()
+
+        # web page
+        url = u"http://{}".format(input)
+
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+        except requests.exceptions.RequestException:
+            pass
+        else:
+            return url
+
+        # google search
+        query = '{} software citation'.format(input)
+        for url in search(query, stop=1):
+            return url
+
+    def set_content(self, input):
+        self.content = self.clean_input(input)
+
+    def set_content_url(self, input):
+        cleaned = self.content
+        if cleaned.startswith("10."):
+            cleaned = u"http://doi.org/{}".format(cleaned)
+        if cleaned.startswith("arxiv"):
+            id = cleaned.split(":", 1)[1]
+            cleaned = u"http://arxiv.org/abs/{}".format(id)
+        if cleaned.startswith("ftp://"):
+            abort(404)
+        self.content_url = cleaned
+
 
 class WebpageMetadataStep(MetadataStep):
     def set_content(self, input):
@@ -315,7 +374,6 @@ class WebpageStep(Step):
 
     def set_content_url(self, input):
         self.content_url = input
-
 
 
 class PypiLibraryStep(Step):
@@ -515,10 +573,12 @@ class ArxivResponseStep(Step):
             arxiv_id = input.split(":", 1)[1]
             self.content_url = "https://arxiv.org/abs/{}".format(arxiv_id)
 
+
 class ArxivMetadataStep(MetadataStep):
     def set_content(self, input_dict):
         print self.content
         self.content = input_dict
+
 
 class CodemetaResponseMetadataStep(MetadataStep):
     def set_content(self, input_dict):
@@ -621,6 +681,7 @@ class GithubApiResponseMetadataStep(MetadataStep):
 
         self.content = metadata_dict
 
+
 class GithubApiResponseStep(Step):
     step_links = [("GITHUB API docs", "https://developer.github.com/v3/repos/#get")]
     step_intro = "GitHub is a Web-based software version control repository hosting service."
@@ -715,7 +776,6 @@ class GithubRepoStep(Step):
 
 
 class DescriptionMetadataStep(MetadataStep):
-
     def set_content(self, text):
         metadata_dict = {}
 
@@ -1110,62 +1170,6 @@ class GithubReadmeFileStep(Step):
         dependencies = find_or_empty_string('# Dependencies #(.+)#?.+#?', readme_text)
         readme_text = readme_text.replace(dependencies, '')
         return readme_text
-
-
-class UserInputStep(Step):
-    @property
-    def starting_children(self):
-        return [
-            CrossrefResponseStep,
-            ArxivResponseStep,
-            GithubRepoStep,
-            BitbucketRepoStep,
-            CranLibraryStep,
-            PypiLibraryStep,
-            WebpageStep
-        ]
-
-    def clean_input(self, input):
-        # doi
-        if input.startswith("10.") or input.startswith(("http://", "https://")):
-            return input
-
-        # arvix
-        if input.lower().startswith("arxiv"):
-            return input.lower()
-
-        # arvix ID only, like 1812.02329
-        r = re.compile('\d{4}.\d{5}')
-        if r.match(input.lower()):
-            return "arxiv:" + input.lower()
-
-        # web page
-        url = u"http://{}".format(input)
-
-        try:
-            response = requests.get(url)
-            response.raise_for_status()
-        except requests.exceptions.RequestException:
-            pass
-        else:
-            return url
-
-        # google search
-        query = '{} software citation'.format(input)
-        for url in search(query, stop=1):
-            return url
-
-    def set_content(self, input):
-        self.content = self.clean_input(input)
-
-    def set_content_url(self, input):
-        cleaned = self.content
-        if cleaned.startswith("10."):
-            cleaned = u"http://doi.org/{}".format(cleaned)
-        if cleaned.startswith("arxiv"):
-            id = cleaned.split(":", 1)[1]
-            cleaned = u"http://arxiv.org/abs/{}".format(id)
-        self.content_url = cleaned
 
 
 class BitbucketRepoStep(Step):
