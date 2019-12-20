@@ -335,8 +335,22 @@ class UserInputStep(Step):
         for url in search(query, stop=1):
             return url
 
+    @staticmethod
+    def get_citation_html_file(url):
+        # check for citation.html file
+        r = requests.get(url + 'citation.html', timeout=2)
+        if r.status_code == 200:
+            return url + 'citation.html'
+        u = requests.get(url + 'en/stable/citation.html', timeout=2)
+        if u.status_code == 200:
+            return url + 'en/stable/citation.html'
+        else:
+            return url
+
     def set_content(self, input):
         self.content = self.clean_input(input)
+        if "readthedocs" in self.content:
+            self.content = self.get_citation_html_file(self.content)
 
     def set_content_url(self, input):
         cleaned = self.content

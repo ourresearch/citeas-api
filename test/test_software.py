@@ -12,6 +12,7 @@ requests_cache.install_cache('my_requests_cache', expire_after=60*60*24*7)  # ex
 
 # run it like this:
 # nosetests --processes=10 test/
+# Use harvard1 citation style
 
 test_urls = [
     ("https://github.com/pvlib/pvlib-python", "10.5281/zenodo.2554311", "Holmgren, W. et al., 2019. pvlib/pvlib-python: v0.6.1. Available at: https://doi.org/10.5281/zenodo.2554311."),
@@ -41,7 +42,9 @@ test_urls = [
     ("https://github.com/nicholasricci/DDM_Framework", "", "Marzolla, M., D'Angelo, G. & Mandrioli, M., 2013. A Parallel Data Distribution Management Algorithm."),
     ("https://cran.r-project.org/web/packages/vistime/index.html", "", "Raabe, S., 2019. vistime: Pretty Timeline Creation. <i>R package version 0.8.1</i>. Available at: https://CRAN.R-project.org/package=vistime."),
     ("https://cran.r-project.org/web/packages/afCEC/index.html", "", "Byrski, K., 2018. afCEC: Active Function Cross-Entropy Clustering. <i>R package version 1.0.2</i>. Available at: https://CRAN.R-project.org/package=afCEC."),
-    ("http://cran.r-project.org/package=arcos", "", "Steven, R., Andrew, B. & Aaron, W., 2019. arcos: Load ARCOS Prescription Data Prepared by the Washington Post. <i>R package version 0.8.2</i>. Available at: https://CRAN.R-project.org/package=arcos.")
+    ("http://cran.r-project.org/package=arcos", "", "Steven, R., Andrew, B. & Aaron, W., 2019. arcos: Load ARCOS Prescription Data Prepared by the Washington Post. <i>R package version 0.8.2</i>. Available at: https://CRAN.R-project.org/package=arcos."),
+    ("https://ccdproc.readthedocs.io/en/latest/", "", "Craig, M. et al., 2017. Astropy/Ccdproc: V1.3.0.Post1. Available at: https://doi.org/10.5281/zenodo.1069648."),
+    ("https://photutils.readthedocs.io/", "", "Bradley, L. et al., 2019. astropy/photutils: v0.7.2. Available at: https://doi.org/10.5281/zenodo.596036.")
 ]
 
 
