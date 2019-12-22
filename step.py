@@ -368,7 +368,7 @@ class WebpageMetadataStep(MetadataStep):
     def set_content(self, input):
         self.content = {}
         input = strip_new_lines(input)
-        title = find_or_empty_string(u"<title>(.+?)</title>", input)
+        title = find_or_empty_string(u"<title.*?>(.+?)</title>", input)
         if not title:
             title = find_or_empty_string(u"<h1>(.+?)</h1>", input)
         if not title:
