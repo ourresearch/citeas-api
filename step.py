@@ -178,7 +178,6 @@ class Step(object):
         }
         return resp
 
-
     def __init__(self):
         self.remaining_children = self.starting_children
         # print "in init for {} with starting children {}, remaining children {}".format(
@@ -191,6 +190,8 @@ class Step(object):
         self.source_preview = {
             'title': None
         }
+        self.is_link_relation = False
+
     @property
     def starting_children(self):
         return []
@@ -261,8 +262,6 @@ class Step(object):
             return "pypi"
         return None
 
-
-
     def to_dict(self):
         ret = {
             "content_url": self.content_url,
@@ -274,7 +273,8 @@ class Step(object):
             "subject": get_subject(self.get_name()),
             "parent_step_name": self.parent.__class__.__name__,
             "parent_subject": get_subject(self.parent.__class__.__name__),
-            "source_preview": self.source_preview
+            "source_preview": self.source_preview,
+            "forwarded_via_link_relation": self.is_link_relation
         }
         return ret
 
@@ -303,8 +303,11 @@ class UserInputStep(Step):
 
     def clean_input(self, input):
         # doi
-        if input.startswith("10.") or input.startswith(("http://", "https://")):
+        if input.startswith("10."):
             return input
+
+        if input.startswith(("http://", "https://")):
+            return self.check_for_rel_cite_as_header(input)
 
         # arvix
         if input.lower().startswith("arxiv"):
@@ -333,7 +336,7 @@ class UserInputStep(Step):
         else:
             query = '{} software citation'.format(input)
         for url in search(query, stop=1):
-            return url
+            return self.check_for_rel_cite_as_header(url)
 
     @staticmethod
     def get_citation_html_file(url):
@@ -362,6 +365,16 @@ class UserInputStep(Step):
         if cleaned.startswith("ftp://"):
             abort(404)
         self.content_url = cleaned
+
+    def check_for_rel_cite_as_header(self, input):
+        r = requests.get(input)
+        try:
+            url = r.links['cite-as']['url']
+            self.is_link_relation = True
+        except KeyError:
+            url = input
+
+        return url
 
 
 class WebpageMetadataStep(MetadataStep):
