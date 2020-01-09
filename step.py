@@ -307,7 +307,7 @@ class UserInputStep(Step):
             return input
 
         if input.startswith(("http://", "https://")):
-            return self.check_for_rel_cite_as_header(input)
+            return input
 
         # arvix
         if input.lower().startswith("arxiv"):
@@ -619,7 +619,6 @@ class ArxivMetadataStep(MetadataStep):
 
 class CodemetaResponseMetadataStep(MetadataStep):
     def set_content(self, input_dict):
-        print self.content
         self.content = input_dict
 
 
@@ -634,7 +633,6 @@ class CodemetaResponseStep(Step):
             CodemetaResponseMetadataStep
         ]
 
-
     def set_content(self, input):
         data = json5.loads(input)
         if "citation" in data:
@@ -643,9 +641,9 @@ class CodemetaResponseStep(Step):
             code_meta_exists = True
         self.content = {}
 
-        if "id" in data:
+        if data.get("id"):
             self.content["doi"] = find_or_empty_string("zenodo\.org\/record\/(\d+)", data["id"])
-        elif "identifier" in data:
+        elif data.get("identifier"):
             self.content["doi"] = clean_doi(data["identifier"], code_meta_exists)
         else:
             self.content["doi"] = None
@@ -663,6 +661,9 @@ class CodemetaResponseStep(Step):
 
         if "name" in data:
             self.content["title"] = data["name"]
+
+        if "title" in data:
+            self.content["title"] = data["title"]
 
         self.content["author"] = []
         if "author" in data:
@@ -691,12 +692,7 @@ class CodemetaResponseStep(Step):
         if "version" in data:
             self.content["version"] = data["version"]
 
-        # should this be removed?
-        # self.content["publisher"] = "DataCite"
-
         self.content["type"] = "software"
-
-        print self.content
 
 
 class GithubApiResponseMetadataStep(MetadataStep):

@@ -1,4 +1,5 @@
 from io import StringIO
+import re
 from HTMLParser import HTMLParser
 from citeproc.source.json import CiteProcJSON
 from enhanced_citation_style import EnhancedCitationStyle
@@ -11,7 +12,6 @@ from citeproc import CitationItem
 from step import UserInputStep
 from step import NoChildrenException
 from step import author_name_as_dict
-
 
 
 def get_author_list(data_author):
@@ -79,7 +79,6 @@ def get_bib_source_from_dict(data):
     return bib_source
 
 
-
 def display_citation(bibtex_metadata, bib_stylename, formatter=formatter.html):
     # valid style names: plos, apa, pnas, nature, bmj, harvard1
     # full list is here: https://github.com/citation-style-language/styles
@@ -113,13 +112,15 @@ def display_citation(bibtex_metadata, bib_stylename, formatter=formatter.html):
 
 
 def strip_duplicate_apa_title(bibtex_metadata, citation_text):
-    title = bibtex_metadata['item-1']['title']
-    title = u"".join(title).replace('  ', ' ')
-    if citation_text.count(title) == 2:
-        citation_text = citation_text.replace(title, '', 1)
-    if citation_text[0] == '.':
-        citation_text = citation_text.replace('.', '', 1)
-        citation_text = citation_text.lstrip()
+    item = bibtex_metadata.get('item-1')
+    title = item.get('title')
+    if title and 'Retrieved from https://github.com' not in citation_text:
+        title = u"".join(title).replace('  ', ' ')
+        if citation_text.count(title) == 2:
+            citation_text = citation_text.replace(title, '', 1)
+        if citation_text[0] == '.':
+            citation_text = citation_text.replace('.', '', 1)
+            citation_text = citation_text.lstrip()
     return citation_text
 
 
@@ -223,14 +224,10 @@ def reference_manager_exports(metadata_dict):
     return response
 
 
-
-
-
 class Software(object):
     def __init__(self, user_supplied_id):
         self.user_supplied_id = user_supplied_id
         self.completed_steps = []
-
 
     def find_metadata(self):
         my_step = UserInputStep()
@@ -264,7 +261,6 @@ class Software(object):
                 return response
         return self.display_url
 
-
     @property
     def display_url(self):
         return self.completed_steps[0].content_url
@@ -287,7 +283,6 @@ class Software(object):
                 break
 
         return metadata_dict
-
 
     def get_provenance(self):
         ret = [s.to_dict() for s in self.completed_steps]
