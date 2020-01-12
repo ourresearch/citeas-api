@@ -11,7 +11,7 @@ from citeproc import CitationItem
 
 from step import UserInputStep
 from step import NoChildrenException
-from step import author_name_as_dict
+from util import author_name_as_dict
 
 
 def get_author_list(data_author):

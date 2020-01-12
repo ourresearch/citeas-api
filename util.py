@@ -7,11 +7,13 @@ import os
 import re
 import time
 import unicodedata
+import urlparse
 from cgi import escape
 
 import heroku
 import requests
 import sqlalchemy
+from nameparser import HumanName
 from unidecode import unidecode
 
 
@@ -459,3 +461,98 @@ def trim_source_text(citation_content, source_text):
 
 def header(citation_part, url):
     return '<i>Snapshot of {} data found at {}.</i>'.format(citation_part, url)
+
+
+def get_hops(url):
+    redirect_re = re.compile('<meta[^>]*?url=(.*?)["\']', re.IGNORECASE)
+    hops = []
+    while url:
+        if url in hops:
+            url = None
+        else:
+            hops.insert(0, url)
+            r = requests.get(url)
+            if r.url != url:
+                hops.insert(0, r.url)
+            # check for redirect meta tag
+            match = redirect_re.search(r.text)
+            if match:
+                url = urlparse.urljoin(url, match.groups()[0].strip())
+            else:
+                url = None
+    return hops
+
+
+def get_webpage_text(starting_url):
+    hops = get_hops(starting_url)
+    try:
+        url = hops[0]
+        r = requests.get(url)
+    except Exception:
+        # print u"exception getting the webpage {}".format(url)
+        return
+    return r.text
+
+
+def author_name_as_dict(literal_name):
+    if not literal_name:
+        return {"family": ""}
+
+    if len(literal_name.split(" ")) > 1:
+        name_dict = HumanName(literal_name).as_dict()
+        response_dict = {
+            "family": name_dict["last"],
+            "given": name_dict["first"],
+            "suffix": name_dict["suffix"]
+        }
+    else:
+        response_dict = {"family": literal_name}
+
+    return response_dict
+
+
+def find_or_empty_string(pattern, text):
+    try:
+        response = re.findall(pattern, text, re.IGNORECASE|re.MULTILINE)[0]
+    except IndexError:
+        response = ""
+    return response
+
+
+def strip_new_lines(text):
+    return text.replace("\n", " ").replace("\r", "")
+
+
+def get_bibtex_url(text):
+    if not text:
+        return None
+    try:
+        result = re.findall(u'(http"?\'?[^"\']*data_type=BIBTEX[^"\']*)', text, re.MULTILINE | re.DOTALL)[0]
+    except IndexError:
+        result = None
+
+    # vhub bibtex pattern
+    try:
+        result = re.findall(u'(\/resources\/.*\/citation\?citationFormat=bibtex.*no_html=1&.*rev=\d*)', text, re.MULTILINE)[0]
+        result = 'https://vhub.org' + result
+    except IndexError:
+        result = None
+
+    return result
+
+
+def extract_bibtex(text):
+    valid_entry_types = ['article', 'book', 'booklet', 'conference', 'inbook', 'incollection', \
+                        'inproceedings', 'manual', 'mastersthesis', 'misc', 'phdthesis', 'proceedings', \
+                         'techreport', 'unpublished']
+    if not text:
+        return None
+    try:
+        entry_type = re.findall(ur"(@\w+-?\w+)", text, re.MULTILINE | re.DOTALL)[0]
+        myvar = entry_type[1:]
+        if entry_type[1:] not in valid_entry_types:
+            return None
+        result = re.findall(ur"@\w+-?\w+{.*}", text, re.MULTILINE | re.DOTALL)[0]
+    except IndexError:
+        result = None
+    return result

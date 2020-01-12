@@ -1,7 +1,6 @@
 import base64
 import os
 import re
-import urlparse
 from io import StringIO
 
 import json5
@@ -9,11 +8,12 @@ import requests
 from arxiv2bib import arxiv2bib_dict, is_valid
 from flask import abort
 from googlesearch import search
-from nameparser import HumanName
 
 from bibtex import \
     BibTeX  # use local patched version instead of citeproc.source.bibtex
-from util import build_source_preview, build_author_source_preview, clean_doi, get_all_subclasses, get_raw_bitbucket_url
+from util import build_source_preview, build_author_source_preview, clean_doi, get_all_subclasses, \
+    get_raw_bitbucket_url, get_webpage_text, author_name_as_dict, find_or_empty_string, strip_new_lines, get_bibtex_url, \
+    extract_bibtex
 
 
 def step_configs():
@@ -27,102 +27,6 @@ def step_configs():
 
 class NoChildrenException(Exception):
     pass
-
-
-# from https://stackoverflow.com/a/2345877/596939 to handle meta redirects like www.simvascular.org
-def get_hops(url):
-    redirect_re = re.compile('<meta[^>]*?url=(.*?)["\']', re.IGNORECASE)
-    hops = []
-    while url:
-        if url in hops:
-            url = None
-        else:
-            hops.insert(0, url)
-            r = requests.get(url)
-            if r.url != url:
-                hops.insert(0, r.url)
-            # check for redirect meta tag
-            match = redirect_re.search(r.text)
-            if match:
-                url = urlparse.urljoin(url, match.groups()[0].strip())
-            else:
-                url = None
-    return hops
-
-
-def get_webpage_text(starting_url):
-    hops = get_hops(starting_url)
-    try:
-        url = hops[0]
-        r = requests.get(url)
-    except Exception:
-        # print u"exception getting the webpage {}".format(url)
-        return
-    return r.text
-
-
-def author_name_as_dict(literal_name):
-    if not literal_name:
-        return {"family": ""}
-
-    if len(literal_name.split(" ")) > 1:
-        name_dict = HumanName(literal_name).as_dict()
-        response_dict = {
-            "family": name_dict["last"],
-            "given": name_dict["first"],
-            "suffix": name_dict["suffix"]
-        }
-    else:
-        response_dict = {"family": literal_name}
-
-    return response_dict
-
-
-def find_or_empty_string(pattern, text):
-    try:
-        response = re.findall(pattern, text, re.IGNORECASE|re.MULTILINE)[0]
-    except IndexError:
-        response = ""
-    return response
-
-
-def strip_new_lines(text):
-    return text.replace("\n", " ").replace("\r", "")
-
-
-def get_bibtex_url(text):
-    if not text:
-        return None
-    try:
-        result = re.findall(u'(http"?\'?[^"\']*data_type=BIBTEX[^"\']*)', text, re.MULTILINE | re.DOTALL)[0]
-    except IndexError:
-        result = None
-
-    # vhub bibtex pattern
-    try:
-        result = re.findall(u'(\/resources\/.*\/citation\?citationFormat=bibtex.*no_html=1&.*rev=\d*)', text, re.MULTILINE)[0]
-        result = 'https://vhub.org' + result
-    except IndexError:
-        result = None
-
-    return result
-
-
-def extract_bibtex(text):
-    valid_entry_types = ['article', 'book', 'booklet', 'conference', 'inbook', 'incollection', \
-                        'inproceedings', 'manual', 'mastersthesis', 'misc', 'phdthesis', 'proceedings', \
-                         'techreport', 'unpublished']
-    if not text:
-        return None
-    try:
-        entry_type = re.findall(ur"(@\w+-?\w+)", text, re.MULTILINE | re.DOTALL)[0]
-        myvar = entry_type[1:]
-        if entry_type[1:] not in valid_entry_types:
-            return None
-        result = re.findall(ur"@\w+-?\w+{.*}", text, re.MULTILINE | re.DOTALL)[0]
-    except IndexError:
-        result = None
-    return result
 
 
 def get_subject(class_name):
@@ -669,12 +573,14 @@ class CodemetaResponseStep(Step):
         if "author" in data:
             if type(data["author"]) is dict:
                 author = data["author"]
-                self.content["author"].append(author_name_as_dict('{} {}'.format(author["givenName"], author["familyName"])))
+                self.content["author"].append(
+                    author_name_as_dict('{} {}'.format(author["givenName"], author["familyName"])))
             elif type(data["author"]) is list:
                 authors = data["author"]
                 for author in authors:
                     try:
-                        self.content["author"].append(author_name_as_dict('{} {}'.format(author["givenName"], author["familyName"])))
+                        self.content["author"].append(
+                            author_name_as_dict('{} {}'.format(author["givenName"], author["familyName"])))
                     except UnicodeEncodeError:
                         continue
 
