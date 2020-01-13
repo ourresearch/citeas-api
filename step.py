@@ -233,7 +233,7 @@ class UserInputStep(Step):
         except requests.exceptions.RequestException:
             pass
         else:
-            return url
+            return self.check_for_rel_cite_as_header(url)
 
         # google search
         # check if input is PMID
@@ -274,14 +274,29 @@ class UserInputStep(Step):
 
     def check_for_rel_cite_as_header(self, input):
         r = requests.get(input)
-        try:
-            url = r.links['cite-as']['url']
-            self.is_link_relation = True
-            self.original_url = input
-        except KeyError:
-            url = input
 
-        return url
+        if 'link' in r.headers:
+            header_links = requests.utils.parse_header_links(r.headers['link'])
+            cite_as_links = [link for link in header_links if link['rel'] == 'cite-as']
+
+            if cite_as_links:
+                doi_links = [link for link in cite_as_links if 'doi.org' in link['url']]
+            else:
+                doi_links = None
+
+            # try to find doi links first
+            if doi_links:
+                self.is_link_relation = True
+                self.original_url = input
+                return doi_links[0]['url']
+            elif cite_as_links:
+                self.is_link_relation = True
+                self.original_url = input
+                return cite_as_links[0]['url']
+            else:
+                return input
+        else:
+            return input
 
 
 class WebpageMetadataStep(MetadataStep):
