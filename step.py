@@ -95,6 +95,7 @@ class Step(object):
             'title': None
         }
         self.is_link_relation = False
+        self.original_url = None
 
     @property
     def starting_children(self):
@@ -178,7 +179,8 @@ class Step(object):
             "parent_step_name": self.parent.__class__.__name__,
             "parent_subject": get_subject(self.parent.__class__.__name__),
             "source_preview": self.source_preview,
-            "forwarded_via_link_relation": self.is_link_relation
+            "forwarded_via_link_relation": self.is_link_relation,
+            "original_url": self.original_url
         }
         return ret
 
@@ -210,8 +212,9 @@ class UserInputStep(Step):
         if input.startswith("10."):
             return input
 
+        # web page
         if input.startswith(("http://", "https://")):
-            return input
+            return self.check_for_rel_cite_as_header(input)
 
         # arvix
         if input.lower().startswith("arxiv"):
@@ -222,9 +225,8 @@ class UserInputStep(Step):
         if r.match(input.lower()):
             return "arxiv:" + input.lower()
 
-        # web page
+        # add http to try as a web page, then see if it returns an error
         url = u"http://{}".format(input)
-
         try:
             response = requests.get(url, timeout=2)
             response.raise_for_status()
@@ -275,6 +277,7 @@ class UserInputStep(Step):
         try:
             url = r.links['cite-as']['url']
             self.is_link_relation = True
+            self.original_url = input
         except KeyError:
             url = input
 
