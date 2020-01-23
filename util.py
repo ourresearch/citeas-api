@@ -7,12 +7,10 @@ import os
 import re
 import time
 import unicodedata
-import urlparse
-from cgi import escape
+import urllib.parse
+from html import escape
 
-import heroku
 import requests
-import sqlalchemy
 from nameparser import HumanName
 from unidecode import unidecode
 
@@ -23,7 +21,7 @@ class NoDoiException(Exception):
 
 # from http://stackoverflow.com/a/3233356/596939
 def update_recursive_sum(d, u):
-    for k, v in u.iteritems():
+    for k, v in u.items():
         if isinstance(v, collections.Mapping):
             r = update_recursive_sum(d.get(k, {}), v)
             d[k] = r
@@ -41,7 +39,7 @@ def as_proportion(my_dict):
         return {}
     total = sum(my_dict.values())
     resp = {}
-    for k, v in my_dict.iteritems():
+    for k, v in my_dict.items():
         resp[k] = round(float(v)/total, 2)
     return resp
 
@@ -58,18 +56,18 @@ def calculate_percentile(refset, value):
 
 
 def clean_html(raw_html):
-  cleanr = re.compile(u'<.*?>')
-  cleantext = re.sub(cleanr, u'', raw_html)
+  cleanr = re.compile('<.*?>')
+  cleantext = re.sub(cleanr, '', raw_html)
   return cleantext
 
 
 # good for deduping strings.  warning: output removes spaces so isn't readable.
 def normalize(text):
     response = text.lower()
-    response = unidecode(unicode(response))
+    response = unidecode(str(response))
     response = clean_html(response)  # has to be before remove_punctuation
     response = remove_punctuation(response)
-    response = re.sub(u"\s+", u"", response)
+    response = re.sub("\s+", "", response)
     for stop_word in ["a", "an", "the"]:
         response = response.replace(stop_word, "")
     return response
@@ -79,7 +77,7 @@ def remove_punctuation(input_string):
     # from http://stackoverflow.com/questions/265960/best-way-to-strip-punctuation-from-a-string-in-python
     no_punc = input_string
     if input_string:
-        no_punc = u"".join(e for e in input_string if (e.isalnum() or e.isspace()))
+        no_punc = "".join(e for e in input_string if (e.isalnum() or e.isspace()))
     return no_punc
 
 
@@ -92,7 +90,7 @@ def replace_punctuation(text, sub):
             chars.append(sub)
         else:
             chars.append(my_char)
-    return u"".join(chars)
+    return "".join(chars)
 
 
 # from http://stackoverflow.com/a/22238613/596939
@@ -139,23 +137,6 @@ def conversational_number(number):
     return short_number + " " + unit
 
 
-def safe_commit(db):
-    try:
-        db.session.commit()
-        return True
-    except (KeyboardInterrupt, SystemExit):
-        # let these ones through, don't save anything to db
-        raise
-    except sqlalchemy.exc.DataError:
-        db.session.rollback()
-        print u"sqlalchemy.exc.DataError on commit.  rolling back."
-    except Exception:
-        db.session.rollback()
-        print u"generic exception in commit.  rolling back."
-        logging.exception("commit error")
-    return False
-
-
 def is_doi_url(url):
     # test urls at https://regex101.com/r/yX5cK0/2
     p = re.compile("https?:\/\/(?:dx.)?doi.org\/(.*)")
@@ -173,7 +154,7 @@ def clean_doi(dirty_doi, code_meta_exists=False):
     dirty_doi = dirty_doi.strip()
 
     # test cases for this regex are at https://regex101.com/r/zS4hA0/1
-    p = re.compile(ur'.*?(10.+)')
+    p = re.compile(r'.*?(10.+)')
 
     matches = re.findall(p, dirty_doi)
     if len(matches) == 0 and code_meta_exists is True:
@@ -184,13 +165,13 @@ def clean_doi(dirty_doi, code_meta_exists=False):
     match = matches[0]
 
     try:
-        resp = unicode(match, "utf-8")  # unicode is valid in dois
+        resp = str(match, "utf-8")  # unicode is valid in dois
     except (TypeError, UnicodeDecodeError):
         resp = match
 
     # remove any url fragments
-    if u"#" in resp:
-        resp = resp.split(u"#")[0]
+    if "#" in resp:
+        resp = resp.split("#")[0]
 
     return resp
 
@@ -219,7 +200,7 @@ def date_as_iso_utc(datetime_object):
     if datetime_object is None:
         return None
 
-    date_string = u"{}{}".format(datetime_object, "+00:00")
+    date_string = "{}{}".format(datetime_object, "+00:00")
     return date_string
 
 
@@ -227,7 +208,7 @@ def dict_from_dir(obj, keys_to_ignore=None, keys_to_show="all"):
 
     if keys_to_ignore is None:
         keys_to_ignore = []
-    elif isinstance(keys_to_ignore, basestring):
+    elif isinstance(keys_to_ignore, str):
         keys_to_ignore = [keys_to_ignore]
 
     ret = {}
@@ -290,7 +271,7 @@ def chunks(l, n):
 
     from http://stackoverflow.com/a/312464
     """
-    for i in xrange(0, len(l), n):
+    for i in range(0, len(l), n):
         yield l[i:i+n]
 
 
@@ -298,7 +279,7 @@ def page_query(q, page_size=1000):
     offset = 0
     while True:
         r = False
-        print "util.page_query() retrieved {} things".format(page_query())
+        print("util.page_query() retrieved {} things".format(page_query()))
         for elem in q.limit(page_size).offset(offset):
             r = True
             yield elem
@@ -313,7 +294,7 @@ def elapsed(since, round_places=2):
 
 def truncate(str, max=100):
     if len(str) > max:
-        return str[0:max] + u"..."
+        return str[0:max] + "..."
     else:
         return str
 
@@ -333,16 +314,16 @@ ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(n/10%10!=1)*(n%10<4)*n%10::4])
 
 #from http://farmdev.com/talks/unicode/
 def to_unicode_or_bust(obj, encoding='utf-8'):
-    if isinstance(obj, basestring):
-        if not isinstance(obj, unicode):
-            obj = unicode(obj, encoding)
+    if isinstance(obj, str):
+        if not isinstance(obj, str):
+            obj = str(obj, encoding)
     return obj
 
 
 def remove_nonprinting_characters(input, encoding='utf-8'):
     input_was_unicode = True
-    if isinstance(input, basestring):
-        if not isinstance(input, unicode):
+    if isinstance(input, str):
+        if not isinstance(input, str):
             input_was_unicode = False
 
     unicode_input = to_unicode_or_bust(input)
@@ -350,7 +331,7 @@ def remove_nonprinting_characters(input, encoding='utf-8'):
     # see http://www.fileformat.info/info/unicode/category/index.htm
     char_classes_to_remove = ["C", "M", "Z"]
 
-    response = u''.join(c for c in unicode_input if unicodedata.category(c)[0] not in char_classes_to_remove)
+    response = ''.join(c for c in unicode_input if unicodedata.category(c)[0] not in char_classes_to_remove)
 
     if not input_was_unicode:
         response = response.encode(encoding)
@@ -387,24 +368,16 @@ class HTTPMethodOverrideMiddleware(object):
 
 
 def get_random_dois(n):
-    url = u"http://api.crossref.org/works?filter=from-pub-date:2006-01-01&sample={}".format(n)
+    url = "http://api.crossref.org/works?filter=from-pub-date:2006-01-01&sample={}".format(n)
     r = requests.get(url)
     items = r.json()["message"]["items"]
     dois = [item["DOI"] for item in items]
-    print dois
-
-
-def restart_dyno(app_name, dyno_name):
-    cloud = heroku.from_key(os.getenv("HEROKU_API_KEY"))
-    app = cloud.apps[app_name]
-    process = app.processes[dyno_name]
-    process.restart()
-    print u"restarted {} on {}!".format(dyno_name, app_name)
+    print(dois)
 
 
 def get_raw_bitbucket_url(url):
     s = url.split('/')
-    raw_url = u"https://bitbucket.org/{}/{}/raw/{}".format(s[1], s[2], '/'.join(s[4:]))
+    raw_url = "https://bitbucket.org/{}/{}/raw/{}".format(s[1], s[2], '/'.join(s[4:]))
     if raw_url.endswith('?at=default'):
         raw_url = raw_url[:-11]
     return raw_url
@@ -477,7 +450,7 @@ def get_hops(url):
             # check for redirect meta tag
             match = redirect_re.search(r.text)
             if match:
-                url = urlparse.urljoin(url, match.groups()[0].strip())
+                url = urllib.parse.urljoin(url, match.groups()[0].strip())
             else:
                 url = None
     return hops
@@ -527,13 +500,13 @@ def get_bibtex_url(text):
     if not text:
         return None
     try:
-        result = re.findall(u'(http"?\'?[^"\']*data_type=BIBTEX[^"\']*)', text, re.MULTILINE | re.DOTALL)[0]
+        result = re.findall('(http"?\'?[^"\']*data_type=BIBTEX[^"\']*)', text, re.MULTILINE | re.DOTALL)[0]
     except IndexError:
         result = None
 
     # vhub bibtex pattern
     try:
-        result = re.findall(u'(\/resources\/.*\/citation\?citationFormat=bibtex.*no_html=1&.*rev=\d*)', text, re.MULTILINE)[0]
+        result = re.findall('(\/resources\/.*\/citation\?citationFormat=bibtex.*no_html=1&.*rev=\d*)', text, re.MULTILINE)[0]
         result = 'https://vhub.org' + result
     except IndexError:
         result = None
@@ -548,11 +521,11 @@ def extract_bibtex(text):
     if not text:
         return None
     try:
-        entry_type = re.findall(ur"(@\w+-?\w+)", text, re.MULTILINE | re.DOTALL)[0]
+        entry_type = re.findall(r"(@\w+-?\w+)", text, re.MULTILINE | re.DOTALL)[0]
         myvar = entry_type[1:]
         if entry_type[1:] not in valid_entry_types:
             return None
-        result = re.findall(ur"@\w+-?\w+{.*}", text, re.MULTILINE | re.DOTALL)[0]
+        result = re.findall(r"@\w+-?\w+{.*}", text, re.MULTILINE | re.DOTALL)[0]
     except IndexError:
         result = None
     return result

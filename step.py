@@ -51,7 +51,7 @@ def get_subject(class_name):
 
     name = class_name.lower()
 
-    for subject, subject_description in subjects.items():
+    for subject, subject_description in list(subjects.items()):
         if name in subject:
             return subject_description
 
@@ -174,7 +174,7 @@ class Step(object):
         return ret
 
     def __repr__(self):
-        return u"<{}>".format(self.__class__.__name__)
+        return "<{}>".format(self.__class__.__name__)
 
 
 class MetadataStep(Step):
@@ -215,7 +215,7 @@ class UserInputStep(Step):
             return "arxiv:" + input.lower()
 
         # add http to try as a web page, then see if it returns an error
-        url = u"http://{}".format(input)
+        url = "http://{}".format(input)
         try:
             response = requests.get(url, timeout=2)
             response.raise_for_status()
@@ -253,10 +253,10 @@ class UserInputStep(Step):
     def set_content_url(self, input):
         cleaned = self.content
         if cleaned.startswith("10."):
-            cleaned = u"http://doi.org/{}".format(cleaned)
+            cleaned = "http://doi.org/{}".format(cleaned)
         if cleaned.startswith("arxiv"):
             id = cleaned.split(":", 1)[1]
-            cleaned = u"http://arxiv.org/abs/{}".format(id)
+            cleaned = "http://arxiv.org/abs/{}".format(id)
         if cleaned.startswith("ftp://"):
             abort(404)
         self.content_url = cleaned
@@ -292,11 +292,11 @@ class WebpageMetadataStep(MetadataStep):
     def set_content(self, input):
         self.content = {}
         input = strip_new_lines(input)
-        title = find_or_empty_string(u"<title.*?>(.+?)</title>", input)
+        title = find_or_empty_string("<title.*?>(.+?)</title>", input)
         if not title:
-            title = find_or_empty_string(u"<h1>(.+?)</h1>", input)
+            title = find_or_empty_string("<h1>(.+?)</h1>", input)
         if not title:
-            title = find_or_empty_string(u"<h2>(.+?)</h2>", input)
+            title = find_or_empty_string("<h2>(.+?)</h2>", input)
         self.content["type"] = "misc"
         self.content["title"] = title.lstrip(" ").rstrip(" ")
         self.content["URL"] = self.content_url
@@ -379,13 +379,13 @@ class CranLibraryStep(Step):
 
     def set_content_url(self, input):
         # print "set_content_url", input
-        if input and u"cran.r-project.org/web/packages" in input:
-            package_name = find_or_empty_string(u"cran.r-project.org/web/packages/(\w+\.?\w+)/?", input)
-            self.content_url = u"https://cran.r-project.org/web/packages/{}".format(package_name)
-        elif input and  u"cran.r-project.org/package=" in input.lower():
-            package_name = find_or_empty_string(u"cran.r-project.org/package=(.*)/?", input)
+        if input and "cran.r-project.org/web/packages" in input:
+            package_name = find_or_empty_string("cran.r-project.org/web/packages/(\w+\.?\w+)/?", input)
+            self.content_url = "https://cran.r-project.org/web/packages/{}".format(package_name)
+        elif input and  "cran.r-project.org/package=" in input.lower():
+            package_name = find_or_empty_string("cran.r-project.org/package=(.*)/?", input)
             package_name = package_name.split("/")[0]
-            self.content_url = u"https://cran.r-project.org/web/packages/{}".format(package_name)
+            self.content_url = "https://cran.r-project.org/web/packages/{}".format(package_name)
 
 
 class CrossrefResponseMetadataStep(MetadataStep):
@@ -434,7 +434,7 @@ class CrossrefResponseStep(Step):
             if "10.5063/schema/codemeta-2.0" in doi.lower():
                 pass
             else:
-                print "HERE I AM", doi
+                print("HERE I AM", doi)
                 return self.strip_junk_from_end_of_doi(doi)
 
     def set_content(self, input):
@@ -448,7 +448,7 @@ class CrossrefResponseStep(Step):
             self.content = r.json()
             self.content["URL"] = doi_url
         except Exception:
-            print u"no doi metadata found for {}".format(doi_url)
+            print("no doi metadata found for {}".format(doi_url))
             pass
 
     def set_content_url(self, input):
@@ -470,10 +470,10 @@ class CrossrefResponseStep(Step):
         try:
             doi = clean_doi(input)
         except Exception:
-            print u"no doi found for {}".format(input)
+            print("no doi found for {}".format(input))
             return
 
-        doi_url = u"https://doi.org/{}".format(doi)
+        doi_url = "https://doi.org/{}".format(doi)
         self.content_url = doi_url
 
 
@@ -524,7 +524,7 @@ class ArxivResponseStep(Step):
 
 class ArxivMetadataStep(MetadataStep):
     def set_content(self, input_dict):
-        print self.content
+        print(self.content)
         self.content = input_dict
 
 
@@ -560,7 +560,7 @@ class CodemetaResponseStep(Step):
             self.content["doi"] = None
 
         if self.content["doi"]:
-            doi_url = u"https://doi.org/{}".format(self.content["doi"])
+            doi_url = "https://doi.org/{}".format(self.content["doi"])
             self.content["URL"] = doi_url
         else:
             if "codeRepository" in data:
@@ -612,7 +612,7 @@ class GithubApiResponseMetadataStep(MetadataStep):
     def set_content(self, input_dict):
         metadata_dict = {}
         if "gist.github.com" in input_dict["repo"]["html_url"]:
-            for key, value in input_dict["repo"]["files"].iteritems():
+            for key, value in input_dict["repo"]["files"].items():
                 file_name = key
             metadata_dict["title"] = file_name
         else:
@@ -674,7 +674,7 @@ class GithubApiResponseStep(Step):
         try:
             user_api_url = "https://api.github.com/users/{}".format(r_repo["owner"]["login"])
         except (KeyError, TypeError):
-            print u"bad github request"
+            print("bad github request")
             return
 
         r_login = requests.get(user_api_url, auth=(login, token), headers=h)
@@ -725,26 +725,26 @@ class DescriptionMetadataStep(MetadataStep):
     def set_content(self, text):
         metadata_dict = {}
 
-        package = find_or_empty_string(ur"Package: (.*)", text)
-        title = find_or_empty_string(ur"Title: (.*)", text)
+        package = find_or_empty_string(r"Package: (.*)", text)
+        title = find_or_empty_string(r"Title: (.*)", text)
         self.source_preview["title"] = build_source_preview(self.content_url, text, 'title', title)
-        metadata_dict["title"] = u"{}: {}".format(package, title)
+        metadata_dict["title"] = "{}: {}".format(package, title)
 
         metadata_dict["author"] = self.find_authors(text)
         self.source_preview["author"] = build_author_source_preview(self.content_url, text, 'author', metadata_dict["author"])
 
-        version = find_or_empty_string(ur"Version: (.*)", text)
-        metadata_dict["note"] = u"R package version {}".format(version)
+        version = find_or_empty_string(r"Version: (.*)", text)
+        metadata_dict["note"] = "R package version {}".format(version)
         metadata_dict["container-title"] = metadata_dict["note"]
 
-        published_date = find_or_empty_string(ur"Date/Publication: (.*)", text)
+        published_date = find_or_empty_string(r"Date/Publication: (.*)", text)
         if published_date:
             year = published_date[0:4]
             metadata_dict["year"] = year
             metadata_dict["issued"] = {"date-parts": [[year]]}
             self.source_preview["year"] = build_source_preview(self.content_url, text, 'year', published_date)
 
-        metadata_dict["URL"] = u"https://CRAN.R-project.org/package={}".format(package)
+        metadata_dict["URL"] = "https://CRAN.R-project.org/package={}".format(package)
         metadata_dict["type"] = "Manual"
         self.content = metadata_dict
 
@@ -772,7 +772,7 @@ class DescriptionMetadataStep(MetadataStep):
                 name = section[0]
                 last_name = section[1].strip()
                 if not last_name.startswith("role"):
-                    name += u" {}".format(last_name)
+                    name += " {}".format(last_name)
 
                 # parse roles
                 roles = re.findall('"([^"]*)"', roles)
@@ -785,7 +785,7 @@ class DescriptionMetadataStep(MetadataStep):
                 section = person.replace('"', '').split(",")
                 name = section[0]
                 last_name = section[1].strip()
-                name += u" {}".format(last_name)
+                name += " {}".format(last_name)
                 authors.append(author_name_as_dict(name))
         return authors
 
@@ -838,11 +838,11 @@ class CranDescriptionFileStep(DescriptionFileStep):
 
 class GithubDescriptionFileStep(DescriptionFileStep):
     def set_content(self, github_main_page_text):
-        matches = re.findall(u"href=\"(.*blob/.*/description.*?)\"", github_main_page_text, re.IGNORECASE)
+        matches = re.findall("href=\"(.*blob/.*/description.*?)\"", github_main_page_text, re.IGNORECASE)
         if matches:
             filename_part = matches[0]
             filename_part = filename_part.replace("/blob", "")
-            filename = u"https://raw.githubusercontent.com{}".format(filename_part)
+            filename = "https://raw.githubusercontent.com{}".format(filename_part)
             self.content = get_webpage_text(filename)
             self.content_url = filename
 
@@ -892,21 +892,21 @@ class GithubCitationFileStep(CitationFileStep):
     step_more = "The CITATION file can be parsed to extract this attribution information."
 
     def set_content(self, github_main_page_text):
-        matches = re.findall(u"href=\"(.*blob/.*/citation.*?)\"", github_main_page_text, re.IGNORECASE)
+        matches = re.findall("href=\"(.*blob/.*/citation.*?)\"", github_main_page_text, re.IGNORECASE)
         if not matches:
-            matches = re.findall(u"href=\"(.*/inst)\"", github_main_page_text, re.IGNORECASE)
+            matches = re.findall("href=\"(.*/inst)\"", github_main_page_text, re.IGNORECASE)
             if matches:
-                inst_url = u"http://github.com{}".format(matches[0])
+                inst_url = "http://github.com{}".format(matches[0])
                 r = requests.get(inst_url)
                 inst_page_text = r.text
-                matches = re.findall(u"href=\"(.*blob/.*/citation.*?)\"", inst_page_text, re.IGNORECASE)
+                matches = re.findall("href=\"(.*blob/.*/citation.*?)\"", inst_page_text, re.IGNORECASE)
 
         if matches:
             filename_part = matches[0]
             filename_part = filename_part.replace("/blob", "")
             filename_part = filename_part.replace("https://github.com", "")
             filename_part = filename_part.replace("http://github.com", "")
-            filename = u"https://raw.githubusercontent.com{}".format(filename_part)
+            filename = "https://raw.githubusercontent.com{}".format(filename_part)
 
             # check if symlink
             decoded_content = self.get_symlink_content(matches)
@@ -932,12 +932,12 @@ class GithubCitationFileStep(CitationFileStep):
 
 class BibtexMetadataStep(MetadataStep):
     def set_content(self, bibtex):
-        bibtext_string = u"{}".format(bibtex)
+        bibtext_string = "{}".format(bibtex)
         # bibtext_string = bibtext_string.replace("-", "-")
         bibtext_string = bibtext_string.replace("journal = {", "container-title = {")
         bib_dict = BibTeX(StringIO(bibtext_string))
 
-        id = bib_dict.keys()[0]
+        id = list(bib_dict.keys())[0]
 
         if "month" in bib_dict[id]:
             del bib_dict[id]["month"]
@@ -946,7 +946,7 @@ class BibtexMetadataStep(MetadataStep):
         # print "bib_dict[id].keys()", bib_dict[id].keys()
         # print "bib_dict[id].values()", bib_dict[id].values()
 
-        for (k, v) in bib_dict[id].items():
+        for (k, v) in list(bib_dict[id].items()):
                 # print k, v
                 try:
                     # if k in ["volume", "year", "type", "title", "author", "eid", "doi", "container-title", "adsnote", "eprint", "page"]:
@@ -955,15 +955,16 @@ class BibtexMetadataStep(MetadataStep):
                     if k in ["url", "note", "journal", "booktitle", "address", "volume", "issue", "number", "type", "title", "eid", "container-title", "adsnote", "eprint", "pages", "author", "year"]:
                         metadata_dict[k] = v
                 except Exception:
-                    print "ERROR on ", k, v
+                    print("ERROR on ", k, v)
                     pass
         # metadata_dict = dict(bib_dict[id].items())
         metadata_dict["bibtex"] = bibtex
 
         # uppercase and include doi
-        if hasattr(bib_dict[id], "doi") and bib_dict[id]["doi"]:
+        doi = bib_dict[id].get("doi")
+        if doi and doi.strip():
             metadata_dict["DOI"] = bib_dict[id]["doi"]
-            metadata_dict["url"] = u"http://doi.org/{}".format(bib_dict[id]["doi"])
+            metadata_dict["url"] = "http://doi.org/{}".format(bib_dict[id]["doi"])
 
         # clean it up to get rid of {} around it, etc
         year_raw = str(metadata_dict['year'])
@@ -1023,12 +1024,12 @@ class CitentryStep(Step):
         ]
 
     def set_content(self, input):
-        if not u"citEntry(" in input:
+        if not "citEntry(" in input:
             return
 
         input = input.replace("\n", "")
         # want this below to be greedy
-        matches = re.findall(u"citEntry\((.*)\)", input, re.IGNORECASE | re.MULTILINE)
+        matches = re.findall("citEntry\((.*)\)", input, re.IGNORECASE | re.MULTILINE)
         if matches:
             self.content = matches[0]
 
@@ -1036,22 +1037,22 @@ class CitentryStep(Step):
 class CitentryMetadataStep(MetadataStep):
     def set_content(self, citentry_content):
         self.content = {}
-        self.content["title"] = find_or_empty_string(u"title\s*=\s*\"(.*?)\"", citentry_content)
-        self.content["URL"] = find_or_empty_string(u"url\s*=\s*\"(.*?)\"", citentry_content)
-        self.content["volume"] = find_or_empty_string(u"volume\s*=\s*\"(.*?)\"", citentry_content)
-        self.content["number"] = find_or_empty_string(u"number\s*=\s*\"(.*?)\"", citentry_content)
-        self.content["pages"] = find_or_empty_string(u"pages\s*=\s*\"(.*?)\"", citentry_content)
-        self.content["publisher"] = find_or_empty_string(u"publisher\s*=\s*\"(.*?)\"", citentry_content)
-        self.content["isbn"] = find_or_empty_string(u"isbn\s*=\s*\"(.*?)\"", citentry_content)
-        self.content["container-title"] = find_or_empty_string(u"journal\s*=\s*\"(.*?)\"", citentry_content)
+        self.content["title"] = find_or_empty_string("title\s*=\s*\"(.*?)\"", citentry_content)
+        self.content["URL"] = find_or_empty_string("url\s*=\s*\"(.*?)\"", citentry_content)
+        self.content["volume"] = find_or_empty_string("volume\s*=\s*\"(.*?)\"", citentry_content)
+        self.content["number"] = find_or_empty_string("number\s*=\s*\"(.*?)\"", citentry_content)
+        self.content["pages"] = find_or_empty_string("pages\s*=\s*\"(.*?)\"", citentry_content)
+        self.content["publisher"] = find_or_empty_string("publisher\s*=\s*\"(.*?)\"", citentry_content)
+        self.content["isbn"] = find_or_empty_string("isbn\s*=\s*\"(.*?)\"", citentry_content)
+        self.content["container-title"] = find_or_empty_string("journal\s*=\s*\"(.*?)\"", citentry_content)
 
-        self.content["year"] = find_or_empty_string(u"year\s*=\s*\"(.*?)\"", citentry_content)
+        self.content["year"] = find_or_empty_string("year\s*=\s*\"(.*?)\"", citentry_content)
         if self.content["year"]:
             self.content["issued"] = {"date-parts": [[self.content["year"]]]}
-        self.content["type"] = find_or_empty_string(u"entry\s*=\s*\"(.*?)\"", citentry_content)
+        self.content["type"] = find_or_empty_string("entry\s*=\s*\"(.*?)\"", citentry_content)
 
         self.content["author"] = []
-        first_author = find_or_empty_string(u"author\s*=.*?\"(.*?)\"", citentry_content)
+        first_author = find_or_empty_string("author\s*=.*?\"(.*?)\"", citentry_content)
         if first_author:
             self.content["author"].append(author_name_as_dict(first_author))
 
@@ -1069,11 +1070,11 @@ class GithubCodemetaFileStep(Step):
         ]
 
     def set_content(self, github_main_page_text):
-        matches = re.findall(u"href=\"(.*blob/.*/codemeta.json)\"", github_main_page_text, re.IGNORECASE)
+        matches = re.findall("href=\"(.*blob/.*/codemeta.json)\"", github_main_page_text, re.IGNORECASE)
         if matches:
             filename_part = matches[0]
             filename_part = filename_part.replace("/blob", "")
-            filename = u"https://raw.githubusercontent.com{}".format(filename_part)
+            filename = "https://raw.githubusercontent.com{}".format(filename_part)
             self.content = get_webpage_text(filename)
             self.content_url = filename
 
@@ -1096,12 +1097,12 @@ class GithubReadmeFileStep(Step):
         ]
 
     def set_content(self, github_main_page_text):
-        matches = re.findall(u"href=\"(.*blob/.*/readme.*?)\"", github_main_page_text, re.IGNORECASE)
+        matches = re.findall("href=\"(.*blob/.*/readme.*?)\"", github_main_page_text, re.IGNORECASE)
         if matches:
             filename_part = matches[0]
             filename_part = filename_part.replace("/blob", "")
             filename_part = filename_part.replace("https://github.com", "")
-            filename = u"https://raw.githubusercontent.com{}".format(filename_part)
+            filename = "https://raw.githubusercontent.com{}".format(filename_part)
             readme_text = get_webpage_text(filename)
             self.content = self.strip_dependencies(readme_text)
             self.content_url = filename
