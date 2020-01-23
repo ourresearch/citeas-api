@@ -30,30 +30,40 @@ class NoChildrenException(Exception):
 
 
 def get_subject(class_name):
-    subjects = {
-        'arxiv': 'ArXiv page',
-        'bibtex': 'BibTeX',
-        'bitbucketrepo': 'Bitbucket repository main page',
-        'citationfile': 'CITATION file',
-        'citentry': 'R CITATION format',
-        'codemetafile': 'CodeMeta file',
-        'codemetaresponse': 'CodeMeta JSON data',
-        'cran': 'R CRAN package webpage',
-        'crossref': 'DOI API response',
-        'descriptionfile': 'R DESCRIPTION file',
-        'githubapi': 'GitHub repository main page',
-        'githubrepo': 'GitHub repository main page',
-        'pypi': 'Python PyPI package webpage',
-        'readmefile': 'README file',
-        'userinput': 'user input',
-        'webpage': 'webpage'
-    }
-
-    name = class_name.lower()
-
-    for subject, subject_description in subjects.items():
-        if name in subject:
-            return subject_description
+    name_lower = class_name.lower()
+    if "userinput" in name_lower:
+        return "user input"
+    if "readmefile" in name_lower:
+        return "README file"
+    if "citationfile" in name_lower:
+        return "CITATION file"
+    if "descriptionfile" in name_lower:
+        return "R DESCRIPTION file"
+    if "codemetafile" in name_lower:
+        return "CodeMeta file"
+    if "arxiv" in name_lower:
+        return "ArXiv page"
+    if "codemetaresponse" in name_lower:
+        return "CodeMeta JSON data"
+    if "crossref" in name_lower:
+        return "DOI API response"
+    if "bibtex" in name_lower:
+        return "BibTeX"
+    if "citentry" in name_lower:
+        return "R CITATION format"
+    if "githubrepo" in name_lower:
+        return "GitHub repository main page"
+    if "bitbucketrepo" in name_lower:
+        return "Bitbucket repository main page"
+    if "githubapi" in name_lower:
+        return "GitHub repository API response"
+    if "cran" in name_lower:
+        return "R CRAN package webpage"
+    if "pypi" in name_lower:
+        return "Python PyPI package webpage"
+    if "webpage" in name_lower:
+        return "webpage"
+    return None
 
 
 class Step(object):
