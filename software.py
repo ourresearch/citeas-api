@@ -1,6 +1,6 @@
 from io import StringIO
 import re
-from HTMLParser import HTMLParser
+import html
 from citeproc.source.json import CiteProcJSON
 from enhanced_citation_style import EnhancedCitationStyle
 from enhanced_citation_style import get_style_name
@@ -18,7 +18,7 @@ def get_author_list(data_author):
     author_list = []
     for name_dict in data_author:
         new_name_dict = {}
-        for name_k, name_v in name_dict.iteritems():
+        for name_k, name_v in name_dict.items():
             if name_k == "literal":
                 new_name_dict = author_name_as_dict(name_v)
             else:
@@ -57,8 +57,8 @@ def get_bib_source_from_dict(data):
     if not "type" in data:
         data["type"] = "misc"
 
-    if data["type"] is not "software":
-        for k, val in data.iteritems():
+    if data["type"] != "software":
+        for k, val in data.items():
             if val and (k in ["title", "container-title"]):
                 num_upper = sum([1 for c in val if c.isupper()])
                 if num_upper > 0.75*len(val):
@@ -89,10 +89,10 @@ def display_citation(bibtex_metadata, bib_stylename, formatter=formatter.html):
     citation = Citation([CitationItem(id)])
     bibliography.register(citation)
 
-    citation_parts = u"".join(bibliography.bibliography()[0])
-    citation_text = u"".join(citation_parts)
+    citation_parts = "".join(bibliography.bibliography()[0])
+    citation_text = "".join(citation_parts)
 
-    if bib_stylename is 'apa':
+    if bib_stylename == 'apa':
         # strip extra periods and spaces that can occur in APA format
         citation_text = citation_text.replace('..', '.')
         citation_text = citation_text.replace('  ', ' ')
@@ -105,8 +105,7 @@ def display_citation(bibtex_metadata, bib_stylename, formatter=formatter.html):
 
         citation_text = strip_duplicate_apa_title(bibtex_metadata, citation_text)
 
-    html_parser = HTMLParser()
-    citation_text = html_parser.unescape(citation_text)
+    citation_text = html.unescape(citation_text)
 
     return citation_text
 
@@ -115,7 +114,7 @@ def strip_duplicate_apa_title(bibtex_metadata, citation_text):
     item = bibtex_metadata.get('item-1')
     title = item.get('title')
     if title and 'Retrieved from https://github.com' not in citation_text:
-        title = u"".join(title).replace('  ', ' ')
+        title = "".join(title).replace('  ', ' ')
         if citation_text.count(title) == 2:
             citation_text = citation_text.replace(title, '', 1)
         if citation_text[0] == '.':
@@ -139,13 +138,13 @@ def citations(bibtex_metadata):
 
 def export_contents(export_type, metadata_dict):
     if export_type == "csv":
-        items = metadata_dict.items()
-        header_row = u",".join([name for (name, value) in items])
+        items = list(metadata_dict.items())
+        header_row = ",".join([name for (name, value) in items])
         try:
-            value_row = u",".join([str(value) for (name, value) in items])
+            value_row = ",".join([str(value) for (name, value) in items])
         except UnicodeEncodeError:
             value_row = ""
-        response = u"{}\n{}".format(header_row, value_row)
+        response = "{}\n{}".format(header_row, value_row)
         return response
     elif export_type == "ris":
         response_list = []
@@ -158,8 +157,8 @@ def export_contents(export_type, metadata_dict):
         response_list.append(("V1", metadata_dict.get("year", "")))
         response_list.append(("PB", metadata_dict.get("publisher", "")))
         for author in metadata_dict.get("author", []):
-            response_list.append(("A1", u", ".join([author.get("family", ""), author.get("given", "")])))
-        response = u"\n".join(u"{} - {}".format(k, v) for (k, v) in response_list)
+            response_list.append(("A1", ", ".join([author.get("family", ""), author.get("given", "")])))
+        response = "\n".join("{} - {}".format(k, v) for (k, v) in response_list)
         response += "\nER - "
         return response
     elif export_type == "enw":
@@ -173,8 +172,8 @@ def export_contents(export_type, metadata_dict):
         response_list.append(("%I", metadata_dict.get("publisher", "")))
         response_list.append(("0%", "Journal Article"))
         for author in metadata_dict.get("author", []):
-            response_list.append(("%A", u", ".join([author.get("family", ""), author.get("given", "")])))
-        response = u"\n".join(u"{} {}".format(k, v) for (k, v) in response_list)
+            response_list.append(("%A", ", ".join([author.get("family", ""), author.get("given", "")])))
+        response = "\n".join("{} {}".format(k, v) for (k, v) in response_list)
         return response
     elif export_type == "bibtex":
         if metadata_dict.get("type"):
@@ -205,7 +204,7 @@ def export_contents(export_type, metadata_dict):
         author_list = build_bibtex_author_list(metadata_dict.get("author", []))
         response_list.append(("author", author_list))
 
-        response += u",\n".join(u"{}={{{}}}".format(k, v) for (k, v) in response_list)
+        response += ",\n".join("{}={{{}}}".format(k, v) for (k, v) in response_list)
         response += "}"
 
         return response
