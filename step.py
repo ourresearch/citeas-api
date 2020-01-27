@@ -63,6 +63,8 @@ def get_subject(class_name):
         return "Python PyPI package webpage"
     if "webpage" in name_lower:
         return "webpage"
+    if "relation" in name_lower:
+        return "cite-as relation header"
     return None
 
 
@@ -94,7 +96,6 @@ class Step(object):
         self.source_preview = {
             'title': None
         }
-        self.is_link_relation = False
         self.original_url = None
 
     @property
@@ -178,7 +179,6 @@ class Step(object):
             "parent_step_name": self.parent.__class__.__name__,
             "parent_subject": get_subject(self.parent.__class__.__name__),
             "source_preview": self.source_preview,
-            "forwarded_via_link_relation": self.is_link_relation,
             "original_url": self.original_url
         }
         return ret
@@ -213,7 +213,7 @@ class UserInputStep(Step):
 
         # web page
         if input.startswith(("http://", "https://")):
-            return self.check_for_rel_cite_as_header(input)
+            return input
 
         # arvix
         if input.lower().startswith("arxiv"):
@@ -232,7 +232,7 @@ class UserInputStep(Step):
         except requests.exceptions.RequestException:
             pass
         else:
-            return self.check_for_rel_cite_as_header(url)
+            return url
 
         # google search
         # check if input is PMID
@@ -241,7 +241,7 @@ class UserInputStep(Step):
         else:
             query = '{} software citation'.format(input)
         for url in search(query, stop=1):
-            return self.check_for_rel_cite_as_header(url)
+            return url
 
     @staticmethod
     def get_citation_html_file(url):
@@ -271,32 +271,6 @@ class UserInputStep(Step):
             abort(404)
         self.content_url = cleaned
 
-    def check_for_rel_cite_as_header(self, input):
-        r = requests.get(input)
-
-        if 'link' in r.headers:
-            header_links = requests.utils.parse_header_links(r.headers['link'])
-            cite_as_links = [link for link in header_links if link['rel'] == 'cite-as']
-
-            if cite_as_links:
-                doi_links = [link for link in cite_as_links if 'doi.org' in link['url']]
-            else:
-                doi_links = None
-
-            # try to find doi links first
-            if doi_links:
-                self.is_link_relation = True
-                self.original_url = input
-                return doi_links[0]['url']
-            elif cite_as_links:
-                self.is_link_relation = True
-                self.original_url = input
-                return cite_as_links[0]['url']
-            else:
-                return input
-        else:
-            return input
-
 
 class WebpageMetadataStep(MetadataStep):
     def set_content(self, input):
@@ -320,6 +294,7 @@ class WebpageStep(Step):
     @property
     def starting_children(self):
         return [
+            RelationHeaderStep,
             GithubRepoStep,
             BitbucketRepoStep,
             CrossrefResponseStep,
@@ -465,6 +440,10 @@ class CrossrefResponseStep(Step):
         has_doi = False
         if input.startswith("10."):
             has_doi = True
+        elif self.content_url:
+            if self.content_url.startswith("http") and "doi.org/10." in self.content_url:
+                has_doi = True
+                return
         elif input.startswith("http") and "doi.org/10." in input:
             has_doi = True
         elif self.extract_doi(input):
@@ -1241,3 +1220,51 @@ class BitbucketDescriptionFileStep(CitationFileStep):
 
             self.content = get_webpage_text(filename)
             self.content_url = filename
+
+
+class RelationResponseMetadataStep(MetadataStep):
+    def set_content(self, input):
+        self.content = input
+
+
+class RelationHeaderStep(Step):
+    step_links = [("What is a cite-as link relation?", "https://tools.ietf.org/html/rfc8574")]
+    step_intro = "A cite-as link relation header is a special header meant to direct the user to a citation resource."
+
+    @property
+    def starting_children(self):
+        return [
+            CrossrefResponseStep
+        ]
+
+    def set_content(self, input):
+        if self.content_url.startswith(("http://", "https://")):
+            relation_link = self.check_for_rel_cite_as_header(self.content_url)
+            if relation_link:
+                self.content_url = relation_link
+                if 'doi.org' in relation_link:
+                    self.content = 'found'
+                else:
+                    return get_webpage_text(relation_link)
+
+    def check_for_rel_cite_as_header(self, input):
+        r = requests.get(input)
+
+        if 'link' in r.headers:
+            header_links = requests.utils.parse_header_links(r.headers['link'])
+            cite_as_links = [link for link in header_links if link['rel'] == 'cite-as']
+
+            if cite_as_links:
+                doi_links = [link for link in cite_as_links if 'doi.org' in link['url']]
+            else:
+                doi_links = None
+
+            # try to find doi links first
+            if doi_links:
+                self.original_url = input
+                return doi_links[0]['url']
+            elif cite_as_links:
+                self.original_url = input
+                return cite_as_links[0]['url']
+            else:
+                return input
