@@ -225,7 +225,11 @@ class UserInputStep(Step):
             return "arxiv:" + input.lower()
 
         # add http to try as a web page, then see if it returns an error
-        url = "http://{}".format(input)
+        if '.' in input:
+            url = "http://{}".format(input)
+        else:
+            url = None
+
         try:
             response = requests.get(url, timeout=2)
             response.raise_for_status()
