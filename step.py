@@ -632,38 +632,22 @@ class GithubApiResponseStep(Step):
             GithubApiResponseMetadataStep
         ]
 
-    def get_github_token_tuple(self):
-        tokens_str = os.environ["GITHUB_TOKENS"]
-        tokens = [t.split(":") for t in tokens_str.split(",")]
-        (login, token) = tokens[0]
-        return (login, token)
-
     def set_content(self, input):
         github_url = self.content_url
 
         if not github_url:
             return
-        if not "github.com" in github_url:
+        if "github.com" not in github_url:
             return
 
         self.content = {}
         h = {"User-Agent": "CiteAs"}
         (login, token) = self.get_github_token_tuple()
+        repo_api_url = self.get_repo_api_url(github_url)
 
-        # clean github URL for API
-        # remove /wiki
-        repo_api_url = github_url.replace("/wiki", "")
-        # strip trailing /
-        if repo_api_url.endswith("/"):
-            repo_api_url = repo_api_url[:-1]
-        # switch to API URL
-        if "gist.github.com" in repo_api_url:
-            gist_id = find_or_empty_string("gist.github.com\/\w+\/(\w+|\d+)", repo_api_url)
-            repo_api_url = "https://api.github.com/gists/{}".format(gist_id)
-        else:
-            repo_api_url = repo_api_url.replace("github.com/", "api.github.com/repos/")
         r_repo = requests.get(repo_api_url, auth=(login, token), headers=h)
         r_repo = r_repo.json()
+
         try:
             user_api_url = "https://api.github.com/users/{}".format(r_repo["owner"]["login"])
         except (KeyError, TypeError):
@@ -675,6 +659,31 @@ class GithubApiResponseStep(Step):
         self.content["user"] = r_login.json()
         self.content_url = repo_api_url
         self.additional_content_url = {'url': user_api_url, 'description': 'author source'}
+
+    @staticmethod
+    def get_repo_api_url(github_url):
+        # remove /wiki
+        repo_api_url = github_url.replace("/wiki", "")
+        # strip trailing /
+        if repo_api_url.endswith("/"):
+            repo_api_url = repo_api_url[:-1]
+        # remove www
+        repo_api_url = repo_api_url.replace("http://www.", "http://")
+        repo_api_url = repo_api_url.replace("https://www.", "https://")
+        # switch to API URL
+        if "gist.github.com" in repo_api_url:
+            gist_id = find_or_empty_string("gist.github.com\/\w+\/(\w+|\d+)", repo_api_url)
+            repo_api_url = "https://api.github.com/gists/{}".format(gist_id)
+        else:
+            repo_api_url = repo_api_url.replace("github.com/", "api.github.com/repos/")
+        return repo_api_url
+
+    @staticmethod
+    def get_github_token_tuple():
+        tokens_str = os.environ["GITHUB_TOKENS"]
+        tokens = [t.split(":") for t in tokens_str.split(",")]
+        (login, token) = tokens[0]
+        return login, token
 
 
 class GithubRepoStep(Step):
