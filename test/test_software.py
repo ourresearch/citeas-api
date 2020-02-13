@@ -37,7 +37,6 @@ test_urls = [
     ("CRAN.R-project.org/package=tidyverse", "", "Wickham, H. et al., 2019. Welcome to the Tidyverse. <i>Journal of Open Source Software</i>, 4(43), p.1686. Available at: https://doi.org/10.21105/joss.01686."),
     ("https://vhub.org/resources/puffin", "", "Bursik, M.I. et al., 2013. puffin. Available at: https://vhub.org/resources/puffin."),
     ("https://cran.r-project.org/web/packages/BDP2/", "", "Kopp-Schneider, A., Wiesenfarth, M. & Abel, U., 2018. BDP2: Bayesian Adaptive Designs for Phase II Trials with Binary. <i>R package version 0.1.3</i>. Available at: https://CRAN.R-project.org/package=BDP2."),
-    ("https://cran.r-project.org/web/packages/rowr", "", "Varrichio, C., 2016. rowr: Row-Based Functions for R Objects. <i>R package version 1.1.3</i>. Available at: https://CRAN.R-project.org/package=rowr."),
     ("https://gist.github.com/rxaviers/7360908", "", "Anon, Complete list of github markdown emoji markup · GitHub. Available at: https://gist.github.com/rxaviers/7360908."),
     ("https://github.com/nicholasricci/DDM_Framework", "", "Marzolla, M., D'Angelo, G. & Mandrioli, M., 2013. A Parallel Data Distribution Management Algorithm."),
     ("https://cran.r-project.org/web/packages/vistime/index.html", "", "Raabe, S., 2020. vistime: Pretty Timeline Creation. <i>R package version 0.9.0</i>. Available at: https://CRAN.R-project.org/package=vistime."),
