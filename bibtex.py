@@ -14,7 +14,7 @@ from warnings import warn
 from citeproc.types import (ARTICLE, ARTICLE_JOURNAL, BOOK, CHAPTER, MANUSCRIPT,
                       PAMPHLET, PAPER_CONFERENCE, REPORT, THESIS)
 from citeproc.string import String, MixedString, NoCase
-from citeproc.source import BibliographySource, Reference, Name, Date, DateRange, Pages
+from citeproc.source import BibliographySource, Reference, Name, Date, DateRange
 from citeproc.source.bibtex.bibparse import BibTeXParser
 from citeproc.source.bibtex.latex import parse_latex
 from citeproc.source.bibtex.latex.macro import NewCommand, Macro
@@ -125,10 +125,9 @@ class BibTeX(BibliographySource):
                 first, last = value.split('--')
             except ValueError:
                 first, last = value.split('-')
-            pages = Pages(first=int(first), last=int(last))
+            pages = '-'.join((first, last))
         else:
-            decimal = value[:-1] if value.endswith('+') else value
-            pages = Pages(first=int(decimal))
+            pages = value[:-1] if value.endswith('+') else value
         return pages
 
     def _bibtex_to_csl_date(self, bibtex_entry):
