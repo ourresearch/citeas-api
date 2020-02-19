@@ -14,6 +14,4 @@ pytest==5.3.5
 requests==2.22.0
 requests-cache==0.4.12
 sentry-sdk==0.14.1
-shortuuid==0.4.3
 unidecode==1.1.1
-WebOb==1.8.3
