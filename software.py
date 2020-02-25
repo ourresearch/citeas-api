@@ -18,6 +18,11 @@ def get_author_list(data_author):
     author_list = []
     for name_dict in data_author:
         new_name_dict = {}
+        if "family" not in name_dict:
+            if "name" in name_dict:
+                new_name_dict["family"] = name_dict["name"]
+            else:
+                new_name_dict["family"] = ""
         for name_k, name_v in name_dict.items():
             if name_k == "literal":
                 new_name_dict = author_name_as_dict(name_v)
