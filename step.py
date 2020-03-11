@@ -882,7 +882,7 @@ class CranCitationFileStep(CitationFileStep):
         cran_citation_url = self.parent_content_url + '/citation.html'
         r = requests.get(cran_citation_url)
 
-        if r.status_code is 200:
+        if r.status_code == 200:
             self.content = r.text
             self.content_url = cran_citation_url
 
@@ -924,7 +924,7 @@ class GithubCitationFileStep(CitationFileStep):
         repo_path = matches[0].replace("/blob/master/CITATION", "")
         api_url = 'https://api.github.com/repos{}/contents/CITATION?ref=master'.format(repo_path)
         r = requests.get(api_url)
-        if r.status_code is not 200:
+        if r.status_code != 200:
             return None
         api_resp = r.json()
         encoded_content = api_resp.get('content')
