@@ -710,7 +710,7 @@ class GithubRepoStep(Step):
             url = find_or_empty_string('\"(https?://github.com/.+?)\"', input)
             url = url.replace("/issues", "")
             url = url.replace("/new", "")
-            if 'sphinx' and 'theme' in url:
+            if 'sphinx' and 'theme' in url or url.endswith('.zip'):
                 url = None
             if not url:
                 return
