@@ -78,9 +78,14 @@ def index_endpoint():
 
 @app.route("/product/<path:id>", methods=["GET"])
 def citeas_product_get(id):
-    my_software = Software(id)
-    my_software.find_metadata()
-    return jsonify(my_software.to_dict())
+    if id.endswith('.pdf'):
+        return jsonify({'error_message': 'PDF documents are not supported.'})
+    elif id.endswith(('.doc', 'docx')):
+        return jsonify({'error_message': 'Word documents are not supported.'})
+    else:
+        my_software = Software(id)
+        my_software.find_metadata()
+        return jsonify(my_software.to_dict())
 
 
 @app.route("/steps", methods=["GET"])
