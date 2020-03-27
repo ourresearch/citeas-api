@@ -444,7 +444,12 @@ def get_hops(url):
             url = None
         else:
             hops.insert(0, url)
-            r = requests.get(url)
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) '
+                              'AppleWebKit/537.36 (KHTML, like Gecko) '
+                              'Chrome/50.0.2661.102 Safari/537.36'
+            }
+            r = requests.get(url, headers=headers)
             if r.url != url:
                 hops.insert(0, r.url)
             # check for redirect meta tag
