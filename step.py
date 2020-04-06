@@ -206,6 +206,26 @@ class UserInputStep(Step):
             WebpageStep
         ]
 
+    def set_content(self, input):
+        url = self.clean_input(input)
+        if "readthedocs" in url:
+            self.content = self.get_citation_html_file(url)
+        elif url.startswith("http"):
+            self.content = get_webpage_text(url)
+        else:
+            self.content = url
+
+    def set_content_url(self, input):
+        cleaned = self.clean_input(input)
+        if cleaned.startswith("10."):
+            cleaned = "http://doi.org/{}".format(cleaned)
+        if cleaned.startswith("arxiv"):
+            id = cleaned.split(":", 1)[1]
+            cleaned = "http://arxiv.org/abs/{}".format(id)
+        if cleaned.startswith("ftp://"):
+            abort(404)
+        self.content_url = cleaned
+
     def clean_input(self, input):
         # doi
         if input.startswith("10."):
@@ -258,22 +278,6 @@ class UserInputStep(Step):
             return url + 'en/stable/citation.html'
         else:
             return url
-
-    def set_content(self, input):
-        self.content = self.clean_input(input)
-        if "readthedocs" in self.content:
-            self.content = self.get_citation_html_file(self.content)
-
-    def set_content_url(self, input):
-        cleaned = self.content
-        if cleaned.startswith("10."):
-            cleaned = "http://doi.org/{}".format(cleaned)
-        if cleaned.startswith("arxiv"):
-            id = cleaned.split(":", 1)[1]
-            cleaned = "http://arxiv.org/abs/{}".format(id)
-        if cleaned.startswith("ftp://"):
-            abort(404)
-        self.content_url = cleaned
 
 
 class WebpageMetadataStep(MetadataStep):
