@@ -313,7 +313,10 @@ class WebpageStep(Step):
         ]
 
     def set_content(self, input):
-        self.content = get_webpage_text(input)
+        if not input:
+            self.content = get_webpage_text(self.content_url)
+        else:
+            self.content = input
 
     def set_content_url(self, input):
         self.content_url = input
