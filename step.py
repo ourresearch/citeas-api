@@ -208,7 +208,9 @@ class UserInputStep(Step):
 
     def set_content(self, input):
         url = self.clean_input(input)
-        if "readthedocs" in url:
+        if "github" in url or "vhub" in url.lower() or "cran" in url.lower():
+            self.content = url
+        elif "readthedocs" in url:
             self.content = self.get_citation_html_file(url)
         elif url.startswith("http"):
             self.content = get_webpage_text(url)
