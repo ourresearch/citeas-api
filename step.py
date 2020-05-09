@@ -208,10 +208,12 @@ class UserInputStep(Step):
 
     def set_content(self, input):
         url = self.clean_input(input)
-        if "github" in url or "vhub" in url.lower() or "cran" in url.lower():
+        if "github" in url or "cran" in url.lower():
             self.content = url
         elif "readthedocs" in url:
-            self.content = self.get_citation_html_file(url)
+            self.content = get_webpage_text(self.get_citation_html_file(url))
+        elif "vhub" in url:
+            self.content = get_webpage_text(url)
         elif url.startswith("http"):
             self.content = get_webpage_text(url)
         else:
@@ -226,6 +228,8 @@ class UserInputStep(Step):
             cleaned = "http://arxiv.org/abs/{}".format(id)
         if cleaned.startswith("ftp://"):
             abort(404)
+        if "readthedocs" in cleaned:
+            cleaned = self.get_citation_html_file(cleaned)
         self.content_url = cleaned
 
     def clean_input(self, input):
