@@ -746,7 +746,8 @@ class DescriptionMetadataStep(MetadataStep):
         metadata_dict["title"] = "{}: {}".format(package, title)
 
         metadata_dict["author"] = self.find_authors(text)
-        self.source_preview["author"] = build_author_source_preview(self.content_url, text, 'author', metadata_dict["author"])
+        if metadata_dict["author"] != "":
+            self.source_preview["author"] = build_author_source_preview(self.content_url, text, 'author', metadata_dict["author"])
 
         version = find_or_empty_string(r"Version: (.*)", text)
         metadata_dict["note"] = "R package version {}".format(version)
@@ -764,9 +765,12 @@ class DescriptionMetadataStep(MetadataStep):
         self.content = metadata_dict
 
     def find_authors(self, text):
-        authors = self.find_authors_method_1(text)
-        if not authors:
-            authors = self.find_authors_method_2(text)
+        try:
+            authors = self.find_authors_method_1(text)
+            if not authors:
+                authors = self.find_authors_method_2(text)
+        except IndexError:
+            authors = ""
         return authors
 
     @staticmethod
