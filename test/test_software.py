@@ -12,7 +12,8 @@ requests_cache.install_cache('my_requests_cache', expire_after=60*60*24*7)  # ex
 # Use harvard1 citation style
 
 arxiv_urls = [
-    ("arXiv:1802.02689", "Borgman, C., Scharnhorst, A. & Golshan, M., 2018. Digital Data Archives as Knowledge Infrastructures: Mediating Data Sharing and Reuse. <i>arXiv</i>. Available at: http://arxiv.org/abs/1802.02689v2.")
+    ("arXiv:1802.02689", "Borgman, C., Scharnhorst, A. & Golshan, M., 2018. Digital Data Archives as Knowledge Infrastructures: Mediating Data Sharing and Reuse. <i>arXiv</i>. Available at: http://arxiv.org/abs/1802.02689v2."),
+    ("1807.09464", "Duchene, J. et al., 2018. Specification-Based Protocol Obfuscation. <i>arXiv</i>. Available at: http://arxiv.org/abs/1807.09464v1."),
 ]
 
 cran_urls = [
@@ -23,10 +24,12 @@ cran_urls = [
     ("https://cran.r-project.org/web/packages/vistime/index.html", "Raabe, S., 2020. vistime: Pretty Timelines. <i>R package version 1.0.0</i>. Available at: https://CRAN.R-project.org/package=vistime."),
     ("https://cran.r-project.org/web/packages/afCEC/index.html", "Byrski, K., 2018. afCEC: Active Function Cross-Entropy Clustering. <i>R package version 1.0.2</i>. Available at: https://CRAN.R-project.org/package=afCEC."),
     ("http://cran.r-project.org/package=abcrf", "Marin, J.-M., 2019. abcrf: Approximate Bayesian Computation via Random Forests. <i>R package version 1.8.1</i>. Available at: https://CRAN.R-project.org/package=abcrf."),
+    ("https://cran.r-project.org/web/packages/stringr", "Hadley, W., 2019. stringr: Simple, Consistent Wrappers for Common String Operations. <i>R package version 1.4.0</i>. Available at: https://CRAN.R-project.org/package=stringr.")
 ]
 
 doi_urls = [
-    ("1807.09464", "Duchene, J. et al., 2018. Specification-Based Protocol Obfuscation. <i>arXiv</i>. Available at: http://arxiv.org/abs/1807.09464v1."),
+    ("10.1109/5.771073", "Paskin, N., 1999. Toward unique identifiers. <i>Proceedings of the IEEE</i>, 87(7), pp.1208–1227. Available at: https://doi.org/10.1109/5.771073."),
+    ("10.1093/ajae/aaq063", "Shi, G., Chavas, J.-. paul . & Stiegert, K., 2010. An Analysis of the Pricing of Traits in the U.S. Corn Seed Market. <i>American Journal of Agricultural Economics</i>, 92(5), pp.1324–1338. Available at: https://doi.org/10.1093/ajae/aaq063.")
 ]
 
 github_urls = [
@@ -41,7 +44,7 @@ github_urls = [
     ("https://github.com/dfm/emcee", 'Foreman-Mackey, D. et al., 2013. emcee: The MCMC Hammer. <i>Publications of the Astronomical Society of the Pacific</i>, 125(925), pp.306\u2013312. Available at: https://doi.org/10.1086/670067.'),
     ("https://github.com/robintw/Py6S", 'Wilson, R.T., 2013. Py6S: A Python interface to the 6S radiative transfer model. <i>Computers & Geosciences</i>, 51, pp.166–171. Available at: https://doi.org/10.1016/j.cageo.2012.08.002.'),
     ("https://github.com/nicholasricci/DDM_Framework", "Marzolla, M., D'Angelo, G. & Mandrioli, M., 2013. A Parallel Data Distribution Management Algorithm."),
-    # ("https://gist.github.com/rxaviers/7360908", "Anon, Complete list of github markdown emoji markup · GitHub. Available at: https://gist.github.com/rxaviers/7360908."),
+    ("https://gist.github.com/vegaasen/157fbc6dce8545b7f12c", "Aasen, V., 2015. supress-warning-idea.md. Available at: https://gist.github.com/157fbc6dce8545b7f12c."),
 ]
 
 website_urls = [
@@ -64,3 +67,26 @@ def test_citations(url, expected):
     my_software = Software(url)
     my_software.find_metadata()
     assert my_software.citation_plain == expected
+
+
+def test_source_preview():
+    my_software = Software('https://cran.r-project.org/web/packages/stringr')
+    my_software.find_metadata()
+    resp = my_software.to_dict()
+    provenance = resp['provenance'][8]['source_preview']
+    assert provenance['title'] == '<i>Snapshot of title data found at https://cran.r-project.org/web/packages/stringr/DESCRIPTION.</i><br>Package: stringr<br />Title: <span class="highlight">' \
+                                  'Simple, Consistent Wrappers for Common String Operations</span><br />Version: 1.4.0<br />Authors@R: <br />    c(person(given = &quot;Hadley&quot;,<br />' \
+                                  '             family = &quot;Wickham&quot;,<br />             role = c(&quot;aut&quot;, &quot;cre&quot;, &quot;cph&quot;),<br />             ' \
+                                  'email = &quot;hadley@rstudio.com&quot;),<br />      person(given = &quot;RStudio&quot;,<br />             role = c(&quot;cph&quot;, &quot;fnd&quot;)))<br />' \
+                                  'Description: A consistent, simple and easy to use set of<br />    wrappers around the fantastic &#x27;stringi'
+    assert provenance['author'] == '<i>Snapshot of author data found at https://cran.r-project.org/web/packages/stringr/DESCRIPTION.</i><br>Package: ' \
+                                   'stringr<br />Title: Simple, Consistent Wrappers for Common String Operations<br />Version: 1.4.0<br />Authors@R: <br />    ' \
+                                   'c(person(given = "<span class="highlight">Hadley</span>",<br />             family = "<span class="highlight">Wickham</span>",<br />             ' \
+                                   'role = c("aut", "cre", "cph"),<br />             email = "hadley@rstudio.com"),<br />      person(given = "RStudio",<br />             ' \
+                                   'role = c("cph", "fnd")))<br />Description: A consistent, simple and easy to use set of<br />    wrappers around the fantastic stringi package. All function and<br />    ' \
+                                   'argument names (and positions) are consistent, all functions deal with<br />    "NA"s and zero length vectors in the same way, and the output from<br />    one function is easy t'
+    assert provenance['year'] == '<i>Snapshot of year data found at https://cran.r-project.org/web/packages/stringr/DESCRIPTION.</i><br>tringr<br />BugReports: ' \
+                                 'https://github.com/tidyverse/stringr/issues<br />Depends: R (&gt;= 3.1)<br />Imports: glue (&gt;= 1.2.0), magrittr, stringi (&gt;= 1.1.7)<br />Suggests: covr, htmltools, ' \
+                                 'htmlwidgets, knitr, rmarkdown, testthat<br />VignetteBuilder: knitr<br />Encoding: UTF-8<br />LazyData: true<br />RoxygenNote: 6.1.1<br />' \
+                                 'NeedsCompilation: no<br />Packaged: 2019-02-09 16:03:19 UTC; hadley<br />Author: Hadley Wickham [aut, cre, cph],<br />  RStudio [cph, fnd]<br />' \
+                                 'Maintainer: Hadley Wickham &lt;hadley@rstudio.com&gt;<br />Repository: CRAN<br />Date/Publication: <span class="highlight">2019-02-10 03:40:03 UTC</span><br />'
