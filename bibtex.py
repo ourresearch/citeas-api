@@ -106,7 +106,10 @@ class BibTeX(BibliographySource):
             elif field == 'pages':
                 value = self._bibtex_to_csl_pages(value)
             elif field in ('author', 'editor'):
-                value = [name for name in self._parse_author(value)]
+                try:
+                    value = [name for name in self._parse_author(value)]
+                except RuntimeError:
+                    pass
             else:
                 try:
                     value = self._parse_string(value)
