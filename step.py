@@ -270,8 +270,9 @@ class UserInputStep(Step):
             query = input
         else:
             query = '{} software citation'.format(input)
-        for url in search(query, stop=1):
-            return url
+        for url in search(query, stop=2):
+            if 'citebay.com' not in url:
+                return url
 
     @staticmethod
     def get_citation_html_file(url):
