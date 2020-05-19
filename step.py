@@ -953,8 +953,8 @@ class GithubCitationFileStep(CitationFileStep):
 class BibtexMetadataStep(MetadataStep):
     def set_content(self, bibtex):
         bibtext_string = "{}".format(bibtex)
-        # bibtext_string = bibtext_string.replace("-", "-")
         bibtext_string = bibtext_string.replace("journal = {", "container-title = {")
+        bibtext_string = bibtext_string.replace("\\url", "url")
         bib_dict = BibTeX(StringIO(bibtext_string))
 
         id = list(bib_dict.keys())[0]
