@@ -215,7 +215,7 @@ class UserInputStep(Step):
         elif "vhub" in url:
             self.content = get_webpage_text(url)
         elif url.startswith("http"):
-            self.content = get_webpage_text(url)
+            self.content = url
         else:
             self.content = url
 
@@ -310,18 +310,15 @@ class WebpageStep(Step):
     def starting_children(self):
         return [
             RelationHeaderStep,
+            CrossrefResponseStep,
             GithubRepoStep,
             BitbucketRepoStep,
-            CrossrefResponseStep,
             BibtexStep,
             WebpageMetadataStep
         ]
 
     def set_content(self, input):
-        if not input:
-            self.content = get_webpage_text(self.content_url)
-        else:
-            self.content = input
+        self.content = get_webpage_text(self.content_url)
 
     def set_content_url(self, input):
         self.content_url = input
