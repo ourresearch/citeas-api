@@ -90,3 +90,71 @@ def test_source_preview():
                                  'htmlwidgets, knitr, rmarkdown, testthat<br />VignetteBuilder: knitr<br />Encoding: UTF-8<br />LazyData: true<br />RoxygenNote: 6.1.1<br />' \
                                  'NeedsCompilation: no<br />Packaged: 2019-02-09 16:03:19 UTC; hadley<br />Author: Hadley Wickham [aut, cre, cph],<br />  RStudio [cph, fnd]<br />' \
                                  'Maintainer: Hadley Wickham &lt;hadley@rstudio.com&gt;<br />Repository: CRAN<br />Date/Publication: <span class="highlight">2019-02-10 03:40:03 UTC</span><br />'
+
+
+def test_provenance():
+    my_software = Software('http://yt-project.org')
+    my_software.find_metadata()
+    resp = my_software.to_dict()
+    provenance = resp['provenance']
+
+    steps_with_content = [
+        {
+            'step_name': 'UserInputStep', 'parent_step_name': 'NoneType'
+        },
+        {
+            'step_name': 'WebpageStep', 'parent_step_name': 'UserInputStep'
+        },
+        {
+            'step_name': 'GithubRepoStep', 'parent_step_name': 'WebpageStep'
+        },
+        {
+            'step_name': 'GithubCitationFileStep', 'parent_step_name': 'GithubRepoStep'
+        },
+        {
+            'step_name': 'CrossrefResponseStep', 'parent_step_name': 'GithubCitationFileStep'
+        },
+        {
+            'step_name': 'CrossrefResponseMetadataStep', 'parent_step_name': 'CrossrefResponseStep'
+        },
+    ]
+
+    steps_without_content = [
+        {
+            'step_name': 'CrossrefResponseStep', 'parent_step_name': 'UserInputStep'
+        },
+        {
+            'step_name': 'ArxivResponseStep', 'parent_step_name': 'UserInputStep'
+        },
+        {
+            'step_name': 'GithubRepoStep', 'parent_step_name': 'UserInputStep'
+        },
+        {
+            'step_name': 'BitbucketRepoStep', 'parent_step_name': 'UserInputStep'
+        },
+        {
+            'step_name': 'CranLibraryStep', 'parent_step_name': 'UserInputStep'
+        },
+        {
+            'step_name': 'PypiLibraryStep', 'parent_step_name': 'UserInputStep'
+        },
+        {
+            'step_name': 'RelationHeaderStep', 'parent_step_name': 'WebpageStep'
+        },
+        {
+            'step_name': 'CrossrefResponseStep', 'parent_step_name': 'WebpageStep'
+        },
+        {
+            'step_name': 'GithubCodemetaFileStep', 'parent_step_name': 'GithubRepoStep'
+        }
+    ]
+
+    for step in steps_with_content:
+        for p in provenance:
+            if p['name'] == step['step_name'] and p['parent_step_name'] == step['parent_step_name']:
+                assert p['has_content'] is True
+
+    for step in steps_without_content:
+        for p in provenance:
+            if p['name'] == step['step_name'] and p['parent_step_name'] == step['parent_step_name']:
+                assert p['has_content'] is False
