@@ -14,3 +14,4 @@ requests==2.23.0
 requests-cache==0.5.2
 sentry-sdk==0.14.4
 unidecode==1.1.1
+validators==0.15.0

@@ -8,6 +8,7 @@ import requests
 from arxiv2bib import arxiv2bib_dict, is_valid
 from flask import abort
 from googlesearch import search
+import validators
 
 from bibtex import \
     BibTeX  # use local patched version instead of citeproc.source.bibtex
@@ -251,7 +252,7 @@ class UserInputStep(Step):
             return "arxiv:" + input.lower()
 
         # add http to try as a web page, then see if it returns an error
-        if '.' in input:
+        if validators.url("http://{}".format(input)):
             url = "http://{}".format(input)
         else:
             url = None
