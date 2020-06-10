@@ -59,7 +59,11 @@ website_urls = [
     ("https://www.thelancet.com/journals/laninf/article/PIIS1473-3099(20)30120-1/fulltext", "Dong, E., Du, H. & Gardner, L., 2020. An interactive web-based dashboard to track COVID-19 in real time. <i>The Lancet Infectious Diseases</i>, 20(5), pp.533–534. Available at: https://doi.org/10.1016/s1473-3099(20)30120-1.")
 ]
 
-urls_to_test = arxiv_urls + cran_urls + doi_urls + github_urls + website_urls
+key_word_urls = [
+    ("Clarke%20J.I.,%20(1966)%20Morphometry%20from%20maps,%20Essays%20in%20geomorphology", "Anon, EconPapers: An Inquiry into the Nature and Causes of the Wealth of Nations. Available at: https://econpapers.repec.org/RePEc:ucp:bkecon:9780226763743.")
+]
+
+urls_to_test = arxiv_urls + cran_urls + doi_urls + github_urls + key_word_urls + website_urls
 
 
 @pytest.mark.parametrize("url,expected", urls_to_test)
