@@ -207,65 +207,55 @@ class UserInputStep(Step):
             WebpageStep
         ]
 
-    def set_content(self, input):
-        url = self.clean_input(input)
-        if "github" in url or "cran" in url.lower():
-            self.content = url
-        elif "readthedocs" in url:
-            self.content = get_webpage_text(self.get_citation_html_file(url))
-        elif "vhub" in url:
-            self.content = get_webpage_text(url)
-        elif url.startswith("http"):
-            self.content = url
-        else:
-            self.content = url
-
     def set_content_url(self, input):
-        cleaned = self.clean_input(input)
-        if cleaned.startswith("10."):
-            cleaned = "http://doi.org/{}".format(cleaned)
-        if cleaned.startswith("arxiv"):
-            id = cleaned.split(":", 1)[1]
-            cleaned = "http://arxiv.org/abs/{}".format(id)
-        if cleaned.startswith("ftp://"):
+        url = self.build_starting_url(input)
+        if url.startswith("ftp://"):
             abort(404)
-        if "readthedocs" in cleaned:
-            cleaned = self.get_citation_html_file(cleaned)
-        self.content_url = cleaned
+        if "readthedocs" in url:
+            url = self.get_citation_html_file(url)
+        self.content_url = url
 
-    def clean_input(self, input):
+    def set_content(self, input):
+        if self.content_url.startswith("http://arxiv"):
+            self.content = self.content_url.replace("http://", "").replace(".org/abs/", ":")
+        else:
+            self.content = self.content_url
+
+    def build_starting_url(self, input):
         # doi
         if input.startswith("10."):
-            return input
+            url = "http://doi.org/{}".format(input)
 
         # web page
-        if input.startswith(("http://", "https://")):
-            return input
+        elif input.startswith(("http://", "https://")):
+            url = input
 
-        # arvix
-        if input.lower().startswith("arxiv"):
-            return input.lower()
+        # arxiv
+        elif input.lower().startswith("arxiv"):
+            id = input.split(":", 1)[1]
+            url = "http://arxiv.org/abs/{}".format(id)
 
         # arvix ID only, like 1812.02329
+        elif self.is_arxiv_id(input):
+            url = "http://arxiv.org/abs/{}".format(input)
+
+        # add http to see if it is a valid URL
+        elif validators.url("http://{}".format(input)):
+            url = "http://{}".format(input)
+
+        else:
+            # google search
+            url = self.google_search(input)
+        return url
+
+    @staticmethod
+    def is_arxiv_id(input):
         r = re.compile('\d{4}.\d{5}')
         if r.match(input.lower()):
-            return "arxiv:" + input.lower()
+            return True
 
-        # add http to try as a web page, then see if it returns an error
-        if validators.url("http://{}".format(input)):
-            url = "http://{}".format(input)
-        else:
-            url = None
-
-        try:
-            response = requests.get(url, timeout=2)
-            response.raise_for_status()
-        except requests.exceptions.RequestException:
-            pass
-        else:
-            return url
-
-        # google search
+    @staticmethod
+    def google_search(input):
         # check if input is PMID
         if len(input) == 8 and input.isdigit():
             query = input
@@ -522,7 +512,7 @@ class ArxivResponseStep(Step):
             self.content["author"].append(author_name_as_dict(author))
 
     def set_content_url(self, input):
-        if input.startswith("arxiv:"):
+        if input.startswith("http://arxiv:"):
             arxiv_id = input.split(":", 1)[1]
             self.content_url = "https://arxiv.org/abs/{}".format(arxiv_id)
 

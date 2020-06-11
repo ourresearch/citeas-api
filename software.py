@@ -235,8 +235,8 @@ class Software(object):
 
     def find_metadata(self):
         my_step = UserInputStep()
-        my_step.set_content(self.user_supplied_id)
         my_step.set_content_url(self.user_supplied_id)
+        my_step.set_content(self.user_supplied_id)
         self.completed_steps.append(my_step)
 
         cursor = 0
