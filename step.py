@@ -240,7 +240,7 @@ class UserInputStep(Step):
             url = "http://arxiv.org/abs/{}".format(input)
 
         # add http to see if it is a valid URL
-        elif validators.url("http://{}".format(input)):
+        elif self.is_valid_url(input):
             url = "http://{}".format(input)
 
         else:
@@ -264,6 +264,18 @@ class UserInputStep(Step):
         for url in search(query, stop=2):
             if 'citebay.com' not in url:
                 return url
+
+    @staticmethod
+    def is_valid_url(input):
+        url = "http://{}".format(input)
+        if validators.url(url):
+            try:
+                r = requests.get(url, timeout=1)
+                if r.status_code == requests.codes.ok:
+                    return True
+            except:
+                return False
+
 
     @staticmethod
     def get_citation_html_file(url):
