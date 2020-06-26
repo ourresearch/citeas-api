@@ -33,7 +33,7 @@ doi_urls = [
 ]
 
 github_urls = [
-    ("https://github.com/pvlib/pvlib-python", "Holmgren, W. et al., 2020. pvlib/pvlib-python: v0.7.2. Available at: https://doi.org/10.5281/zenodo.3762635."),
+    ("https://github.com/pvlib/pvlib-python", "Holmgren, W. et al., 2020. <i>pvlib/pvlib-python: v0.7.2</i>, Zenodo. Available at: https://doi.org/10.5281/zenodo.3762635."),
     ("https://github.com/gcowan/hyperk", "Cowan, G., 2016. Gcowan/Hyperk: Mcp Data Processing Code. Available at: https://doi.org/10.5281/zenodo.160400."),
     ("https://github.com/NSLS-II-XPD/xpdView", "Duff, C. & Kaming-Thanassi, J., 2016. Xpdview: Xpdview Initial Release. Available at: https://doi.org/10.5281/zenodo.60479."),
     ("https://github.com/impactstory/depsy", "Research, O., 2015. depsy. Available at: https://github.com/ourresearch/depsy."),
@@ -55,7 +55,7 @@ website_urls = [
     ("https://slicer.org/", "Punzo, D., 2015. SlicerAstro. Available at: https://github.com/Punzo/SlicerAstro."),
     ("https://vhub.org/resources/puffin", "Bursik, M.I. et al., 2013. puffin. Available at: https://vhub.org/resources/puffin."),
     ("https://ccdproc.readthedocs.io/en/latest/", "Craig, M. et al., 2017. Astropy/Ccdproc: V1.3.0.Post1. Available at: https://doi.org/10.5281/zenodo.1069648."),
-    ("https://photutils.readthedocs.io/", "Bradley, L. et al., 2019. astropy/photutils: v0.7.2. Available at: https://doi.org/10.5281/zenodo.596036."),
+    ("https://photutils.readthedocs.io/", "Bradley, L. et al., 2019. <i>astropy/photutils: v0.7.2</i>, Zenodo. Available at: https://doi.org/10.5281/zenodo.596036."),
     ("https://www.thelancet.com/journals/laninf/article/PIIS1473-3099(20)30120-1/fulltext", "Dong, E., Du, H. & Gardner, L., 2020. An interactive web-based dashboard to track COVID-19 in real time. <i>The Lancet Infectious Diseases</i>, 20(5), pp.533–534. Available at: https://doi.org/10.1016/s1473-3099(20)30120-1.")
 ]
 

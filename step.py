@@ -261,8 +261,8 @@ class UserInputStep(Step):
             query = input
         else:
             query = '{} software citation'.format(input)
-        for url in search(query, stop=2):
-            if 'citebay.com' not in url:
+        for url in search(query, stop=3):
+            if 'citebay.com' not in url and not url.endswith('.pdf'):
                 return url
 
     @staticmethod
