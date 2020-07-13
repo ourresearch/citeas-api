@@ -280,14 +280,24 @@ class UserInputStep(Step):
 
     @staticmethod
     def get_citation_html_file(url):
-        # check for citation.html file
-        r = requests.get(url + 'citation.html', timeout=2)
-        if r.status_code == 200:
-            return url + 'citation.html'
-        u = requests.get(url + 'en/stable/citation.html', timeout=2)
-        if u.status_code == 200:
-            return url + 'en/stable/citation.html'
+        # format url
+        if url.endswith('en/stable') or url.endswith('en/latest'):
+            citation_url = url + '/citation.html'
+        elif url.endswith('en/stable/') or url.endswith('en/latest/'):
+            citation_url = url + 'citation.html'
+        elif url.endswith('/'):
+            citation_url = url + 'en/stable/citation.html'
         else:
+            citation_url = url + '/en/stable/citation.html'
+
+        # check if citation exists
+        try:
+            r = requests.get(citation_url, timeout=2)
+            if r.status_code == 200:
+                return citation_url
+            else:
+                return url
+        except requests.exceptions.RequestException:
             return url
 
 
