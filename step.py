@@ -7,7 +7,7 @@ import json5
 import requests
 from arxiv2bib import arxiv2bib_dict, is_valid
 from flask import abort
-from googlesearch import search
+from googlesearch import get_random_user_agent, search
 import validators
 
 from bibtex import \
@@ -256,12 +256,13 @@ class UserInputStep(Step):
 
     @staticmethod
     def google_search(input):
+        random_user_agent = get_random_user_agent()
         # check if input is PMID
         if len(input) == 8 and input.isdigit():
             query = input
         else:
             query = '{} software citation'.format(input)
-        for url in search(query, stop=3):
+        for url in search(query, stop=3, user_agent=random_user_agent):
             if 'citebay.com' not in url and not url.endswith('.pdf'):
                 return url
 

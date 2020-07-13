@@ -60,7 +60,7 @@ website_urls = [
 ]
 
 key_word_urls = [
-    ("Clarke%20J.I.,%20(1966)%20Morphometry%20from%20maps,%20Essays%20in%20geomorphology", "Anon, EconPapers: An Inquiry into the Nature and Causes of the Wealth of Nations. Available at: https://econpapers.repec.org/RePEc:ucp:bkecon:9780226763743.")
+    ("Clarke%20J.I.,%20(1966)%20Morphometry%20from%20maps,%20Essays%20in%20geomorphology", "Anon, Using & Citing GIS Data – Spatial Analysis – Carleton College. Available at: https://www.carleton.edu/spatial-analysis/using-citing-gis-data/.")
 ]
 
 urls_to_test = arxiv_urls + cran_urls + doi_urls + github_urls + key_word_urls + website_urls
