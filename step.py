@@ -280,23 +280,27 @@ class UserInputStep(Step):
 
     @staticmethod
     def get_citation_html_file(url):
+        # citation paths
+        citation_opt_1 = 'citation.html'
+        citation_opt_2 = 'reference/citing.html'
+
         # format url
         if url.endswith('en/stable') or url.endswith('en/latest'):
-            citation_url = url + '/citation.html'
+            citation_urls = [url + '/' + citation_opt_1, url + '/' + citation_opt_2]
         elif url.endswith('en/stable/') or url.endswith('en/latest/'):
-            citation_url = url + 'citation.html'
+            citation_urls = [url + citation_opt_1, url + citation_opt_2]
         elif url.endswith('/'):
-            citation_url = url + 'en/stable/citation.html'
+            citation_urls = [url + 'en/stable/' + citation_opt_1, url + 'en/stable/' + citation_opt_2]
         else:
-            citation_url = url + '/en/stable/citation.html'
+            citation_urls = [url + 'en/stable/' + citation_opt_1, url + 'en/stable/' + citation_opt_2]
 
         # check if citation exists
         try:
-            r = requests.get(citation_url, timeout=2)
-            if r.status_code == 200:
-                return citation_url
-            else:
-                return url
+            for citation_url in citation_urls:
+                r = requests.get(citation_url, timeout=2)
+                if r.status_code == 200:
+                    return citation_url
+            return url
         except requests.exceptions.RequestException:
             return url
 
@@ -325,6 +329,7 @@ class WebpageStep(Step):
         return [
             RelationHeaderStep,
             CrossrefResponseStep,
+            ArxivResponseStep,
             GithubRepoStep,
             BitbucketRepoStep,
             BibtexStep,
@@ -506,9 +511,14 @@ class ArxivResponseStep(Step):
             ArxivMetadataStep
         ]
 
-    def set_content(self, full_input):
+    def set_content(self, input):
+        arxiv_id = self.extract_arxiv(input)
+        if arxiv_id:
+            self.set_content_url(arxiv_id)
+            input = arxiv_id
+
         try:
-            input = full_input.split(":", 1)[1].lower()
+            input = input.split(":", 1)[1].lower()
         except IndexError:
             return
 
@@ -535,9 +545,18 @@ class ArxivResponseStep(Step):
             self.content["author"].append(author_name_as_dict(author))
 
     def set_content_url(self, input):
+        if self.extract_arxiv(input):
+            print('found arxiv')
+            return self.extract_arxiv(input)
+
         if input.startswith("http://arxiv:"):
             arxiv_id = input.split(":", 1)[1]
             self.content_url = "https://arxiv.org/abs/{}".format(arxiv_id)
+
+    def extract_arxiv(self, text):
+        possible_arxiv_ids = re.findall("arXiv:\d{4}.\d{4,5}", text, re.IGNORECASE|re.MULTILINE)
+        for arxiv_id in possible_arxiv_ids:
+            return arxiv_id
 
 
 class ArxivMetadataStep(MetadataStep):

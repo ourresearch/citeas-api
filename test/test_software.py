@@ -14,6 +14,7 @@ requests_cache.install_cache('my_requests_cache', expire_after=60*60*24*7)  # ex
 arxiv_urls = [
     ("arXiv:1802.02689", "Borgman, C., Scharnhorst, A. & Golshan, M., 2018. Digital Data Archives as Knowledge Infrastructures: Mediating Data Sharing and Reuse. <i>arXiv</i>. Available at: http://arxiv.org/abs/1802.02689v2."),
     ("1807.09464", "Duchene, J. et al., 2018. Specification-Based Protocol Obfuscation. <i>arXiv</i>. Available at: http://arxiv.org/abs/1807.09464v1."),
+    ("https://freud.readthedocs.io/en/stable/", "Ramasubramani, V. et al., 2019. freud: A Software Suite for High Throughput Analysis of Particle Simulation Data. <i>arXiv</i>. Available at: http://arxiv.org/abs/1906.06317v3.")
 ]
 
 cran_urls = [
