@@ -14,7 +14,7 @@ requests_cache.install_cache('my_requests_cache', expire_after=60*60*24*7)  # ex
 arxiv_urls = [
     ("arXiv:1802.02689", "Borgman, C., Scharnhorst, A. & Golshan, M., 2018. Digital Data Archives as Knowledge Infrastructures: Mediating Data Sharing and Reuse. <i>arXiv</i>. Available at: http://arxiv.org/abs/1802.02689v2."),
     ("1807.09464", "Duchene, J. et al., 2018. Specification-Based Protocol Obfuscation. <i>arXiv</i>. Available at: http://arxiv.org/abs/1807.09464v1."),
-    ("https://freud.readthedocs.io/en/stable/", "Ramasubramani, V. et al., 2019. freud: A Software Suite for High Throughput Analysis of Particle Simulation Data. <i>arXiv</i>. Available at: http://arxiv.org/abs/1906.06317v3.")
+    ("https://freud.readthedocs.io/en/stable/", "Ramasubramani, V. et al., 2020. freud: A software suite for high throughput analysis of particle simulation data. <i>Computer Physics Communications</i>, 254, p.107275. Available at: https://doi.org/10.1016/j.cpc.2020.107275.")
 ]
 
 cran_urls = [
@@ -22,7 +22,7 @@ cran_urls = [
     ("CRAN.R-project.org/package=changepoint", "Killick, R., Haynes, K. & Eckley, I., 2016. changepoint: Methods for Changepoint Detection. <i>R package version 2.2.2</i>. Available at: https://CRAN.R-project.org/package=changepoint."),
     ("CRAN.R-project.org/package=tidyverse", "Wickham, H. et al., 2019. Welcome to the Tidyverse. <i>Journal of Open Source Software</i>, 4(43), p.1686. Available at: https://doi.org/10.21105/joss.01686."),
     ("https://cran.r-project.org/web/packages/BDP2/", "Kopp-Schneider, A., Wiesenfarth, M. & Abel, U., 2018. BDP2: Bayesian Adaptive Designs for Phase II Trials with Binary. <i>R package version 0.1.3</i>. Available at: https://CRAN.R-project.org/package=BDP2."),
-    ("https://cran.r-project.org/web/packages/vistime/index.html", "Raabe, S., 2020. vistime: Pretty Timelines. <i>R package version 1.0.0</i>. Available at: https://CRAN.R-project.org/package=vistime."),
+    ("https://cran.r-project.org/web/packages/vistime/index.html", "Raabe, S., 2020. vistime: Pretty Timelines. <i>R package version 1.1.0</i>. Available at: https://CRAN.R-project.org/package=vistime."),
     ("https://cran.r-project.org/web/packages/afCEC/index.html", "Byrski, K., 2018. afCEC: Active Function Cross-Entropy Clustering. <i>R package version 1.0.2</i>. Available at: https://CRAN.R-project.org/package=afCEC."),
     ("http://cran.r-project.org/package=abcrf", "Marin, J.-M., 2019. abcrf: Approximate Bayesian Computation via Random Forests. <i>R package version 1.8.1</i>. Available at: https://CRAN.R-project.org/package=abcrf."),
     ("https://cran.r-project.org/web/packages/stringr", "Hadley, W., 2019. stringr: Simple, Consistent Wrappers for Common String Operations. <i>R package version 1.4.0</i>. Available at: https://CRAN.R-project.org/package=stringr.")
@@ -58,11 +58,11 @@ website_urls = [
     ("https://ccdproc.readthedocs.io/en/latest/", "Craig, M. et al., 2017. Astropy/Ccdproc: V1.3.0.Post1. Available at: https://doi.org/10.5281/zenodo.1069648."),
     ("https://photutils.readthedocs.io/", "Bradley, L. et al., 2019. <i>astropy/photutils: v0.7.2</i>, Zenodo. Available at: https://doi.org/10.5281/zenodo.596036."),
     ("https://www.thelancet.com/journals/laninf/article/PIIS1473-3099(20)30120-1/fulltext", "Dong, E., Du, H. & Gardner, L., 2020. An interactive web-based dashboard to track COVID-19 in real time. <i>The Lancet Infectious Diseases</i>, 20(5), pp.533–534. Available at: https://doi.org/10.1016/s1473-3099(20)30120-1."),
-    ("freud.readthedocs.io", "Anon, freud — freud 2.2.0 documentation. Available at: http://freud.readthedocs.io.")
+    ("freud.readthedocs.io", "Anon, freud — freud 2.3.0 documentation. Available at: http://freud.readthedocs.io.")
 ]
 
 key_word_urls = [
-    ("Clarke%20J.I.,%20(1966)%20Morphometry%20from%20maps,%20Essays%20in%20geomorphology", "Anon, Using & Citing GIS Data – Spatial Analysis – Carleton College. Available at: https://www.carleton.edu/spatial-analysis/using-citing-gis-data/.")
+    ("Clarke%20J.I.,%20(1966)%20Morphometry%20from%20maps,%20Essays%20in%20geomorphology", "Tennekes, M., 2018. tmap: Thematic Maps in R. <i>Journal of Statistical Software</i>, 84(6). Available at: https://doi.org/10.18637/jss.v084.i06.")
 ]
 
 urls_to_test = arxiv_urls + cran_urls + doi_urls + github_urls + key_word_urls + website_urls
