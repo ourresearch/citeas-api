@@ -681,7 +681,7 @@ class GithubApiResponseStep(Step):
 
         if not github_url:
             return
-        if "github.com" not in github_url:
+        if github_url.endswith("github.com") or "github.com" not in github_url:
             return
 
         self.content = {}
