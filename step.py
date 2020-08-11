@@ -738,6 +738,7 @@ class GithubRepoStep(Step):
     @property
     def starting_children(self):
         return [
+                CrossrefResponseStep,
                 GithubCodemetaFileStep,
                 GithubCitationFileStep,
                 GithubReadmeFileStep,

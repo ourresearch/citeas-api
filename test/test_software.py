@@ -53,7 +53,7 @@ website_urls = [
     ("http://fftw.org/", "Frigo, M. & Johnson, S.G., 2005. The Design and Implementation of FFTW3. <i>Proceedings of the IEEE</i>, 93(2), pp.216–231. Available at: https://doi.org/10.1109/jproc.2004.840301."),
     ("www.simvascular.org", " 2015. SimVascular. Available at: https://github.com/SimVascular/SimVascular."),
     ("https://bioconductor.org/packages/release/bioc/html/edgeR.html", "Yunshun Chen <Yuchen@Wehi.Edu.Au>, A., Davis McCarthy <Dmccarthy@Wehi.Edu.Au>, Xiaobei Zhou <Xiaobei.Zhou@Uzh.Ch>, Mark Robinson<Mark.Robinson@Imls.Uzh.Ch>, Gordon Smyth <Smyth@Wehi.Edu.Au>, 2017. edgeR. Available at: https://doi.org/10.18129/b9.bioc.edger."),
-    ("https://slicer.org/", "Punzo, D., 2015. SlicerAstro. Available at: https://github.com/Punzo/SlicerAstro."),
+    ("https://slicer.org/", "Punzo, D. et al., 2017. SlicerAstro: A 3-D interactive visual analytics tool for HI data. <i>Astronomy and Computing</i>, 19, pp.45–59. Available at: https://doi.org/10.1016/j.ascom.2017.03.004."),
     ("https://vhub.org/resources/puffin", "Bursik, M.I. et al., 2013. puffin. Available at: https://vhub.org/resources/puffin."),
     ("https://ccdproc.readthedocs.io/en/latest/", "Craig, M. et al., 2017. Astropy/Ccdproc: V1.3.0.Post1. Available at: https://doi.org/10.5281/zenodo.1069648."),
     ("https://photutils.readthedocs.io/", "Bradley, L. et al., 2019. <i>astropy/photutils: v0.7.2</i>, Zenodo. Available at: https://doi.org/10.5281/zenodo.596036."),
