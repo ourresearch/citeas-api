@@ -46,6 +46,7 @@ github_urls = [
     ("https://github.com/robintw/Py6S", 'Wilson, R.T., 2013. Py6S: A Python interface to the 6S radiative transfer model. <i>Computers & Geosciences</i>, 51, pp.166–171. Available at: https://doi.org/10.1016/j.cageo.2012.08.002.'),
     ("https://github.com/nicholasricci/DDM_Framework", "Marzolla, M., D'Angelo, G. & Mandrioli, M., 2013. A Parallel Data Distribution Management Algorithm."),
     ("https://gist.github.com/vegaasen/157fbc6dce8545b7f12c", "Aasen, V., 2015. supress-warning-idea.md. Available at: https://gist.github.com/157fbc6dce8545b7f12c."),
+    ("https://github.com/cboettig/noise-phenomena", "Boettiger, C., 2018. Cboettig/Noise-Phenomena: Supplement To: \"From Noise To Knowledge: How Randomness Generates Novel Phenomena And Reveals Information\". Available at: https://doi.org/10.5281/zenodo.1219780.")
 ]
 
 website_urls = [

@@ -5,6 +5,7 @@ from io import StringIO
 
 import json5
 import requests
+import requests_cache
 from arxiv2bib import arxiv2bib_dict, is_valid
 from flask import abort
 from googlesearch import get_random_user_agent, search
@@ -441,10 +442,13 @@ class CrossrefResponseStep(Step):
         if text.startswith('https://zenodo.org/record/'):
             text = get_webpage_text(text)
 
-        badge_doi = find_or_empty_string("://zenodo.org/badge/doi/(.+?).svg", text)
-        if badge_doi:
-            return self.strip_junk_from_end_of_doi(badge_doi)
-        zenodo_doi = find_or_empty_string("10.5281/zenodo\.\d+", text)
+        badge_doi_1 = find_or_empty_string("://zenodo.org/badge/doi/(.+?).svg", text)
+        if badge_doi_1:
+            return self.strip_junk_from_end_of_doi(badge_doi_1)
+        badge_doi_2 = find_or_empty_string("zenodo.org/badge/latestdoi/\d+", text)
+        if badge_doi_2:
+            text = get_webpage_text('https://' + badge_doi_2)
+        zenodo_doi = find_or_empty_string("10\.5281\/zenodo\.\d+", text)
         if zenodo_doi:
             return self.strip_junk_from_end_of_doi(zenodo_doi)
 
@@ -462,10 +466,11 @@ class CrossrefResponseStep(Step):
         if not doi_url:
             return
         try:
-            headers = {'Accept': 'application/vnd.citationstyles.csl+json'}
-            r = requests.get(doi_url, headers=headers)
-            self.content = r.json()
-            self.content["URL"] = doi_url
+            with requests_cache.disabled():
+                headers = {'Accept': 'application/vnd.citationstyles.csl+json'}
+                r = requests.get(doi_url, headers=headers)
+                self.content = r.json()
+                self.content["URL"] = doi_url
         except Exception:
             print("no doi metadata found for {}".format(doi_url))
             pass
@@ -480,15 +485,22 @@ class CrossrefResponseStep(Step):
                 return
         elif input.startswith("http") and "doi.org/10." in input:
             has_doi = True
-        elif self.extract_doi(input):
-            has_doi = True
+        else:
+            # needs to be refactored at some point
+            doi = self.extract_doi(input)
+            if doi:
+                input = doi
+                has_doi = True
+            elif input.startswith("http") and 'github.com' in input:
+                # find zenodo badges in github repositories
+                content = get_webpage_text(input)
+                doi = self.extract_doi(content)
+                if doi:
+                    input = doi
+                    has_doi = True
 
         if not has_doi:
             return
-
-        input = self.extract_doi(input)
-
-        # print "has_doi", has_doi, input[0:10]
 
         try:
             doi = clean_doi(input)
