@@ -10,6 +10,6 @@ nameparser==1.0.6
 pytest==6.0.1
 requests==2.24.0
 requests-cache==0.5.2
-sentry-sdk==0.16.3
+sentry-sdk==0.17.4
 unidecode==1.1.1
-validators==0.17.1
+validators==0.18.1
