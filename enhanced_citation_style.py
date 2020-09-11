@@ -1,6 +1,7 @@
 from citeproc import CitationStylesStyle
 from citeproc_styles import get_style_filepath
 
+
 class EnhancedCitationStyle(CitationStylesStyle):
     def __init__(self, bib_stylename):
         # valid style names: plos, apa, pnas, nature, bmj, harvard1

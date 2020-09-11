@@ -59,7 +59,7 @@ def get_bib_source_from_dict(data):
     if "author" in data:
         data["author"] = get_author_list(data["author"])
 
-    if not "type" in data:
+    if "type" not in data:
         data["type"] = "misc"
 
     if data["type"] != "software":
@@ -69,7 +69,7 @@ def get_bib_source_from_dict(data):
                 if num_upper > 0.75*len(val):
                     data[k] = val.title()
 
-    if "page" in data and data["page"]=="-":
+    if "page" in data and data["page"] == "-":
         del data["page"]
 
     if "bibtex" in data:
@@ -243,16 +243,11 @@ class Software(object):
         while not self.completed_steps[-1].is_metadata:
             current_step = self.completed_steps[cursor]
 
-            # print "current_step:", current_step
             try:
-                # print "before adding next step, self.completed_steps:", self.completed_steps
                 next_step = current_step.get_child()
                 self.completed_steps.append(next_step)
-                # print "after adding next step, self.completed_steps:", self.completed_steps
-                # set cursor to end of stack.
                 cursor = len(self.completed_steps) - 1
             except NoChildrenException:
-                # print "got NoChildrenException"
                 cursor -= 1
 
     @property

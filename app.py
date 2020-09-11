@@ -24,13 +24,9 @@ libraries_to_mum = [
     "requests.packages.urllib3",
     "requests.packages.urllib3.connectionpool",
     "requests_oauthlib",
-    "urllib3.connectionpool"
-    "stripe",
+    "urllib3.connectionpool",
     "oauthlib",
-    "boto",
     "citeproc",
-    "newrelic",
-    "RateLimiter",
 ]
 
 for a_library in libraries_to_mum:

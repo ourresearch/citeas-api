@@ -88,8 +88,6 @@ class Step(object):
 
     def __init__(self):
         self.remaining_children = self.starting_children
-        # print "in init for {} with starting children {}, remaining children {}".format(
-        #     self, self.starting_children, self.remaining_children)
         self.url = None
         self.content_url = None
         self.additional_content_url = None
@@ -398,7 +396,6 @@ class CranLibraryStep(Step):
             self.content = get_webpage_text(self.content_url)
 
     def set_content_url(self, input):
-        # print "set_content_url", input
         if input and "cran.r-project.org/web/packages" in input:
             package_name = find_or_empty_string("cran.r-project.org/web/packages/(\w+\.?\w+)/?", input)
             self.content_url = "https://cran.r-project.org/web/packages/{}".format(package_name)
@@ -894,7 +891,6 @@ class CranDescriptionFileStep(DescriptionFileStep):
     def set_content(self, input):
         filename = self.parent_content_url + '/DESCRIPTION'
         page = get_webpage_text(filename)
-
         self.content = page
         self.content_url = filename
 
@@ -1006,21 +1002,13 @@ class BibtexMetadataStep(MetadataStep):
             del bib_dict[id]["month"]
 
         metadata_dict = {}
-        # print "bib_dict[id].keys()", bib_dict[id].keys()
-        # print "bib_dict[id].values()", bib_dict[id].values()
 
         for (k, v) in list(bib_dict[id].items()):
-                # print k, v
-                try:
-                    # if k in ["volume", "year", "type", "title", "author", "eid", "doi", "container-title", "adsnote", "eprint", "page"]:
-                    # print v.values()
-                    # if k in ["booktitle", "address", "volume", "year", "type", "title", "author", "eid", "doi", "container-title", "adsnote", "eprint"]:
-                    if k in ["url", "note", "journal", "booktitle", "address", "volume", "issue", "number", "type", "title", "eid", "container-title", "adsnote", "eprint", "pages", "author", "year"]:
-                        metadata_dict[k] = v
-                except Exception:
-                    print("ERROR on ", k, v)
-                    pass
-        # metadata_dict = dict(bib_dict[id].items())
+            try:
+                if k in ["url", "note", "journal", "booktitle", "address", "volume", "issue", "number", "type", "title", "eid", "container-title", "adsnote", "eprint", "pages", "author", "year"]:
+                    metadata_dict[k] = v
+            except Exception:
+                print("ERROR on ", k, v)
         metadata_dict["bibtex"] = bibtex
 
         # uppercase and include doi
@@ -1059,8 +1047,6 @@ class BibtexStep(Step):
         ]
 
     def set_content(self, input):
-        # if u"@font-face" in input:
-        #     return
         bibtex = extract_bibtex(input)
         if bibtex:
             self.content = bibtex
@@ -1087,7 +1073,7 @@ class CitentryStep(Step):
         ]
 
     def set_content(self, input):
-        if not "citEntry(" in input:
+        if "citEntry(" not in input:
             return
 
         input = input.replace("\n", "")
@@ -1099,17 +1085,18 @@ class CitentryStep(Step):
 
 class CitentryMetadataStep(MetadataStep):
     def set_content(self, citentry_content):
-        self.content = {}
-        self.content["title"] = find_or_empty_string("title\s*=\s*\"(.*?)\"", citentry_content)
-        self.content["URL"] = find_or_empty_string("url\s*=\s*\"(.*?)\"", citentry_content)
-        self.content["volume"] = find_or_empty_string("volume\s*=\s*\"(.*?)\"", citentry_content)
-        self.content["number"] = find_or_empty_string("number\s*=\s*\"(.*?)\"", citentry_content)
-        self.content["pages"] = find_or_empty_string("pages\s*=\s*\"(.*?)\"", citentry_content)
-        self.content["publisher"] = find_or_empty_string("publisher\s*=\s*\"(.*?)\"", citentry_content)
-        self.content["isbn"] = find_or_empty_string("isbn\s*=\s*\"(.*?)\"", citentry_content)
-        self.content["container-title"] = find_or_empty_string("journal\s*=\s*\"(.*?)\"", citentry_content)
+        self.content = {
+            "title": find_or_empty_string("title\s*=\s*\"(.*?)\"", citentry_content),
+            "URL": find_or_empty_string("url\s*=\s*\"(.*?)\"", citentry_content),
+            "volume": find_or_empty_string("volume\s*=\s*\"(.*?)\"", citentry_content),
+            "number": find_or_empty_string("number\s*=\s*\"(.*?)\"", citentry_content),
+            "pages": find_or_empty_string("pages\s*=\s*\"(.*?)\"", citentry_content),
+            "publisher": find_or_empty_string("publisher\s*=\s*\"(.*?)\"", citentry_content),
+            "isbn": find_or_empty_string("isbn\s*=\s*\"(.*?)\"", citentry_content),
+            "container-title": find_or_empty_string("journal\s*=\s*\"(.*?)\"", citentry_content),
+            "year": find_or_empty_string("year\s*=\s*\"(.*?)\"", citentry_content)
+        }
 
-        self.content["year"] = find_or_empty_string("year\s*=\s*\"(.*?)\"", citentry_content)
         if self.content["year"]:
             self.content["issued"] = {"date-parts": [[self.content["year"]]]}
         self.content["type"] = find_or_empty_string("entry\s*=\s*\"(.*?)\"", citentry_content)
@@ -1140,8 +1127,6 @@ class GithubCodemetaFileStep(Step):
             filename = "https://raw.githubusercontent.com{}".format(filename_part)
             self.content = get_webpage_text(filename)
             self.content_url = filename
-
-        # get content from description
 
     def set_content_url(self, input):
         # in this case set_content does it, because it knows the url
@@ -1197,7 +1182,7 @@ class BitbucketRepoStep(Step):
             ]
 
     def set_content(self, input):
-        if not "bitbucket.org" in input:
+        if "bitbucket.org" not in input:
             return
         if input.startswith("http"):
             url = "/".join(input.split("/", 5)[0:5])
@@ -1285,7 +1270,6 @@ class BitbucketReadmeFileStep(Step):
 
 class BitbucketDescriptionFileStep(CitationFileStep):
     def set_content(self, bitbucket_main_page_text):
-        found_match = False
         matches = re.findall('href=\"(.*\/description.*?)\"', bitbucket_main_page_text, re.IGNORECASE)
 
         if matches:
