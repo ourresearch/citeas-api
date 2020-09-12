@@ -451,9 +451,7 @@ class CrossrefResponseStep(Step):
 
         possible_dois = re.findall("10.\d{4,9}/[-._;()/:A-Z0-9+]+", text, re.IGNORECASE|re.MULTILINE)
         for doi in possible_dois:
-            if "10.5063/schema/codemeta-2.0" in doi.lower():
-                pass
-            else:
+            if "10.5063/schema/codemeta-2.0" not in doi.lower():
                 print("HERE I AM", doi)
                 return self.strip_junk_from_end_of_doi(doi)
 
@@ -470,7 +468,6 @@ class CrossrefResponseStep(Step):
                 self.content["URL"] = doi_url
         except Exception:
             print("no doi metadata found for {}".format(doi_url))
-            pass
 
     def set_content_url(self, input):
         has_doi = False
@@ -1231,7 +1228,6 @@ class BitbucketCodemetaFileStep(Step):
 
 class BitbucketCitationFileStep(CitationFileStep):
     def set_content(self, bitbucket_main_page_text):
-        found_match = False
         matches = re.findall('href=\"(.*\/citation.*?)\"', bitbucket_main_page_text, re.IGNORECASE)
 
         if matches:
