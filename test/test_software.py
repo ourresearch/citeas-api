@@ -57,13 +57,13 @@ website_urls = [
     ("https://slicer.org/", "Punzo, D. et al., 2017. SlicerAstro: A 3-D interactive visual analytics tool for HI data. <i>Astronomy and Computing</i>, 19, pp.45–59. Available at: https://doi.org/10.1016/j.ascom.2017.03.004."),
     ("https://vhub.org/resources/puffin", "Bursik, M.I. et al., 2013. puffin. Available at: https://vhub.org/resources/puffin."),
     ("https://ccdproc.readthedocs.io/en/latest/", "Craig, M. et al., 2017. Astropy/Ccdproc: V1.3.0.Post1. Available at: https://doi.org/10.5281/zenodo.1069648."),
-    ("https://photutils.readthedocs.io/", "Bradley, L. et al., 2019. <i>astropy/photutils: v0.7.2</i>, Zenodo. Available at: https://doi.org/10.5281/zenodo.596036."),
+    ("https://photutils.readthedocs.io/", "Bradley, L. et al., 2020. <i>astropy/photutils: 1.0.1</i>, Zenodo. Available at: https://doi.org/10.5281/zenodo.596036."),
     ("https://www.thelancet.com/journals/laninf/article/PIIS1473-3099(20)30120-1/fulltext", "Dong, E., Du, H. & Gardner, L., 2020. An interactive web-based dashboard to track COVID-19 in real time. <i>The Lancet Infectious Diseases</i>, 20(5), pp.533–534. Available at: https://doi.org/10.1016/s1473-3099(20)30120-1."),
     ("freud.readthedocs.io", "Anon, freud — freud 2.3.0 documentation. Available at: http://freud.readthedocs.io.")
 ]
 
 key_word_urls = [
-    ("Clarke%20J.I.,%20(1966)%20Morphometry%20from%20maps,%20Essays%20in%20geomorphology", "Tennekes, M., 2018. tmap: Thematic Maps in R. <i>Journal of Statistical Software</i>, 84(6). Available at: https://doi.org/10.18637/jss.v084.i06.")
+    ("Clarke%20J.I.,%20(1966)%20Morphometry%20from%20maps,%20Essays%20in%20geomorphology", "Holmgren, W. et al., 2020. <i>pvlib/pvlib-python: v0.7.2</i>, Zenodo. Available at: https://doi.org/10.5281/zenodo.3762635.")
 ]
 
 urls_to_test = arxiv_urls + cran_urls + doi_urls + github_urls + key_word_urls + website_urls
