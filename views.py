@@ -1,16 +1,12 @@
-from flask import make_response
-from flask import request
-from flask import abort
-from flask import render_template
-from flask import jsonify
-
 import json
 import os
 import sys
-from software import Software
-from step import step_configs
+
+from flask import abort, jsonify, make_response, render_template, request
 
 from app import app
+from software import Software
+from step import step_configs
 
 
 def json_dumper(obj):
