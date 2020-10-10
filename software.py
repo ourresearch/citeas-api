@@ -1,16 +1,11 @@
-from io import StringIO
-import re
 import html
-from citeproc.source.json import CiteProcJSON
-from enhanced_citation_style import EnhancedCitationStyle
-from enhanced_citation_style import get_style_name
-from citeproc import CitationStylesBibliography
-from citeproc import formatter
-from citeproc import Citation
-from citeproc import CitationItem
 
-from step import UserInputStep
-from step import NoChildrenException
+from citeproc import (Citation, CitationItem, CitationStylesBibliography,
+                      formatter)
+from citeproc.source.json import CiteProcJSON
+
+from enhanced_citation_style import EnhancedCitationStyle, get_style_name
+from step import NoChildrenException, UserInputStep
 from util import author_name_as_dict
 
 
@@ -52,9 +47,7 @@ def bibtex_pages_format(pages):
 
 
 def get_bib_source_from_dict(data):
-
     data["id"] = "ITEM-1"
-    id = "ITEM-1"
 
     if "author" in data:
         data["author"] = get_author_list(data["author"])
@@ -89,9 +82,8 @@ def display_citation(bibtex_metadata, bib_stylename, formatter=formatter.html):
     # full list is here: https://github.com/citation-style-language/styles
 
     bib_style = EnhancedCitationStyle(bib_stylename)
-    bibliography = CitationStylesBibliography(bib_style, bibtex_metadata, formatter) #could be formatter.html
-    id = "ITEM-1"
-    citation = Citation([CitationItem(id)])
+    bibliography = CitationStylesBibliography(bib_style, bibtex_metadata, formatter)  # could be formatter.html
+    citation = Citation([CitationItem("ITEM-1")])
     bibliography.register(citation)
 
     citation_parts = "".join(bibliography.bibliography()[0])
@@ -111,7 +103,6 @@ def display_citation(bibtex_metadata, bib_stylename, formatter=formatter.html):
         citation_text = strip_duplicate_apa_title(bibtex_metadata, citation_text)
 
     citation_text = html.unescape(citation_text)
-
     return citation_text
 
 
