@@ -766,12 +766,34 @@ class GithubRepoStep(Step):
             if not url:
                 return
 
+        if self.is_organization(url):
+            pinned_url = self.get_pinned_url(url)
+            if pinned_url:
+                self.content = get_webpage_text(pinned_url)
+                self.content_url = pinned_url
+                return
+
         self.content = get_webpage_text(url)
         self.content_url = url
 
     def set_content_url(self, input):
         # set in set_content
         pass
+
+    @staticmethod
+    def is_organization(url):
+        url = url.replace('http://', '')
+        url = url.replace('https://', '')
+        return len(url.split('/')) == 2
+
+    def get_pinned_url(self, url):
+        text = get_webpage_text(url)
+        pinned_area = find_or_empty_string("PINNED_REPO.*\s*<span", text)
+        pinned_url = find_or_empty_string("href=\"(\/\w+\/\w+)\"", pinned_area)
+        if pinned_url:
+            pinned_url = "https://github.com" + pinned_url
+        return pinned_url
+
 
 
 class DescriptionMetadataStep(MetadataStep):

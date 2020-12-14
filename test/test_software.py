@@ -46,7 +46,8 @@ github_urls = [
     ("https://github.com/robintw/Py6S", 'Wilson, R.T., 2013. Py6S: A Python interface to the 6S radiative transfer model. <i>Computers & Geosciences</i>, 51, pp.166–171. Available at: https://doi.org/10.1016/j.cageo.2012.08.002.'),
     ("https://github.com/nicholasricci/DDM_Framework", "Marzolla, M., D'Angelo, G. & Mandrioli, M., 2013. A Parallel Data Distribution Management Algorithm."),
     ("https://gist.github.com/vegaasen/157fbc6dce8545b7f12c", "Aasen, V., 2015. supress-warning-idea.md. Available at: https://gist.github.com/157fbc6dce8545b7f12c."),
-    ("https://github.com/cboettig/noise-phenomena", "Boettiger, C., 2018. Cboettig/Noise-Phenomena: Supplement To: \"From Noise To Knowledge: How Randomness Generates Novel Phenomena And Reveals Information\". Available at: https://doi.org/10.5281/zenodo.1219780.")
+    ("https://github.com/cboettig/noise-phenomena", "Boettiger, C., 2018. Cboettig/Noise-Phenomena: Supplement To: \"From Noise To Knowledge: How Randomness Generates Novel Phenomena And Reveals Information\". Available at: https://doi.org/10.5281/zenodo.1219780."),
+    ("https://dbdp.org/", "Bent, B. et al., 2020. The digital biomarker discovery pipeline: An open-source software platform for the development of digital biomarkers using mHealth and wearables data. <i>Journal of Clinical and Translational Science</i>, pp.1–8. Available at: https://doi.org/10.1017/cts.2020.511.")
 ]
 
 website_urls = [
@@ -59,7 +60,7 @@ website_urls = [
     ("https://ccdproc.readthedocs.io/en/latest/", "Craig, M. et al., 2017. Astropy/Ccdproc: V1.3.0.Post1. Available at: https://doi.org/10.5281/zenodo.1069648."),
     ("https://photutils.readthedocs.io/", "Bradley, L. et al., 2020. <i>astropy/photutils: 1.0.1</i>, Zenodo. Available at: https://doi.org/10.5281/zenodo.596036."),
     ("https://www.thelancet.com/journals/laninf/article/PIIS1473-3099(20)30120-1/fulltext", "Dong, E., Du, H. & Gardner, L., 2020. An interactive web-based dashboard to track COVID-19 in real time. <i>The Lancet Infectious Diseases</i>, 20(5), pp.533–534. Available at: https://doi.org/10.1016/s1473-3099(20)30120-1."),
-    ("freud.readthedocs.io", "Anon, freud — freud 2.4.0 documentation. Available at: http://freud.readthedocs.io.")
+    ("freud.readthedocs.io", "Anon, freud — freud 2.4.1 documentation. Available at: http://freud.readthedocs.io.")
 ]
 
 key_word_urls = [
