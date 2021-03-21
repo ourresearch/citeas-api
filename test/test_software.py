@@ -22,7 +22,7 @@ cran_urls = [
     ("CRAN.R-project.org/package=changepoint", "Killick, R., Haynes, K. & Eckley, I., 2016. changepoint: Methods for Changepoint Detection. <i>R package version 2.2.2</i>. Available at: https://CRAN.R-project.org/package=changepoint."),
     ("CRAN.R-project.org/package=tidyverse", "Wickham, H. et al., 2019. Welcome to the Tidyverse. <i>Journal of Open Source Software</i>, 4(43), p.1686. Available at: https://doi.org/10.21105/joss.01686."),
     ("https://cran.r-project.org/web/packages/BDP2/", "Kopp-Schneider, A., Wiesenfarth, M. & Abel, U., 2018. BDP2: Bayesian Adaptive Designs for Phase II Trials with Binary. <i>R package version 0.1.3</i>. Available at: https://CRAN.R-project.org/package=BDP2."),
-    ("https://cran.r-project.org/web/packages/vistime/index.html", "Raabe, S., 2020. vistime: Pretty Timelines. <i>R package version 1.1.0</i>. Available at: https://CRAN.R-project.org/package=vistime."),
+    ("https://cran.r-project.org/web/packages/vistime/index.html", "Raabe, S., 2021. vistime: Pretty Timelines. <i>R package version 1.2.0</i>. Available at: https://CRAN.R-project.org/package=vistime."),
     ("https://cran.r-project.org/web/packages/afCEC/index.html", "Byrski, K., 2018. afCEC: Active Function Cross-Entropy Clustering. <i>R package version 1.0.2</i>. Available at: https://CRAN.R-project.org/package=afCEC."),
     ("http://cran.r-project.org/package=abcrf", "Marin, J.-M., 2019. abcrf: Approximate Bayesian Computation via Random Forests. <i>R package version 1.8.1</i>. Available at: https://CRAN.R-project.org/package=abcrf."),
     ("https://cran.r-project.org/web/packages/stringr", "Hadley, W., 2019. stringr: Simple, Consistent Wrappers for Common String Operations. <i>R package version 1.4.0</i>. Available at: https://CRAN.R-project.org/package=stringr.")
@@ -58,7 +58,7 @@ website_urls = [
     ("https://slicer.org/", "Punzo, D. et al., 2017. SlicerAstro: A 3-D interactive visual analytics tool for HI data. <i>Astronomy and Computing</i>, 19, pp.45–59. Available at: https://doi.org/10.1016/j.ascom.2017.03.004."),
     ("https://vhub.org/resources/puffin", "Bursik, M.I. et al., 2013. puffin. Available at: https://vhub.org/resources/puffin."),
     ("https://ccdproc.readthedocs.io/en/latest/", "Craig, M. et al., 2017. Astropy/Ccdproc: V1.3.0.Post1. Available at: https://doi.org/10.5281/zenodo.1069648."),
-    ("https://photutils.readthedocs.io/", "Bradley, L. et al., 2020. <i>astropy/photutils: 1.0.1</i>, Zenodo. Available at: https://doi.org/10.5281/zenodo.596036."),
+    ("https://photutils.readthedocs.io/", "Bradley, L. et al., 2021. <i>astropy/photutils: 1.1.0</i>, Zenodo. Available at: https://doi.org/10.5281/zenodo.596036."),
     ("https://www.thelancet.com/journals/laninf/article/PIIS1473-3099(20)30120-1/fulltext", "Dong, E., Du, H. & Gardner, L., 2020. An interactive web-based dashboard to track COVID-19 in real time. <i>The Lancet Infectious Diseases</i>, 20(5), pp.533–534. Available at: https://doi.org/10.1016/s1473-3099(20)30120-1."),
     ("freud.readthedocs.io", "Anon, freud — freud 2.4.1 documentation. Available at: http://freud.readthedocs.io.")
 ]
