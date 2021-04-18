@@ -22,7 +22,7 @@ cran_urls = [
     ("CRAN.R-project.org/package=changepoint", "Killick, R., Haynes, K. & Eckley, I., 2016. changepoint: Methods for Changepoint Detection. <i>R package version 2.2.2</i>. Available at: https://CRAN.R-project.org/package=changepoint."),
     ("CRAN.R-project.org/package=tidyverse", "Wickham, H. et al., 2019. Welcome to the Tidyverse. <i>Journal of Open Source Software</i>, 4(43), p.1686. Available at: https://doi.org/10.21105/joss.01686."),
     ("https://cran.r-project.org/web/packages/BDP2/", "Kopp-Schneider, A., Wiesenfarth, M. & Abel, U., 2018. BDP2: Bayesian Adaptive Designs for Phase II Trials with Binary. <i>R package version 0.1.3</i>. Available at: https://CRAN.R-project.org/package=BDP2."),
-    ("https://cran.r-project.org/web/packages/vistime/index.html", "Raabe, S., 2021. vistime: Pretty Timelines. <i>R package version 1.2.0</i>. Available at: https://CRAN.R-project.org/package=vistime."),
+    ("https://cran.r-project.org/web/packages/vistime/index.html", "Raabe, S., 2021. vistime: Pretty Timelines in R. <i>R package version 1.2.1</i>. Available at: https://CRAN.R-project.org/package=vistime."),
     ("https://cran.r-project.org/web/packages/afCEC/index.html", "Byrski, K., 2018. afCEC: Active Function Cross-Entropy Clustering. <i>R package version 1.0.2</i>. Available at: https://CRAN.R-project.org/package=afCEC."),
     ("http://cran.r-project.org/package=abcrf", "Marin, J.-M., 2019. abcrf: Approximate Bayesian Computation via Random Forests. <i>R package version 1.8.1</i>. Available at: https://CRAN.R-project.org/package=abcrf."),
     ("https://cran.r-project.org/web/packages/stringr", "Hadley, W., 2019. stringr: Simple, Consistent Wrappers for Common String Operations. <i>R package version 1.4.0</i>. Available at: https://CRAN.R-project.org/package=stringr.")
@@ -47,7 +47,7 @@ github_urls = [
     ("https://github.com/nicholasricci/DDM_Framework", "Marzolla, M., D'Angelo, G. & Mandrioli, M., 2013. A Parallel Data Distribution Management Algorithm."),
     ("https://gist.github.com/vegaasen/157fbc6dce8545b7f12c", "Aasen, V., 2015. supress-warning-idea.md. Available at: https://gist.github.com/157fbc6dce8545b7f12c."),
     ("https://github.com/cboettig/noise-phenomena", "Boettiger, C., 2018. Cboettig/Noise-Phenomena: Supplement To: \"From Noise To Knowledge: How Randomness Generates Novel Phenomena And Reveals Information\". Available at: https://doi.org/10.5281/zenodo.1219780."),
-    ("https://dbdp.org/", "Bent, B. et al., 2020. The digital biomarker discovery pipeline: An open-source software platform for the development of digital biomarkers using mHealth and wearables data. <i>Journal of Clinical and Translational Science</i>, pp.1–8. Available at: https://doi.org/10.1017/cts.2020.511.")
+    ("https://dbdp.org/", "Bent, B. et al., 2020. The digital biomarker discovery pipeline: An open-source software platform for the development of digital biomarkers using mHealth and wearables data. <i>Journal of Clinical and Translational Science</i>, 5(1). Available at: https://doi.org/10.1017/cts.2020.511.")
 ]
 
 website_urls = [
@@ -60,7 +60,7 @@ website_urls = [
     ("https://ccdproc.readthedocs.io/en/latest/", "Craig, M. et al., 2017. Astropy/Ccdproc: V1.3.0.Post1. Available at: https://doi.org/10.5281/zenodo.1069648."),
     ("https://photutils.readthedocs.io/", "Bradley, L. et al., 2021. <i>astropy/photutils: 1.1.0</i>, Zenodo. Available at: https://doi.org/10.5281/zenodo.596036."),
     ("https://www.thelancet.com/journals/laninf/article/PIIS1473-3099(20)30120-1/fulltext", "Dong, E., Du, H. & Gardner, L., 2020. An interactive web-based dashboard to track COVID-19 in real time. <i>The Lancet Infectious Diseases</i>, 20(5), pp.533–534. Available at: https://doi.org/10.1016/s1473-3099(20)30120-1."),
-    ("freud.readthedocs.io", "Anon, freud — freud 2.4.1 documentation. Available at: http://freud.readthedocs.io.")
+    ("freud.readthedocs.io", "Anon, freud — freud 2.5.1 documentation. Available at: http://freud.readthedocs.io.")
 ]
 
 key_word_urls = [
