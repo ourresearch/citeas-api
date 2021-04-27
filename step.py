@@ -229,6 +229,10 @@ class UserInputStep(Step):
         elif input.startswith(("http://", "https://")):
             url = input
 
+        # url in string
+        elif re.search("(?P<url>https?://[^\s]+)", input):
+            url = re.search("(?P<url>https?://[^\s]+)", input).group("url")
+
         # arxiv
         elif input.lower().startswith("arxiv"):
             id = input.split(":", 1)[1]
