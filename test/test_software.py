@@ -61,7 +61,8 @@ website_urls = [
     ("https://photutils.readthedocs.io/", "Bradley, L. et al., 2021. <i>astropy/photutils: 1.1.0</i>, Zenodo. Available at: https://doi.org/10.5281/zenodo.596036."),
     ("https://www.thelancet.com/journals/laninf/article/PIIS1473-3099(20)30120-1/fulltext", "Dong, E., Du, H. & Gardner, L., 2020. An interactive web-based dashboard to track COVID-19 in real time. <i>The Lancet Infectious Diseases</i>, 20(5), pp.533–534. Available at: https://doi.org/10.1016/s1473-3099(20)30120-1."),
     ("freud.readthedocs.io", "Anon, freud — freud 2.5.1 documentation. Available at: http://freud.readthedocs.io."),
-    ("nullhttps://www.nytimes.com/2021/04/22/climate/biden-emissions-target-economy.html", "Anon, Biden Wants to Slash Emissions. Success Would Mean a Very Different America. - The New York Times. Available at: https://www.nytimes.com/2021/04/22/climate/biden-emissions-target-economy.html.")
+    ("nullhttps://www.nytimes.com/2021/04/22/climate/biden-emissions-target-economy.html", "Anon, Biden Wants to Slash Emissions. Success Would Mean a Very Different America. - The New York Times. Available at: https://www.nytimes.com/2021/04/22/climate/biden-emissions-target-economy.html."),
+    ("https://www.thebalancecareers.com/constructive-feedback-to-help-employees-grow-4120943", "Anon, How to Provide Feedback to Help Employees Grow Their Skills. Available at: https://www.thebalancecareers.com/constructive-feedback-to-help-employees-grow-4120943.")
 ]
 
 key_word_urls = [

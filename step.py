@@ -1330,9 +1330,12 @@ class RelationHeaderStep(Step):
     def check_for_rel_cite_as_header(self, input):
         r = requests.get(input)
 
+        cite_as_links = []
         if 'link' in r.headers:
             header_links = requests.utils.parse_header_links(r.headers['link'])
-            cite_as_links = [link for link in header_links if link['rel'] == 'cite-as']
+            for link in header_links:
+                if 'rel' in link and link['rel'] == 'cite-as':
+                    cite_as_links.append(link)
 
             if cite_as_links:
                 doi_links = [link for link in cite_as_links if 'doi.org' in link['url']]
