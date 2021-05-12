@@ -1,10 +1,10 @@
+from html import escape
 import re
 import unicodedata
 import urllib.parse
-from html import escape
 
-import requests
 from nameparser import HumanName
+import requests
 
 
 class NoDoiException(Exception):

@@ -1,8 +1,8 @@
-from flask import Flask
-
 import logging
-import sys
 import os
+import sys
+
+from flask import Flask
 import requests
 import requests_cache
 import sentry_sdk

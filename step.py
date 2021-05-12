@@ -1,14 +1,14 @@
 import base64
+from io import StringIO
 import os
 import re
-from io import StringIO
 
-import json5
-import requests
-import requests_cache
 from arxiv2bib import arxiv2bib_dict, is_valid
 from flask import abort
 from googlesearch import get_random_user_agent, search
+import json5
+import requests
+import requests_cache
 import validators
 
 from bibtex import \
@@ -279,7 +279,6 @@ class UserInputStep(Step):
                     return True
             except:
                 return False
-
 
     @staticmethod
     def get_citation_html_file(url):
