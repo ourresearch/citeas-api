@@ -37,7 +37,7 @@ github_urls = [
     ("https://github.com/pvlib/pvlib-python", "Holmgren, W. et al., 2020. <i>pvlib/pvlib-python: v0.7.2</i>, Zenodo. Available at: https://doi.org/10.5281/zenodo.3762635."),
     ("https://github.com/gcowan/hyperk", "Cowan, G., 2016. Gcowan/Hyperk: Mcp Data Processing Code. Available at: https://doi.org/10.5281/zenodo.160400."),
     ("https://github.com/NSLS-II-XPD/xpdView", "Duff, C. & Kaming-Thanassi, J., 2016. Xpdview: Xpdview Initial Release. Available at: https://doi.org/10.5281/zenodo.60479."),
-    ("https://github.com/impactstory/depsy", "Research, O., 2015. depsy. Available at: https://github.com/ourresearch/depsy."),
+    ("https://github.com/impactstory/depsy", "OurResearch, 2015. depsy. Available at: https://github.com/ourresearch/depsy."),
     ("https://github.com/abianchetti/blick", "Bianchetti, A., 2012. blick. Available at: https://github.com/abianchetti/blick."),
     ("https://github.com/jasonpriem/FeedVis", "Priem, J., 2011. FeedVis. Available at: https://github.com/jasonpriem/FeedVis."),
     ("https://github.com/vahtras/loprop", 'Vahtras, O., 2014. Loprop For Dalton. Available at: https://doi.org/10.5281/zenodo.13276.'),
