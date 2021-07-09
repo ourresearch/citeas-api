@@ -1,9 +1,16 @@
 Backend for https://citeas.org
 
-Installation
+Run with docker
 ============
 
-Installation instructions can be found [here](/installation.md).
+Run the project with docker using the following commands:
+
+1. Download the repo: `$ git clone https://github.com/ourresearch/citeas-api.git`
+2. Move into the repo directory: `$ cd citeas-api`
+3. Build the docker image: `$ docker build --tag citeas-api .`
+4. Run the docker image: `$ docker run -p 8000:8000 citeas-api`
+5. Test the API on your local machine with: [http://0.0.0.0:8000/product/http://yt-project.org](http://0.0.0.0:8000/product/http://yt-project.org)
+6. View additional citations by entering addresses or text with the following format: http://0.0.0.0:8000/product/<address or keyword>
 
 Cool Examples
 =============
