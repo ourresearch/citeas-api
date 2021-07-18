@@ -1,7 +1,6 @@
 import html
 
-from citeproc import (Citation, CitationItem, CitationStylesBibliography,
-                      formatter)
+from citeproc import Citation, CitationItem, CitationStylesBibliography, formatter
 from citeproc.source.json import CiteProcJSON
 
 from enhanced_citation_style import EnhancedCitationStyle, get_style_name
@@ -28,22 +27,22 @@ def get_author_list(data_author):
 
 
 def build_bibtex_author_list(authors):
-    author_list = ''
+    author_list = ""
     for i, author in enumerate(authors):
         if i > 0:
-            author_list += ' and '
+            author_list += " and "
 
         if author.get("family"):
             author_list += author.get("family")
 
         if author.get("given"):
-            author_list += ', ' + author.get("given")
+            author_list += ", " + author.get("given")
 
     return author_list
 
 
 def bibtex_pages_format(pages):
-    return pages.replace('-', '--')
+    return pages.replace("-", "--")
 
 
 def get_bib_source_from_dict(data):
@@ -59,7 +58,7 @@ def get_bib_source_from_dict(data):
         for k, val in data.items():
             if val and (k in ["title", "container-title"]):
                 num_upper = sum([1 for c in val if c.isupper()])
-                if num_upper > 0.75*len(val):
+                if num_upper > 0.75 * len(val):
                     data[k] = val.title()
 
     if "page" in data and data["page"] == "-":
@@ -82,23 +81,25 @@ def display_citation(bibtex_metadata, bib_stylename, formatter=formatter.html):
     # full list is here: https://github.com/citation-style-language/styles
 
     bib_style = EnhancedCitationStyle(bib_stylename)
-    bibliography = CitationStylesBibliography(bib_style, bibtex_metadata, formatter)  # could be formatter.html
+    bibliography = CitationStylesBibliography(
+        bib_style, bibtex_metadata, formatter
+    )  # could be formatter.html
     citation = Citation([CitationItem("ITEM-1")])
     bibliography.register(citation)
 
     citation_parts = "".join(bibliography.bibliography()[0])
     citation_text = "".join(citation_parts)
 
-    if bib_stylename == 'apa':
+    if bib_stylename == "apa":
         # strip extra periods and spaces that can occur in APA format
-        citation_text = citation_text.replace('..', '.')
-        citation_text = citation_text.replace('  ', ' ')
+        citation_text = citation_text.replace("..", ".")
+        citation_text = citation_text.replace("  ", " ")
 
         citation_text = citation_text.strip()
 
         # strip leading comma
-        if citation_text.startswith(','):
-            citation_text = citation_text.lstrip(',').strip()
+        if citation_text.startswith(","):
+            citation_text = citation_text.lstrip(",").strip()
 
         citation_text = strip_duplicate_apa_title(bibtex_metadata, citation_text)
 
@@ -107,14 +108,14 @@ def display_citation(bibtex_metadata, bib_stylename, formatter=formatter.html):
 
 
 def strip_duplicate_apa_title(bibtex_metadata, citation_text):
-    item = bibtex_metadata.get('item-1')
-    title = item.get('title')
-    if title and 'Retrieved from https://github.com' not in citation_text:
-        title = "".join(title).replace('  ', ' ')
+    item = bibtex_metadata.get("item-1")
+    title = item.get("title")
+    if title and "Retrieved from https://github.com" not in citation_text:
+        title = "".join(title).replace("  ", " ")
         if citation_text.count(title) == 2:
-            citation_text = citation_text.replace(title, '', 1)
-        if citation_text[0] == '.':
-            citation_text = citation_text.replace('.', '', 1)
+            citation_text = citation_text.replace(title, "", 1)
+        if citation_text[0] == ".":
+            citation_text = citation_text.replace(".", "", 1)
             citation_text = citation_text.lstrip()
     return citation_text
 
@@ -122,11 +123,18 @@ def strip_duplicate_apa_title(bibtex_metadata, citation_text):
 def citations(bibtex_metadata):
     response = []
     # full list of possible citation formats is here: https://github.com/citation-style-language/styles
-    for bib_stylename in ["apa", "harvard1", "nature", "modern-language-association-with-url", "chicago-author-date", "vancouver"]:
+    for bib_stylename in [
+        "apa",
+        "harvard1",
+        "nature",
+        "modern-language-association-with-url",
+        "chicago-author-date",
+        "vancouver",
+    ]:
         citation_style_object = {
             "style_shortname": bib_stylename,
             "citation": display_citation(bibtex_metadata, bib_stylename),
-            "style_fullname": get_style_name(bib_stylename)
+            "style_fullname": get_style_name(bib_stylename),
         }
         response.append(citation_style_object)
     return response
@@ -153,7 +161,9 @@ def export_contents(export_type, metadata_dict):
         response_list.append(("V1", metadata_dict.get("year", "")))
         response_list.append(("PB", metadata_dict.get("publisher", "")))
         for author in metadata_dict.get("author", []):
-            response_list.append(("A1", ", ".join([author.get("family", ""), author.get("given", "")])))
+            response_list.append(
+                ("A1", ", ".join([author.get("family", ""), author.get("given", "")]))
+            )
         response = "\n".join("{} - {}".format(k, v) for (k, v) in response_list)
         response += "\nER - "
         return response
@@ -168,7 +178,9 @@ def export_contents(export_type, metadata_dict):
         response_list.append(("%I", metadata_dict.get("publisher", "")))
         response_list.append(("0%", "Journal Article"))
         for author in metadata_dict.get("author", []):
-            response_list.append(("%A", ", ".join([author.get("family", ""), author.get("given", "")])))
+            response_list.append(
+                ("%A", ", ".join([author.get("family", ""), author.get("given", "")]))
+            )
         response = "\n".join("{} {}".format(k, v) for (k, v) in response_list)
         return response
     elif export_type == "bibtex":
@@ -194,7 +206,9 @@ def export_contents(export_type, metadata_dict):
             response_list.append(("volume", metadata_dict.get("volume", "")))
             response_list.append(("number", metadata_dict.get("number", "")))
 
-        response_list.append(("pages", bibtex_pages_format(metadata_dict.get("page", ""))))
+        response_list.append(
+            ("pages", bibtex_pages_format(metadata_dict.get("page", "")))
+        )
         response_list.append(("year", metadata_dict.get("year", "")))
         response_list.append(("publisher", metadata_dict.get("publisher", "")))
         author_list = build_bibtex_author_list(metadata_dict.get("author", []))
@@ -213,7 +227,7 @@ def reference_manager_exports(metadata_dict):
     for export_name in ["csv", "enw", "ris", "bibtex"]:
         export_object = {
             "export_name": export_name,
-            "export": export_contents(export_name, metadata_dict)
+            "export": export_contents(export_name, metadata_dict),
         }
         response.append(export_object)
     return response
@@ -258,12 +272,12 @@ class Software(object):
     @property
     def metadata(self):
         metadata_step = self.completed_steps[-1]
-        if metadata_step.content.get('issued'):
+        if metadata_step.content.get("issued"):
             try:
-                year = metadata_step.content['issued']['date-parts'][0][0]
+                year = metadata_step.content["issued"]["date-parts"][0][0]
             except IndexError:
-                year = ''
-            metadata_step.content['year'] = year
+                year = ""
+            metadata_step.content["year"] = year
 
         metadata_dict = metadata_step.content
 
@@ -281,7 +295,10 @@ class Software(object):
     @property
     def citation_plain(self):
         citations = self.to_dict()["citations"]
-        return next((i["citation"] for i in citations if i["style_shortname"] == 'harvard1'), None)
+        return next(
+            (i["citation"] for i in citations if i["style_shortname"] == "harvard1"),
+            None,
+        )
 
     def to_dict(self):
         bibtex_metadata = get_bib_source_from_dict(self.metadata)
@@ -292,6 +309,6 @@ class Software(object):
             "citations": citations(bibtex_metadata),
             "exports": reference_manager_exports(self.metadata),
             "metadata": self.metadata,
-            "provenance": self.get_provenance()
+            "provenance": self.get_provenance(),
         }
         return ret
