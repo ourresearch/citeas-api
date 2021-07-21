@@ -263,8 +263,11 @@ class UserInputStep(Step):
         # check if input is PMID
         if len(input) == 8 and input.isdigit():
             query = input
+        elif 'scipy' in input:
+            query = 'scipy citation'
         else:
             query = '{} software citation'.format(input)
+
         for url in search(query, stop=3, user_agent=random_user_agent):
             if 'citebay.com' not in url and not url.endswith('.pdf'):
                 return url
@@ -452,7 +455,9 @@ class CrossrefResponseStep(Step):
         if zenodo_doi:
             return self.strip_junk_from_end_of_doi(zenodo_doi)
 
-        possible_dois = re.findall("10.\d{4,9}/[-._;()/:A-Z0-9+]+", text, re.IGNORECASE|re.MULTILINE)
+        if '<html>' in text:
+            text = re.sub('<[^<]+?>', '', text)  # strip html tags before searching for dois
+        possible_dois = re.findall("10.\d{4,9}\/[-._;()/:A-Za-z0-9+]+", text, re.IGNORECASE|re.MULTILINE)
         for doi in possible_dois:
             if "10.5063/schema/codemeta-2.0" not in doi.lower():
                 print("HERE I AM", doi)
