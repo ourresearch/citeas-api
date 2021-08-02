@@ -93,6 +93,7 @@ class Step(object):
         self.additional_content_url = None
         self.content = None
         self.parent = None
+        self.key_word = None
         self.source_preview = {
             'title': None
         }
@@ -179,7 +180,8 @@ class Step(object):
             "parent_step_name": self.parent.__class__.__name__,
             "parent_subject": get_subject(self.parent.__class__.__name__),
             "source_preview": self.source_preview,
-            "original_url": self.original_url
+            "original_url": self.original_url,
+            "key_word": self.key_word
         }
         return ret
 
@@ -249,6 +251,7 @@ class UserInputStep(Step):
         else:
             # google search
             url = self.google_search(input)
+            self.key_word = input
         return url
 
     @staticmethod
