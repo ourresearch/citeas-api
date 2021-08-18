@@ -6,6 +6,47 @@ import urllib.parse
 from nameparser import HumanName
 import requests
 
+from steps.exceptions import NoChildrenException
+
+
+def get_subject(class_name):
+    name_lower = class_name.lower()
+    if "userinput" in name_lower:
+        return "user input"
+    if "readmefile" in name_lower:
+        return "README file"
+    if "citationfile" in name_lower:
+        return "CITATION file"
+    if "descriptionfile" in name_lower:
+        return "R DESCRIPTION file"
+    if "codemetafile" in name_lower:
+        return "CodeMeta file"
+    if "arxiv" in name_lower:
+        return "ArXiv page"
+    if "codemetaresponse" in name_lower:
+        return "CodeMeta JSON data"
+    if "crossref" in name_lower:
+        return "DOI API response"
+    if "bibtex" in name_lower:
+        return "BibTeX"
+    if "citentry" in name_lower:
+        return "R CITATION format"
+    if "githubrepo" in name_lower:
+        return "GitHub repository main page"
+    if "bitbucketrepo" in name_lower:
+        return "Bitbucket repository main page"
+    if "githubapi" in name_lower:
+        return "GitHub repository API response"
+    if "cran" in name_lower:
+        return "R CRAN package webpage"
+    if "pypi" in name_lower:
+        return "Python PyPI package webpage"
+    if "webpage" in name_lower:
+        return "webpage"
+    if "relation" in name_lower:
+        return "cite-as relation header"
+    return None
+
 
 class NoDoiException(Exception):
     pass

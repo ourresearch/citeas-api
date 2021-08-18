@@ -1,0 +1,2 @@
+class NoChildrenException(Exception):
+    pass

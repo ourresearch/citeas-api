@@ -6,7 +6,7 @@ from flask import abort, jsonify, make_response, render_template, request
 
 from app import app
 from software import Software
-from step import step_configs
+from steps.core import step_configs
 
 
 def json_dumper(obj):
