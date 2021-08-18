@@ -13,9 +13,7 @@ class ArxivResponseStep(Step):
 
     @property
     def starting_children(self):
-        return [
-            ArxivMetadataStep
-        ]
+        return [ArxivMetadataStep]
 
     def set_content(self, input):
         arxiv_id = self.extract_arxiv(input)
@@ -52,7 +50,7 @@ class ArxivResponseStep(Step):
 
     def set_content_url(self, input):
         if self.extract_arxiv(input):
-            print('found arxiv')
+            print("found arxiv")
             return self.extract_arxiv(input)
 
         if input.startswith("http://arxiv:"):
@@ -60,7 +58,9 @@ class ArxivResponseStep(Step):
             self.content_url = "https://arxiv.org/abs/{}".format(arxiv_id)
 
     def extract_arxiv(self, text):
-        possible_arxiv_ids = re.findall("arXiv:\d{4}.\d{4,5}", text, re.IGNORECASE|re.MULTILINE)
+        possible_arxiv_ids = re.findall(
+            "arXiv:\d{4}.\d{4,5}", text, re.IGNORECASE | re.MULTILINE
+        )
         for arxiv_id in possible_arxiv_ids:
             return arxiv_id
 

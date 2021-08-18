@@ -10,7 +10,9 @@ from steps.utils import find_or_empty_string, get_raw_bitbucket_url, get_webpage
 
 class BitbucketRepoStep(Step):
     step_links = [("Bitbucket home page", "https://bitbucket.com/")]
-    step_intro = "Bitbucket is a web-based software version control repository hosting service."
+    step_intro = (
+        "Bitbucket is a web-based software version control repository hosting service."
+    )
     step_more = "Attribution information is often included in software source code, which can be inspected for software projects that have posted their code on Bitbucket."
 
     @property
@@ -19,22 +21,24 @@ class BitbucketRepoStep(Step):
             BitbucketCodemetaFileStep,
             BitbucketCitationFileStep,
             BitbucketReadmeFileStep,
-            BitbucketDescriptionFileStep
-            ]
+            BitbucketDescriptionFileStep,
+        ]
 
     def set_content(self, input):
         if "bitbucket.org" not in input:
             return
         if input.startswith("http"):
             url = "/".join(input.split("/", 5)[0:5])
-            url = url + '/src'
+            url = url + "/src"
         else:
-            url = find_or_empty_string('"(https?:\/\/bitbucket.org\/\w+\/\w+/?)"', input)
+            url = find_or_empty_string(
+                '"(https?:\/\/bitbucket.org\/\w+\/\w+/?)"', input
+            )
             if not url:
                 return
             else:
                 url = "/".join(url.split("/")[0:5])
-                url = url + '/src'
+                url = url + "/src"
 
         self.content = get_webpage_text(url)
         self.content_url = url
@@ -45,19 +49,23 @@ class BitbucketRepoStep(Step):
 
 
 class BitbucketReadmeFileStep(Step):
-    step_links = [("README description", "https://confluence.atlassian.com/bitbucket/readme-content-221449772.html")]
+    step_links = [
+        (
+            "README description",
+            "https://confluence.atlassian.com/bitbucket/readme-content-221449772.html",
+        )
+    ]
     step_intro = "A README file contains information about other files in a directory or archive of computer software."
     step_more = "README files often contain requests for attribution."
 
     @property
     def starting_children(self):
-        return [
-            CrossrefResponseStep,
-            BibtexStep
-        ]
+        return [CrossrefResponseStep, BibtexStep]
 
     def set_content(self, bitbucket_main_page_text):
-        matches = re.findall('href=\"(.*\/readme.*?\?.*)\"', bitbucket_main_page_text, re.IGNORECASE)
+        matches = re.findall(
+            'href="(.*\/readme.*?\?.*)"', bitbucket_main_page_text, re.IGNORECASE
+        )
         if matches:
             filename_part = matches[0]
             filename = get_raw_bitbucket_url(filename_part)
@@ -77,13 +85,14 @@ class BitbucketCodemetaFileStep(Step):
 
     @property
     def starting_children(self):
-        return [
-            CrossrefResponseStep,
-            CodemetaResponseStep
-        ]
+        return [CrossrefResponseStep, CodemetaResponseStep]
 
     def set_content(self, bitbucket_main_page_text):
-        matches = re.findall('href=\"(.*\/codemeta\.json.*?\?.*)\"', bitbucket_main_page_text, re.IGNORECASE)
+        matches = re.findall(
+            'href="(.*\/codemeta\.json.*?\?.*)"',
+            bitbucket_main_page_text,
+            re.IGNORECASE,
+        )
         if matches:
             filename_part = matches[0]
             filename = get_raw_bitbucket_url(filename_part)
@@ -98,7 +107,9 @@ class BitbucketCodemetaFileStep(Step):
 
 class BitbucketCitationFileStep(CitationFileStep):
     def set_content(self, bitbucket_main_page_text):
-        matches = re.findall('href=\"(.*\/citation.*?)\"', bitbucket_main_page_text, re.IGNORECASE)
+        matches = re.findall(
+            'href="(.*\/citation.*?)"', bitbucket_main_page_text, re.IGNORECASE
+        )
 
         if matches:
             filename_part = matches[0]
@@ -110,7 +121,9 @@ class BitbucketCitationFileStep(CitationFileStep):
 
 class BitbucketDescriptionFileStep(CitationFileStep):
     def set_content(self, bitbucket_main_page_text):
-        matches = re.findall('href=\"(.*\/description.*?)\"', bitbucket_main_page_text, re.IGNORECASE)
+        matches = re.findall(
+            'href="(.*\/description.*?)"', bitbucket_main_page_text, re.IGNORECASE
+        )
 
         if matches:
             filename_part = matches[0]

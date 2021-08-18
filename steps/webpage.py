@@ -5,7 +5,12 @@ from steps.core import MetadataStep, Step
 from steps.crossref import CrossrefResponseStep
 from steps.github import GithubRepoStep
 from steps.relation_header import RelationHeaderStep
-from steps.utils import build_source_preview, find_or_empty_string, get_webpage_text, strip_new_lines
+from steps.utils import (
+    build_source_preview,
+    find_or_empty_string,
+    get_webpage_text,
+    strip_new_lines,
+)
 
 
 class WebpageStep(Step):
@@ -21,7 +26,7 @@ class WebpageStep(Step):
             GithubRepoStep,
             BitbucketRepoStep,
             BibtexStep,
-            WebpageMetadataStep
+            WebpageMetadataStep,
         ]
 
     def set_content(self, input):
@@ -43,4 +48,6 @@ class WebpageMetadataStep(MetadataStep):
         self.content["type"] = "misc"
         self.content["title"] = title.lstrip(" ").rstrip(" ")
         self.content["URL"] = self.content_url
-        self.source_preview["title"] = build_source_preview(self.content_url, input, 'title', title)
+        self.source_preview["title"] = build_source_preview(
+            self.content_url, input, "title", title
+        )

@@ -8,15 +8,15 @@ import requests_cache
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
 
-requests_cache.install_cache('my_requests_cache', expire_after=60*60*24*1)  # expire_after is in seconds
+requests_cache.install_cache(
+    "my_requests_cache", expire_after=60 * 60 * 24 * 1
+)  # expire_after is in seconds
 requests_cache.clear()
 
 # set up logging
 # see http://wiki.pylonshq.com/display/pylonscookbook/Alternative+logging+configuration
 logging.basicConfig(
-    stream=sys.stdout,
-    level=logging.DEBUG,
-    format='%(name)s - %(message)s'
+    stream=sys.stdout, level=logging.DEBUG, format="%(name)s - %(message)s"
 )
 logger = logging.getLogger("citeas")
 
@@ -37,9 +37,6 @@ for a_library in libraries_to_mum:
 requests.packages.urllib3.disable_warnings()
 
 # error reporting with sentry
-sentry_sdk.init(
-    dsn=os.environ.get('SENTRY_DSN'),
-    integrations=[FlaskIntegration()]
-)
+sentry_sdk.init(dsn=os.environ.get("SENTRY_DSN"), integrations=[FlaskIntegration()])
 
 app = Flask(__name__)

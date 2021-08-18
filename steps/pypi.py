@@ -9,16 +9,13 @@ from steps.utils import get_webpage_text
 class PypiLibraryStep(Step):
     step_links = [("PyPI home page", "https://pypi.python.org/pypi")]
     step_intro = "The Python Package Index (PyPI) is a repository of software for the Python programming language."
-    step_more = "A project's PyPI repository page often lists useful attribution information."
+    step_more = (
+        "A project's PyPI repository page often lists useful attribution information."
+    )
 
     @property
     def starting_children(self):
-        return [
-            GithubRepoStep,
-            BitbucketRepoStep,
-            CrossrefResponseStep,
-            BibtexStep
-        ]
+        return [GithubRepoStep, BitbucketRepoStep, CrossrefResponseStep, BibtexStep]
 
     def set_content(self, input):
         self.set_content_url(input)

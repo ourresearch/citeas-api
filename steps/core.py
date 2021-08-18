@@ -14,7 +14,7 @@ class Step(object):
             "step_links": cls.step_links,
             "step_intro": cls.step_intro,
             "step_more": cls.step_more,
-            "subject": get_subject(cls.__name__)
+            "subject": get_subject(cls.__name__),
         }
         return resp
 
@@ -26,9 +26,7 @@ class Step(object):
         self.content = None
         self.parent = None
         self.key_word = None
-        self.source_preview = {
-            'title': None
-        }
+        self.source_preview = {"title": None}
         self.original_url = None
 
     @property
@@ -113,7 +111,7 @@ class Step(object):
             "parent_subject": get_subject(self.parent.__class__.__name__),
             "source_preview": self.source_preview,
             "original_url": self.original_url,
-            "key_word": self.key_word
+            "key_word": self.key_word,
         }
         return ret
 
@@ -134,10 +132,3 @@ def step_configs():
         if step_class.step_intro:
             configs[step_class.__name__] = step_class.config_dict()
     return configs
-
-
-
-
-
-
-

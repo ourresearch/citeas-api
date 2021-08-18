@@ -16,9 +16,7 @@ class CodemetaResponseStep(Step):
 
     @property
     def starting_children(self):
-        return [
-            CodemetaResponseMetadataStep
-        ]
+        return [CodemetaResponseMetadataStep]
 
     def set_content(self, input):
         data = json5.loads(input)
@@ -29,7 +27,9 @@ class CodemetaResponseStep(Step):
         self.content = {}
 
         if data.get("id"):
-            self.content["doi"] = find_or_empty_string("zenodo\.org\/record\/(\d+)", data["id"])
+            self.content["doi"] = find_or_empty_string(
+                "zenodo\.org\/record\/(\d+)", data["id"]
+            )
         elif data.get("identifier"):
             self.content["doi"] = clean_doi(data["identifier"], code_meta_exists)
         else:
@@ -57,13 +57,21 @@ class CodemetaResponseStep(Step):
             if type(data["author"]) is dict:
                 author = data["author"]
                 self.content["author"].append(
-                    author_name_as_dict('{} {}'.format(author["givenName"], author["familyName"])))
+                    author_name_as_dict(
+                        "{} {}".format(author["givenName"], author["familyName"])
+                    )
+                )
             elif type(data["author"]) is list:
                 authors = data["author"]
                 for author in authors:
                     try:
                         self.content["author"].append(
-                            author_name_as_dict('{} {}'.format(author["givenName"], author["familyName"])))
+                            author_name_as_dict(
+                                "{} {}".format(
+                                    author["givenName"], author["familyName"]
+                                )
+                            )
+                        )
                     except UnicodeEncodeError:
                         continue
 
@@ -73,7 +81,9 @@ class CodemetaResponseStep(Step):
             else:
                 agents = data["agents"]
             for agent in agents:
-                self.content["author"].append(author_name_as_dict(data["agents"]["name"]))
+                self.content["author"].append(
+                    author_name_as_dict(data["agents"]["name"])
+                )
 
         if "dateCreated" in data:
             self.content["issued"] = {"date-parts": [[data["dateCreated"][0:4]]]}

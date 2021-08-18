@@ -1,4 +1,4 @@
- #!/usr/bin/python
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 from citeproc.py2compat import *
@@ -11,8 +11,17 @@ import unicodedata
 
 from warnings import warn
 
-from citeproc.types import (ARTICLE, ARTICLE_JOURNAL, BOOK, CHAPTER, MANUSCRIPT,
-                      PAMPHLET, PAPER_CONFERENCE, REPORT, THESIS)
+from citeproc.types import (
+    ARTICLE,
+    ARTICLE_JOURNAL,
+    BOOK,
+    CHAPTER,
+    MANUSCRIPT,
+    PAMPHLET,
+    PAPER_CONFERENCE,
+    REPORT,
+    THESIS,
+)
 from citeproc.string import String, MixedString, NoCase
 from citeproc.source import BibliographySource, Reference, Name, Date, DateRange
 from citeproc.source.bibtex.bibparse import BibTeXParser
@@ -21,67 +30,69 @@ from citeproc.source.bibtex.latex.macro import NewCommand, Macro
 
 
 class BibTeX(BibliographySource):
-    fields = {'address': 'publisher_place',
-              'annote': 'annote',
-              'author': 'author',
-              'booktitle': 'container_title',
-              'chapter': 'chapter_number',
-              'edition': 'edition',
-              'editor': 'editor',
-#              'howpublished': None,
-#              'institution': None,
-              'journal': 'container_title',
-#              'month': None,
-              'note': 'note',
-              'number': 'issue',
-#              'organization': None,
-              'pages': 'page',
-              'publisher': 'publisher',
-#              'school': None,
-              'series': 'collection_title',
-              'title': 'title',
-#              'type': None,
-#              'year': None,
+    fields = {
+        "address": "publisher_place",
+        "annote": "annote",
+        "author": "author",
+        "booktitle": "container_title",
+        "chapter": "chapter_number",
+        "edition": "edition",
+        "editor": "editor",
+        #              'howpublished': None,
+        #              'institution': None,
+        "journal": "container_title",
+        #              'month': None,
+        "note": "note",
+        "number": "issue",
+        #              'organization': None,
+        "pages": "page",
+        "publisher": "publisher",
+        #              'school': None,
+        "series": "collection_title",
+        "title": "title",
+        #              'type': None,
+        #              'year': None,
+        "volume": "volume",
+        # hap added doi and url
+        "doi": "doi",
+        "url": "url",
+        # non-standard fields
+        "isbn": "ISBN",
+        "issn": "ISSN",
+    }
 
-              'volume': 'volume',
+    types = {  # standard entry types
+        "article": ARTICLE_JOURNAL,
+        "book": BOOK,
+        "booklet": PAMPHLET,
+        "conference": PAPER_CONFERENCE,
+        "inbook": CHAPTER,
+        "incollection": ARTICLE_JOURNAL,
+        "inproceedings": PAPER_CONFERENCE,
+        "manual": BOOK,
+        "mastersthesis": THESIS,
+        "misc": ARTICLE,
+        "phdthesis": THESIS,
+        "proceedings": BOOK,
+        "techreport": REPORT,
+        "unpublished": MANUSCRIPT,
+        # non-standard entry types
+        "thesis": THESIS,
+        "report": REPORT,
+    }
 
-              # hap added doi and url
-              'doi': 'doi',
-              'url': 'url',
-
-              # non-standard fields
-              'isbn': 'ISBN',
-              'issn': 'ISSN'}
-
-    types = {# standard entry types
-             'article': ARTICLE_JOURNAL,
-             'book': BOOK,
-             'booklet': PAMPHLET,
-             'conference': PAPER_CONFERENCE,
-             'inbook': CHAPTER,
-             'incollection': ARTICLE_JOURNAL,
-             'inproceedings': PAPER_CONFERENCE,
-             'manual': BOOK,
-             'mastersthesis': THESIS,
-             'misc': ARTICLE,
-             'phdthesis': THESIS,
-             'proceedings': BOOK,
-             'techreport': REPORT,
-             'unpublished': MANUSCRIPT,
-
-             # non-standard entry types
-             'thesis': THESIS,
-             'report': REPORT,
-             }
-
-    def __init__(self, filename, encoding='ascii'):
+    def __init__(self, filename, encoding="ascii"):
         bibtex_database = BibTeXParser(filename)
         bibtex_database.encoding = encoding
         self.preamble_macros = {}
-        parse_latex(bibtex_database.preamble,
-                    {'newcommand': NewCommand(self.preamble_macros),
-                     'mbox': Macro(1, '{0}'),
-                     'cite': Macro(1, 'CITE({0})')})
+        parse_latex(
+            bibtex_database.preamble,
+            {
+                "newcommand": NewCommand(self.preamble_macros),
+                "mbox": Macro(1, "{0}"),
+                "cite": Macro(1, "CITE({0})"),
+            },
+        )
         for key, entry in bibtex_database.items():
             self.add(self.create_reference(key, entry))
 
@@ -98,14 +109,14 @@ class BibTeX(BibliographySource):
             except KeyError:
                 csl_field = field
 
-            if field in ('number', 'volume'):
+            if field in ("number", "volume"):
                 try:
                     value = int(value)
                 except ValueError:
                     pass
-            elif field == 'pages':
+            elif field == "pages":
                 value = self._bibtex_to_csl_pages(value)
-            elif field in ('author', 'editor'):
+            elif field in ("author", "editor"):
                 try:
                     value = [name for name in self._parse_author(value)]
                 except RuntimeError:
@@ -122,15 +133,15 @@ class BibTeX(BibliographySource):
 
     @staticmethod
     def _bibtex_to_csl_pages(value):
-        value = value.replace(' ', '')
-        if '-' in value:
+        value = value.replace(" ", "")
+        if "-" in value:
             try:
-                first, last = value.split('--')
+                first, last = value.split("--")
             except ValueError:
-                first, last = value.split('-')
-            pages = '-'.join((first, last))
+                first, last = value.split("-")
+            pages = "-".join((first, last))
         else:
-            pages = value[:-1] if value.endswith('+') else value
+            pages = value[:-1] if value.endswith("+") else value
         return pages
 
     def _bibtex_to_csl_date(self, bibtex_entry):
@@ -143,8 +154,10 @@ class BibTeX(BibliographySource):
         # hap replaced section above with this, ignoring the month.
         begin_dict, end_dict = {}, {}
 
-        if 'year' in bibtex_entry:
-            begin_dict['year'], end_dict['year'] = self._parse_year(bibtex_entry['year'])
+        if "year" in bibtex_entry:
+            begin_dict["year"], end_dict["year"] = self._parse_year(
+                bibtex_entry["year"]
+            )
         if not begin_dict:
             return None
         if begin_dict == end_dict:
@@ -161,15 +174,27 @@ class BibTeX(BibliographySource):
             begin_year, end_year = year_str.split(EN_DASH)
             begin_len, end_len = len(begin_year), len(end_year)
             if end_len < begin_len:
-                end_year = begin_year[:begin_len - end_len] + end_year
+                end_year = begin_year[: begin_len - end_len] + end_year
         else:
             begin_year = end_year = int(year_str)
         return begin_year, end_year
 
-    MONTHS = ('jan', 'feb', 'mar', 'apr', 'may', 'jun',
-              'jul', 'aug', 'sep', 'oct', 'nov', 'dec')
-    RE_DAY = '(?P<day>\d+)'
-    RE_MONTH = '(?P<month>\w+)'
+    MONTHS = (
+        "jan",
+        "feb",
+        "mar",
+        "apr",
+        "may",
+        "jun",
+        "jul",
+        "aug",
+        "sep",
+        "oct",
+        "nov",
+        "dec",
+    )
+    RE_DAY = "(?P<day>\d+)"
+    RE_MONTH = "(?P<month>\w+)"
 
     @staticmethod
     def _parse_month(month):
@@ -182,50 +207,50 @@ class BibTeX(BibliographySource):
         begin = {}
         end = {}
         month = month.strip()
-        month = month.replace(', ', '-')
+        month = month.replace(", ", "-")
         if month.isdecimal():
-            begin['month'] = end['month'] = month
-        elif month.replace('-', '').isalpha():
-            if '-' in month:
-                begin['month'], end['month'] = month.split('-')
+            begin["month"] = end["month"] = month
+        elif month.replace("-", "").isalpha():
+            if "-" in month:
+                begin["month"], end["month"] = month.split("-")
             else:
-                begin['month'] = end['month'] = month
+                begin["month"] = end["month"] = month
         else:
-            m = re.match(BibTeX.RE_DAY + '[ ~]*' + BibTeX.RE_MONTH, month)
+            m = re.match(BibTeX.RE_DAY + "[ ~]*" + BibTeX.RE_MONTH, month)
             if m is None:
-                m = re.match(BibTeX.RE_MONTH + '[ ~]*' + BibTeX.RE_DAY, month)
-            begin['day'] = end['day'] = int(m.group('day'))
-            begin['month'] = end['month'] = m.group('month')
-        begin['month'] = month_name_to_index(begin['month'])
-        end['month'] = month_name_to_index(end['month'])
+                m = re.match(BibTeX.RE_MONTH + "[ ~]*" + BibTeX.RE_DAY, month)
+            begin["day"] = end["day"] = int(m.group("day"))
+            begin["month"] = end["month"] = m.group("month")
+        begin["month"] = month_name_to_index(begin["month"])
+        end["month"] = month_name_to_index(end["month"])
         return begin, end
 
     def _parse_string(self, title):
         def make_string(string, top_level_group=False):
             unlatexed = parse_latex(string, self.preamble_macros)
-            fixed_case = top_level_group and not string.startswith('\\')
+            fixed_case = top_level_group and not string.startswith("\\")
             string_cls = NoCase if fixed_case else String
             return string_cls(unlatexed)
 
         title = str(title)
-        title = title.replace('\n','')
+        title = title.replace("\n", "")
         title = " ".join(title.split())
 
         output = MixedString()
         level = 0
-        string = ''
+        string = ""
         for char in title:
-            if char == '{':
+            if char == "{":
                 if level == 0:
                     if string:
                         output += make_string(string)
-                        string = ''
+                        string = ""
                 level += 1
-            elif char == '}':
+            elif char == "}":
                 level -= 1
                 if level == 0:
                     output += make_string(string, True)
-                    string = ''
+                    string = ""
             else:
                 string += char
         if level != 0:
@@ -239,13 +264,14 @@ class BibTeX(BibliographySource):
         for author in split_names(authors):
             first, von, last, jr = parse_name(author)
             csl_parts = {}
-            for part, csl_label in [(first, 'given'),
-                                    (von, 'non-dropping-particle'),
-                                    (last, 'family'),
-                                    (jr, 'suffix')]:
+            for part, csl_label in [
+                (first, "given"),
+                (von, "non-dropping-particle"),
+                (last, "family"),
+                (jr, "suffix"),
+            ]:
                 if part is not None:
-                    csl_parts[csl_label] = parse_latex(part,
-                                                       self.preamble_macros)
+                    csl_parts[csl_label] = parse_latex(part, self.preamble_macros)
             name = Name(**csl_parts)
             csl_authors.append(name)
         return csl_authors
@@ -255,7 +281,7 @@ class BibTeX(BibliographySource):
         csl_fields = self._bibtex_to_csl(bibtex_entry)
         csl_date = self._bibtex_to_csl_date(bibtex_entry)
         if csl_date:
-            csl_fields['issued'] = csl_date
+            csl_fields["issued"] = csl_date
         ref = Reference(key, csl_type, **csl_fields)
         return ref
 
@@ -270,7 +296,8 @@ class BibTeX(BibliographySource):
 #  - Tame the BeaST by Nicolas Markey
 #    (http://tug.ctan.org/info/bibtex/tamethebeast/ttb_en.pdf)
 
-AND = ' and '
+AND = " and "
+
 
 def split_names(string):
     """Split a string of names separated by 'and' into a list of names."""
@@ -282,9 +309,9 @@ def split_names(string):
         if brace_level == 0 and string[i:].startswith(AND):
             names.append(string[last_index:i])
             last_index = i + len(AND)
-        elif char == '{':
+        elif char == "{":
             brace_level += 1
-        elif char == '}':
+        elif char == "}":
             brace_level -= 1
     last_name = string[last_index:]
     if last_name:
@@ -297,8 +324,8 @@ def parse_name(name):
     parts.
     """
     parts = split_name(name)
-    if len(parts) == 1:       # First von Last
-        first_von_last, = parts
+    if len(parts) == 1:  # First von Last
+        (first_von_last,) = parts
         index = 0
         first, jr = [], []
         for word in first_von_last[:-1]:
@@ -307,13 +334,13 @@ def parse_name(name):
             first.append(word)
             index += 1
         von_last = first_von_last[index:]
-    elif len(parts) == 2:     # von Last, First
+    elif len(parts) == 2:  # von Last, First
         jr = []
         von_last, first = parts
-    elif len(parts) == 3:     # von Last, Jr, First
+    elif len(parts) == 3:  # von Last, Jr, First
         von_last, jr, first = parts
     von, last = split_von_last(von_last)
-    join = ' '.join
+    join = " ".join
     return join(first) or None, join(von) or None, join(last), join(jr) or None
 
 
@@ -326,20 +353,20 @@ def split_name(name):
     brace_level = 0
     parts = []
     current_part = []
-    word = ''
+    word = ""
     for char in name:
-        if char in ' \t,':
+        if char in " \t,":
             if brace_level == 0:
                 if word:
                     current_part.append(word)
-                    word = ''
-                if char == ',':
+                    word = ""
+                if char == ",":
                     parts.append(current_part)
                     current_part = []
                 continue
-        elif char == '{':
+        elif char == "{":
             brace_level += 1
-        elif char == '}':
+        elif char == "}":
             brace_level -= 1
         word += char
     if word:
@@ -358,11 +385,11 @@ def is_capitalized(string):
     for char, next_char in lookahead_iter(string):
         if (brace_level == 0 or special_char) and char.isalpha():
             return char.isupper()
-        elif char == '{':
+        elif char == "{":
             brace_level += 1
-            if brace_level == 1 and next_char == '\\':
+            if brace_level == 1 and next_char == "\\":
                 special_char = True
-        elif char == '}':
+        elif char == "}":
             brace_level -= 1
             if brace_level == 0:
                 special_char = False
@@ -374,7 +401,7 @@ def split_von_last(words):
     if len(words) > 1 and is_capitalized(words[0]) is False:
         for j, word in enumerate(reversed(words[:-1])):
             if is_capitalized(word) not in (True, None):
-                return words[:-j - 1], words[-j - 1:]
+                return words[: -j - 1], words[-j - 1 :]
     return [], words
 
 
@@ -390,4 +417,4 @@ def lookahead_iter(iterable):
     yield item, None
 
 
-EN_DASH = unicodedata.lookup('EN DASH')
+EN_DASH = unicodedata.lookup("EN DASH")

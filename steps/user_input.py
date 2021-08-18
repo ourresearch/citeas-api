@@ -25,7 +25,7 @@ class UserInputStep(Step):
             BitbucketRepoStep,
             CranLibraryStep,
             PypiLibraryStep,
-            WebpageStep
+            WebpageStep,
         ]
 
     def set_content_url(self, input):
@@ -38,7 +38,9 @@ class UserInputStep(Step):
 
     def set_content(self, input):
         if self.content_url.startswith("http://arxiv"):
-            self.content = self.content_url.replace("http://", "").replace(".org/abs/", ":")
+            self.content = self.content_url.replace("http://", "").replace(
+                ".org/abs/", ":"
+            )
         else:
             self.content = self.content_url
 
@@ -76,7 +78,7 @@ class UserInputStep(Step):
 
     @staticmethod
     def is_arxiv_id(input):
-        r = re.compile('\d{4}.\d{5}')
+        r = re.compile("\d{4}.\d{5}")
         if r.match(input.lower()):
             return True
 
@@ -86,13 +88,13 @@ class UserInputStep(Step):
         # check if input is PMID
         if len(input) == 8 and input.isdigit():
             query = input
-        elif 'scipy' in input:
-            query = 'scipy citation'
+        elif "scipy" in input:
+            query = "scipy citation"
         else:
-            query = '{} software citation'.format(input)
+            query = "{} software citation".format(input)
 
         for url in search(query, stop=3, user_agent=random_user_agent):
-            if 'citebay.com' not in url and not url.endswith('.pdf'):
+            if "citebay.com" not in url and not url.endswith(".pdf"):
                 return url
 
     @staticmethod
@@ -109,18 +111,24 @@ class UserInputStep(Step):
     @staticmethod
     def get_citation_html_file(url):
         # citation paths
-        citation_opt_1 = 'citation.html'
-        citation_opt_2 = 'reference/citing.html'
+        citation_opt_1 = "citation.html"
+        citation_opt_2 = "reference/citing.html"
 
         # format url
-        if url.endswith('en/stable') or url.endswith('en/latest'):
-            citation_urls = [url + '/' + citation_opt_1, url + '/' + citation_opt_2]
-        elif url.endswith('en/stable/') or url.endswith('en/latest/'):
+        if url.endswith("en/stable") or url.endswith("en/latest"):
+            citation_urls = [url + "/" + citation_opt_1, url + "/" + citation_opt_2]
+        elif url.endswith("en/stable/") or url.endswith("en/latest/"):
             citation_urls = [url + citation_opt_1, url + citation_opt_2]
-        elif url.endswith('/'):
-            citation_urls = [url + 'en/stable/' + citation_opt_1, url + 'en/stable/' + citation_opt_2]
+        elif url.endswith("/"):
+            citation_urls = [
+                url + "en/stable/" + citation_opt_1,
+                url + "en/stable/" + citation_opt_2,
+            ]
         else:
-            citation_urls = [url + 'en/stable/' + citation_opt_1, url + 'en/stable/' + citation_opt_2]
+            citation_urls = [
+                url + "en/stable/" + citation_opt_1,
+                url + "en/stable/" + citation_opt_2,
+            ]
 
         # check if citation exists
         try:
