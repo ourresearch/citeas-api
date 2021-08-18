@@ -6,8 +6,6 @@ import urllib.parse
 from nameparser import HumanName
 import requests
 
-from steps.exceptions import NoChildrenException
-
 
 def get_subject(class_name):
     name_lower = class_name.lower()
@@ -45,6 +43,8 @@ def get_subject(class_name):
         return "webpage"
     if "relation" in name_lower:
         return "cite-as relation header"
+    if "google" in name_lower:
+        return "google search result"
     return None
 
 

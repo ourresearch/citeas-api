@@ -1,7 +1,6 @@
 import re
 
 from flask import abort
-from googlesearch import get_random_user_agent, search
 import requests
 import validators
 
@@ -11,6 +10,7 @@ from steps.cran import CranLibraryStep
 from steps.core import Step
 from steps.crossref import CrossrefResponseStep
 from steps.github import GithubRepoStep
+from steps.google import GoogleStep
 from steps.pypi import PypiLibraryStep
 from steps.webpage import WebpageStep
 
@@ -19,6 +19,7 @@ class UserInputStep(Step):
     @property
     def starting_children(self):
         return [
+            GoogleStep,
             CrossrefResponseStep,
             ArxivResponseStep,
             GithubRepoStep,
@@ -72,7 +73,7 @@ class UserInputStep(Step):
 
         else:
             # google search
-            url = self.google_search(input)
+            url = input
             self.key_word = input
         return url
 
@@ -81,21 +82,6 @@ class UserInputStep(Step):
         r = re.compile("\d{4}.\d{5}")
         if r.match(input.lower()):
             return True
-
-    @staticmethod
-    def google_search(input):
-        random_user_agent = get_random_user_agent()
-        # check if input is PMID
-        if len(input) == 8 and input.isdigit():
-            query = input
-        elif "scipy" in input:
-            query = "scipy citation"
-        else:
-            query = "{} software citation".format(input)
-
-        for url in search(query, stop=3, user_agent=random_user_agent):
-            if "citebay.com" not in url and not url.endswith(".pdf"):
-                return url
 
     @staticmethod
     def is_valid_url(input):

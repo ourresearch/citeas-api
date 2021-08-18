@@ -81,6 +81,8 @@ class Step(object):
             return None
         if "citentry" in name_lower:
             return None
+        if "google" in name_lower:
+            return "google"
         return "link"
 
     @property
