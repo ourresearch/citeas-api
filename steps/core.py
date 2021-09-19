@@ -73,6 +73,8 @@ class Step(object):
             return None
         if "crossref" in name_lower:
             return "doi"
+        if "pmid" in name_lower:
+            return "pmid or pmcid"
         if "arxiv" in name_lower:
             return "arXiv ID"
         if "userinput" in name_lower:

@@ -203,7 +203,7 @@ def test_source_preview():
     my_software = Software("https://cran.r-project.org/web/packages/stringr")
     my_software.find_metadata()
     resp = my_software.to_dict()
-    provenance = resp["provenance"][9]["source_preview"]
+    provenance = resp["provenance"][10]["source_preview"]
     assert (
         provenance["title"]
         == '<i>Snapshot of title data found at https://cran.r-project.org/web/packages/stringr/DESCRIPTION.</i><br>Package: stringr<br />Title: <span class="highlight">'

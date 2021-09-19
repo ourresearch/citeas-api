@@ -7,6 +7,7 @@ from steps.core import Step
 from steps.crossref import CrossrefResponseStep
 from steps.description import DescriptionFileStep
 from steps.github import GithubRepoStep
+from steps.pmid import PMIDStep
 from steps.utils import find_or_empty_string, get_webpage_text
 
 
@@ -25,6 +26,7 @@ class CranLibraryStep(Step):
             GithubRepoStep,
             BitbucketRepoStep,
             CrossrefResponseStep,
+            PMIDStep,
             BibtexStep,
         ]
 

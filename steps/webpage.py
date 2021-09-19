@@ -4,6 +4,7 @@ from steps.bitbucket import BitbucketRepoStep
 from steps.core import MetadataStep, Step
 from steps.crossref import CrossrefResponseStep
 from steps.github import GithubRepoStep
+from steps.pmid import PMIDStep
 from steps.relation_header import RelationHeaderStep
 from steps.utils import (
     build_source_preview,
@@ -22,6 +23,7 @@ class WebpageStep(Step):
         return [
             RelationHeaderStep,
             CrossrefResponseStep,
+            PMIDStep,
             ArxivResponseStep,
             GithubRepoStep,
             BitbucketRepoStep,

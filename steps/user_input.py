@@ -11,6 +11,7 @@ from steps.core import Step
 from steps.crossref import CrossrefResponseStep
 from steps.github import GithubRepoStep
 from steps.google import GoogleStep
+from steps.pmid import PMIDStep
 from steps.pypi import PypiLibraryStep
 from steps.webpage import WebpageStep
 
@@ -21,6 +22,7 @@ class UserInputStep(Step):
         return [
             GoogleStep,
             CrossrefResponseStep,
+            PMIDStep,
             ArxivResponseStep,
             GithubRepoStep,
             BitbucketRepoStep,
