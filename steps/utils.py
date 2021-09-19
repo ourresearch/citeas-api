@@ -45,6 +45,8 @@ def get_subject(class_name):
         return "cite-as relation header"
     if "google" in name_lower:
         return "google search result"
+    if "pmid" in name_lower:
+        return "PubMed identifier"
     return None
 
 
