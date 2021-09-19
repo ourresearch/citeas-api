@@ -100,6 +100,8 @@ class Step(object):
             return "cran"
         if name_lower.startswith("pypi"):
             return "pypi"
+        if "pmid" in name_lower:
+            return "pmid or pmcid"
         return None
 
     def to_dict(self):
